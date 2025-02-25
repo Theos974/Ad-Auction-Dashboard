@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.logic;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class LogDate {
 
@@ -10,6 +11,7 @@ public class LogDate {
     private int hour = -1;
     private int minute = -1;
     private int second = -1;
+    private Boolean exists = true;
 
     public LogDate (int year, int month, int day, int hour, int minute, int second){
         setYear(year);
@@ -18,6 +20,17 @@ public class LogDate {
         setHour(hour);
         setMinute(minute);
         setSecond(second);
+    }
+    public LogDate(String invalid){
+        if (Objects.equals(invalid, "n/a")){
+            this.exists = Boolean.FALSE;
+        } else {
+            System.err.println("Invalid date");
+        }
+    }
+
+    public String getDate(){
+        return null;
     }
 
     private void setYear(int year){
@@ -38,17 +51,23 @@ public class LogDate {
     }
     private void setDay(int day){
         if (day <= 0) {System.err.println("Day Less than 0");}
-        else if (Arrays.asList(1,3,5,7,8,10,12).contains(day)){
+        else if (Arrays.asList(1,3,5,7,8,10,12).contains(this.getMonth())){
             if (day <= 31) {
                 this.day = day;
             }
-        } else if (Arrays.asList(4,6,9,11).contains(day)) {
+        } else if (Arrays.asList(4,6,9,11).contains(this.getMonth())) {
             if (day <= 30) {
                 this.day = day;
             }
-        } else if (day == 2) {
-            if (this.year % 4 == 0){
-                this.day = day;
+        } else if (this.getMonth() == 2) {
+            if (this.getYear() % 4 == 0){
+                if (day <= 29){
+                    this.day = day;
+                }
+            } else {
+                if (day <= 28){
+                    this.day = day;
+                }
             }
         } else {
             System.err.println("Invalid Large Day");
@@ -74,7 +93,7 @@ public class LogDate {
         return this.minute;
     }
     private void setSecond(int second){
-        if (minute >= 0 && minute <= 59){
+        if (second >= 0 && second <= 59){
             this.second = second;
         } else {System.err.println("Invalid Second");}
     }
