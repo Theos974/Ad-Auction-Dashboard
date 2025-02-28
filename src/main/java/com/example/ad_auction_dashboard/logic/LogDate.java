@@ -37,7 +37,7 @@ public class LogDate {
         if (this.getInvalid()){
             return  "";
         } else if (this.getExists()){
-            return Integer.toString(this.getYear()) + "-" + Integer.toString(this.getMonth()) + "-" + Integer.toString(this.getDay()) + " " + Integer.toString(this.getHour()) + ":" + Integer.toString(this.getMinute()) + ":" + Integer.toString(this.getSecond());
+            return Integer.toString(this.getYear()) + "-" + String.format("%02d", this.getMonth()) + "-" + String.format("%02d", this.getDay()) + " " + String.format("%02d", this.getHour()) + ":" + String.format("%02d", this.getMinute()) + ":" + String.format("%02d", this.getSecond());
         } else {
             return "n/a";
         }

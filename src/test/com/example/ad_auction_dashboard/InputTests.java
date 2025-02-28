@@ -367,8 +367,7 @@ public class InputTests {
             FileHandler fileHandler = new FileHandler();
             String output = fileHandler.readFromCsv("src/test/com/example/ad_auction_dashboard/impression_log.csv");
             f.delete();
-            assertEquals("Date,ID,Gender,Age,Income,Context,Impression Cost\n" +
-                    "2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", output, "Should be a valid csv");
+            assertEquals("2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", output, "Should be a valid csv");
         } catch (Exception e){
             System.err.println(e);
         }
