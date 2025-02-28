@@ -2,6 +2,7 @@ package com.example.ad_auction_dashboard.logic;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class LogDate {
 
@@ -12,6 +13,7 @@ public class LogDate {
     private int minute = -1;
     private int second = -1;
     private Boolean exists = true;
+
 
     public LogDate (int year, int month, int day, int hour, int minute, int second){
         setYear(year);
@@ -99,5 +101,13 @@ public class LogDate {
     }
     public int getSecond(){
         return this.second;
+    }
+
+    public void setExists(Boolean exists) {
+        this.exists = exists;
+    }
+
+    public Boolean getExists() {
+        return exists;
     }
 }

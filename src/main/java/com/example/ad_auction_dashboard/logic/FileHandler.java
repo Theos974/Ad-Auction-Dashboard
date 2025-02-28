@@ -1,16 +1,33 @@
 package com.example.ad_auction_dashboard.logic;
 
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
 public class FileHandler {
 
 
     public Campaign openZip(String filePath){
         return null;
     }
-    public Log openIndividualCSV(String filePath){
+    public LogFile openIndividualCSV(String filePath){
         return null;
     }
 
     public String[] readFromZip(String filePath){
+//        try{
+//            ZipFile zipFile = new ZipFile(filePath);
+//            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+//
+//            while (entries.hasMoreElements()){
+//                ZipEntry entry = entries.nextElement();
+//                InputStream stream = zipFile.getInputStream(entry);
+//
+//            }
+//        } catch (Exception e){
+//            System.err.println(e);
+//        }
         return null;
     }
 

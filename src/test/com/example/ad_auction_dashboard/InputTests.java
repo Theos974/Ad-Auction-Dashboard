@@ -16,9 +16,6 @@ import java.util.zip.ZipOutputStream;
 public class InputTests {
 
     //formatting for all csv types
-
-
-
     //Validating Inputs
     @Test
     @DisplayName("Year not 4 digits")
