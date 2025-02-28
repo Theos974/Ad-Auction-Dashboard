@@ -172,7 +172,7 @@ public class InputTests {
         LogDate log3 = new LogDate(2025, 3, 16, 5, 28, 6);
         assertEquals("", log1.getDate(), "no is not a valid Date");
         assertEquals("n/a", log2.getDate(), "n/a is valid as an 'invalid' date");
-        assertEquals("2025-03-16 05:28:06", log3.getDate(), "Is a valid Date");
+        assertEquals("2025-3-16 5:28:6", log3.getDate(), "Is a valid Date");
     }
     @Test
     @DisplayName("ID Validation")

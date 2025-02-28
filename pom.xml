@@ -67,16 +67,15 @@
           <target>17</target>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.openjfx</groupId>
-        <artifactId>javafx-maven-plugin</artifactId>
-        <version>0.0.8</version>
-        <executions>
-          <execution>
-            <!-- Default configuration for running with: mvn clean javafx:run -->
-            <id>default-cli</id>
-            <configuration>
-              <mainClass>com.example.ad_auction_dashboard/com.example.ad_auction_dashboard.HelloApplication</mainClass>
+        <plugin>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-maven-plugin</artifactId>
+            <version>0.0.8</version>
+            <executions>
+                <execution>
+                    <id>default-cli</id>
+                    <configuration>
+                        <mainClass>com.example.ad_auction_dashboard.viewer.MainApp</mainClass>
               <launcher>app</launcher>
               <jlinkZipName>app</jlinkZipName>
               <jlinkImageName>app</jlinkImageName>

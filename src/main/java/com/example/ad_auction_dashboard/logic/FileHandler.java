@@ -1,7 +1,7 @@
 package com.example.ad_auction_dashboard.logic;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,6 +72,12 @@ public class FileHandler {
     }
 
     public String readFromCsv(String filePath){
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+
+        } catch (Exception e){
+            System.err.println(e);
+        }
         return null;
     }
     public String[] splitCsv(String csvFile){
