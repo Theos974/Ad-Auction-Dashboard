@@ -33,6 +33,8 @@ public class ImpressionLog implements LogFile {
     public void setId(String id) {
         if (id.matches("[0-9]*")){
             this.id = id;
+        } else {
+            this.id = "";
         }
     }
 
@@ -45,6 +47,8 @@ public class ImpressionLog implements LogFile {
             this.gender = Gender.Male;
         } else if (Objects.equals(gender, "Female")){
             this.gender = Gender.Female;
+        } else {
+            this.gender = Gender.Invalid;
         }
     }
 
@@ -54,7 +58,7 @@ public class ImpressionLog implements LogFile {
         } else if (this.gender == Gender.Female){
             return "Female";
         } else {
-            return null;
+            return "";
         }
     }
 
@@ -76,6 +80,7 @@ public class ImpressionLog implements LogFile {
                 this.age = Age.E;
                 break;
             default:
+                this.age = Age.Invalid;
                 break;
         }
     }
@@ -89,7 +94,8 @@ public class ImpressionLog implements LogFile {
             case C -> {return "35-44";}
             case D -> {return "45-54";}
             case E -> {return ">54";}
-            default -> {return null;}
+            case Invalid -> {return "";}
+            default -> {return "";}
         }
     }
 
@@ -105,6 +111,7 @@ public class ImpressionLog implements LogFile {
                 this.income = Income.High;
                 break;
             default:
+                this.income = Income.Invalid;
                 break;
         }
     }
@@ -114,7 +121,8 @@ public class ImpressionLog implements LogFile {
             case Low -> {return "Low";}
             case Medium -> {return "Medium";}
             case High -> {return "High";}
-            default -> {return null;}
+            case Invalid -> {return "";}
+            default -> {return "";}
         }
     }
 
@@ -126,7 +134,7 @@ public class ImpressionLog implements LogFile {
             case "Shopping":
                 this.context = Context.Shopping;
                 break;
-            case "Social":
+            case "Social Media":
                 this.context = Context.Social;
                 break;
             case "Media":
@@ -142,6 +150,7 @@ public class ImpressionLog implements LogFile {
                 this.context = Context.Travel;
                 break;
             default:
+                this.context = Context.Invalid;
                 break;
         }
     }
@@ -150,18 +159,21 @@ public class ImpressionLog implements LogFile {
         switch (this.context){
             case News -> {return "News";}
             case Shopping -> {return "Shopping";}
-            case Social -> {return "Social";}
+            case Social -> {return "Social Media";}
             case Media -> {return "Media";}
             case Blog -> {return "Blog";}
             case Hobbies -> {return "Hobbies";}
             case Travel -> {return "Travel";}
-            default -> {return null;}
+            case Invalid -> {return "";}
+            default -> {return "";}
         }
     }
 
     public void setImpressionCost(String impressionCost) {
         if (impressionCost.matches("[0-9]\\.[0-9]{6}")){
             this.impressionCost = Float.parseFloat(impressionCost);
+        } else {
+            this.impressionCost = (float) -1;
         }
     }
 
@@ -169,16 +181,22 @@ public class ImpressionLog implements LogFile {
         return impressionCost;
     }
 
+    public String getLogAsString(){
+        return this.getDate().getDate() + "," + this.getId() + "," + this.getGender() + "," + this.getAge() + "," + this.getIncome() + "," + this.getContext() + "," + Float.toString(this.getImpressionCost());
+    }
+
     enum Gender {
         Male,
-        Female
+        Female,
+        Invalid
     }
     enum Age {
         A("<25"),
         B("25-34"),
         C("35-44"),
         D("45-54"),
-        E(">54")
+        E(">54"),
+        Invalid("")
         ;
 
         private String range;
@@ -194,7 +212,8 @@ public class ImpressionLog implements LogFile {
     enum Income {
         Low,
         Medium,
-        High
+        High,
+        Invalid
     }
     enum Context {
         News,
@@ -203,6 +222,7 @@ public class ImpressionLog implements LogFile {
         Media,
         Blog,
         Hobbies,
-        Travel
+        Travel,
+        Invalid
     }
 }

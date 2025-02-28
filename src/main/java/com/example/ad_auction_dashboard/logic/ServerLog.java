@@ -26,6 +26,8 @@ public class ServerLog implements LogFile {
     public void setId(String id) {
         if (id.matches("[0-9]*")){
             this.id = id;
+        } else {
+            this.id = "";
         }
     }
 
@@ -34,7 +36,7 @@ public class ServerLog implements LogFile {
     }
 
     public void setExitDate(String exitDate) {
-        this.entryDate = LogFile.convertDate(exitDate);
+        this.exitDate = LogFile.convertDate(exitDate);
     }
 
     public LogDate getExitDate() {
@@ -42,8 +44,10 @@ public class ServerLog implements LogFile {
     }
 
     public void setPagesViewed(String pagesViewed) {
-        if (pagesViewed.matches("[0-9]+")){
+        if (pagesViewed.matches("[1-9]+")){
             this.pagesViewed = Integer.parseInt(pagesViewed);
+        } else {
+            this.pagesViewed = -1;
         }
     }
 
@@ -66,5 +70,9 @@ public class ServerLog implements LogFile {
 
     public Boolean getConversion() {
         return conversion;
+    }
+
+    public String getLogAsString(){
+        return this.getEntryDate().getDate() + "," + this.getId() + "," + this.getExitDate().getDate() + "," + this.getPagesViewed() + "," + this.getConversion();
     }
 }

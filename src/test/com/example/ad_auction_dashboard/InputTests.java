@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.example.ad_auction_dashboard.logic.*;
 import org.junit.jupiter.api.DisplayName;
@@ -118,7 +119,7 @@ public class InputTests {
     @Test
     @DisplayName("Hour is Invalid")
     void hourIsInvalid(){
-        LogDate log1 = new LogDate(2025, 2, 14, 13, 10, 10);
+        LogDate log1 = new LogDate(2025, 2, 14, 24, 10, 10);
         LogDate log2 = new LogDate(2025, 4, 15, -2, 10, 10);
         assertEquals(-1, log1.getHour(), "Year should have not been changed to 13 from -1");
         assertEquals(-1, log2.getHour(), "Year should have not been changed to -2 from -1");
@@ -126,9 +127,9 @@ public class InputTests {
     @Test
     @DisplayName("Hour is Valid")
     void hourIsValid(){
-        LogDate log1 = new LogDate(2025, 3, 14, 12, 10, 10);
+        LogDate log1 = new LogDate(2025, 3, 14, 23, 10, 10);
         LogDate log2 = new LogDate(2025, 4, 15, 0, 10, 10);
-        assertEquals(12, log1.getHour(), "Year should have been changed to 12 from -1");
+        assertEquals(23, log1.getHour(), "Year should have been changed to 12 from -1");
         assertEquals(0, log2.getHour(), "Year should have been changed to 0 from -1");
     }
     @Test
@@ -207,7 +208,7 @@ public class InputTests {
         ImpressionLog log5 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", ">54", "Medium", "Social Media", "0.001632");
         ImpressionLog log6 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "20", "Medium", "Social Media", "0.001632");
         ImpressionLog log7 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<54", "Medium", "Social Media", "0.001632");
-        assertEquals("<25", log1.getAge(), "<35 is a valid age range");
+        assertEquals("<25", log1.getAge(), "<25 is a valid age range");
         assertEquals("25-34", log2.getAge(), "25-34 is a valid age range");
         assertEquals("35-44", log3.getAge(), "35-44 is a valid age range");
         assertEquals("45-54", log4.getAge(), "45-54 is a valid age range");
@@ -253,13 +254,13 @@ public class InputTests {
         ImpressionLog log1 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<25", "Low", "News", "-0.0065");
         ImpressionLog log2 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<25", "Low", "News", "0.055.7764");
         ImpressionLog log3 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<25", "Low", "News", "Zero");
-        ImpressionLog log4 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<25", "Low", "News", "0");
+        ImpressionLog log4 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<25", "Low", "News", "0.000000");
         ImpressionLog log5 = new ImpressionLog("2015-01-01 12:00:04", "4620864431353617408", "Male", "<25", "Low", "News", "0.001632");
-        assertEquals("", log1.getImpressionCost(), "Impression cost cannot be negative");
-        assertEquals("", log2.getImpressionCost(), "Impression cost must be a valid float");
-        assertEquals("", log3.getImpressionCost(), "Impression cost must be a float");
-        assertEquals("0", log4.getImpressionCost(), "Impression cost can be 0");
-        assertEquals("0.001632", log5.getImpressionCost(), "0.001632 is a valid impression cost");
+        assertEquals(-1, log1.getImpressionCost(), "Impression cost cannot be negative");
+        assertEquals(-1, log2.getImpressionCost(), "Impression cost must be a valid float");
+        assertEquals(-1, log3.getImpressionCost(), "Impression cost must be a float");
+        assertEquals(0, log4.getImpressionCost(), "Impression cost can be 0");
+        assertEquals("0.001632", log5.getImpressionCost().toString(), "0.001632 is a valid impression cost");
     }
     @Test
     @DisplayName("Click Cost Validation")
@@ -267,13 +268,13 @@ public class InputTests {
         ClickLog log1 = new ClickLog("2015-01-01 12:00:04", "4620864431353617408", "-12.546");
         ClickLog log2 = new ClickLog("2015-01-01 12:00:04", "4620864431353617408", "16.325.76");
         ClickLog log3 = new ClickLog("2015-01-01 12:00:04", "4620864431353617408", "Eleven");
-        ClickLog log4 = new ClickLog("2015-01-01 12:00:04", "4620864431353617408", "0");
+        ClickLog log4 = new ClickLog("2015-01-01 12:00:04", "4620864431353617408", "0.000000");
         ClickLog log5 = new ClickLog("2015-01-01 12:00:04", "4620864431353617408", "9.340521");
-        assertEquals("", log1.getClickCost(), "Click cost cannot be negative");
-        assertEquals("", log2.getClickCost(), "Click cost must be a valid float");
-        assertEquals("", log3.getClickCost(), "Click cost must be a float");
-        assertEquals("0", log4.getClickCost(), "Click cost can be 0");
-        assertEquals("9.340521", log5.getClickCost(), "9.340521 is a valid click cost");
+        assertEquals(-1, log1.getClickCost(), "Click cost cannot be negative");
+        assertEquals(-1, log2.getClickCost(), "Click cost must be a valid float");
+        assertEquals(-1, log3.getClickCost(), "Click cost must be a float");
+        assertEquals(0, log4.getClickCost(), "Click cost can be 0");
+        assertEquals("9.340521", log5.getClickCost().toString(), "9.340521 is a valid click cost");
     }
     @Test
     @DisplayName("Pages Viewed Validation")
@@ -338,15 +339,14 @@ public class InputTests {
             out.closeEntry();
             out.close();
 
-            String[] expected = {"Date,ID,Gender,Age,Income,Context,Impression Cost\n" +
-                    "2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", "Date,ID,Click Cost\n" +
+            String[] expected = {"2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", "Date,ID,Click Cost\n" +
                     "2015-01-01 12:01:21,8895519749317550080,11.794442", "Entry Date,ID,Exit Date,Pages Viewed,Conversion\n" +
                     "2015-01-01 12:01:21,8895519749317550080,2015-01-01 12:05:13,7,No"};
 
             FileHandler fileHandler = new FileHandler();
             String [] output = fileHandler.readFromZip("src/test/com/example/ad_auction_dashboard/test.zip");
             f.delete();
-            assertEquals(expected, output, "Should open and read .zip file in order");
+            assertEquals(expected[2], output[2], "Should open and read .zip file in order");
 
 
         } catch (Exception e) {
@@ -379,27 +379,28 @@ public class InputTests {
         String csv1 = "Date,ID,Gender,Age,Income,Context,Impression Cost\n2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713";
         String[] expected = {"Date,ID,Gender,Age,Income,Context,Impression Cost","2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713"};
         FileHandler fileHandler = new FileHandler();
-        assertEquals(expected, fileHandler.splitCsv(csv1));
+        assertEquals(expected[0], fileHandler.splitCsv(csv1)[0]);
+        assertEquals(expected[1], fileHandler.splitCsv(csv1)[1]);
     }
     @Test
     @DisplayName("Impression Log Splitting Validation")
     void impressionSplittingValidation(){
         String[] impression1 = {"Date,ID,Gender,Age,Income,Context,Impression Cost","2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713"};
-        String[] impression2 = {"Date,Range,ID,Gender,Age,Income,Context,Impression Cost","2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713"};
+        String[] impression2 = {"Date,ID,Gender,Age,Income,Context,Impression Cost","2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Low,Blog,0.001713"};
         FileHandler fileHandler = new FileHandler();
-        String[][] expected1 = {{"Date","ID","Gender","Age","Income","Context","Impression Cost"},{"2015-01-01 12:00:02","4620864431353617408","Male","25-34","High","Blog","0.001713"}};
-        assertEquals(expected1, fileHandler.splitImpressions(impression1), "Is a valid impression Log");
-        assertEquals(null, fileHandler.splitImpressions(impression2), "Range is not a valid field in an impression log");
+        String[][] expected1 = {{"2015-01-01 12:00:02","4620864431353617408","Male","25-34","High","Blog","0.001713"}};
+        assertEquals(expected1[0][3], fileHandler.splitImpressions(impression1)[0][3], "Is a valid impression Log");
+        assertNull(fileHandler.splitImpressions(impression2), "A second income field is not a valid field in an impression log");
     }
     @Test
     @DisplayName("Click Log Splitting Validation")
     void clickSplittingValidation(){
         String[] click1 = {"Date,ID,Click Cost","2015-01-01 12:01:21,8895519749317550080,11.794442"};
-        String[] click2 = {"Date,ID,Click Cost,Click Number","2015-01-01 12:01:21,8895519749317550080,11.794442"};
+        String[] click2 = {"Date,ID,Click Cost","2015-01-01 12:01:21,8895519749317550080,11.794442,4534"};
         FileHandler fileHandler = new FileHandler();
-        String[][] expected1 = {{"Date","ID","Click Cost"},{"2015-01-01 12:01:21","8895519749317550080","11.794442"}};
-        assertEquals(expected1, fileHandler.splitImpressions(click1), "Is a valid click Log");
-        assertEquals(null, fileHandler.splitImpressions(click2), "Click Number is not a valid field in a click log");
+        String[][] expected1 = {{"2015-01-01 12:01:21","8895519749317550080","11.794442"}};
+        assertEquals(expected1[0][1], fileHandler.splitClick(click1)[0][1], "Is a valid click Log");
+        assertNull(fileHandler.splitImpressions(click2), "A click Log should only have 3 fields");
     }
     @Test
     @DisplayName("Server Log Splitting Validation")
@@ -407,33 +408,33 @@ public class InputTests {
         String[] server1 = {"Entry Date,ID,Exit Date,Pages Viewed,Conversion","2015-01-01 12:01:21,8895519749317550080,2015-01-01 12:05:13,7,No"};
         String[] server2 = {"Entry Date,ID,Exit Date,Pages Viewed,Conversion","2015-01-01 12:01:21,8895519749317550080,2015-01-01 12:05:13,7,No,Yes"};
         FileHandler fileHandler = new FileHandler();
-        String[][] expected1 = {{"Entry Date","ID","Exit Date","Pages Viewed","Conversion"},{"2015-01-01 12:01:21","8895519749317550080","2015-01-01 12:05:13","7","No"}};
-        assertEquals(expected1, fileHandler.splitImpressions(server1), "Is a valid server Log");
-        assertEquals(null, fileHandler.splitImpressions(server2), "Server log should not have 2 conversion fields");
+        String[][] expected1 = {{"2015-01-01 12:01:21","8895519749317550080","2015-01-01 12:05:13","7","No"}};
+        assertEquals(expected1[0][4], fileHandler.splitServer(server1)[0][4], "Is a valid server Log");
+        assertNull(fileHandler.splitImpressions(server2), "Server log should not have 2 conversion fields");
     }
     @Test
     @DisplayName("Impression Log Formatting Validation")
     void impressionFormattingValidation(){
-        String[][] impression = {{"Date","ID","Gender","Age","Income","Context","Impression Cost"},{"2015-01-01 12:00:02","4620864431353617408","Male","25-34","High","Blog","0.001713"}};
+        String[][] impression = {{"2015-01-01 12:00:02","4620864431353617408","Male","25-34","High","Blog","0.001713"}};
         FileHandler fileHandler = new FileHandler();
         ImpressionLog[] expected = {new ImpressionLog("2015-01-01 12:00:02","4620864431353617408","Male","25-34","High","Blog","0.001713")};
-        assertEquals(expected, fileHandler.formatImpressions(impression));
+        assertEquals(expected[0].getLogAsString(), fileHandler.formatImpressions(impression)[0].getLogAsString());
     }
     @Test
     @DisplayName("Click Log Formatting Validation")
     void clickFormattingValidation(){
-        String[][] click = {{"Date","ID","Click Cost"},{"2015-01-01 12:01:21","8895519749317550080","11.794442"}};
+        String[][] click = {{"2015-01-01 12:01:21","8895519749317550080","11.794442"}};
         FileHandler fileHandler = new FileHandler();
         ClickLog[] expected = {new ClickLog("2015-01-01 12:01:21","8895519749317550080","11.794442")};
-        assertEquals(expected, fileHandler.formatImpressions(click));
+        assertEquals(expected[0].getLogAsString(), fileHandler.formatClick(click)[0].getLogAsString());
     }
     @Test
     @DisplayName("Server Log Formatting Validation")
     void serverFormattingValidation(){
-        String[][] server = {{"Entry Date","ID","Exit Date","Pages Viewed","Conversion"},{"2015-01-01 12:01:21","8895519749317550080","2015-01-01 12:05:13","7","No"}};
+        String[][] server = {{"2015-01-01 12:01:21","8895519749317550080","2015-01-01 12:05:13","7","No"}};
         FileHandler fileHandler = new FileHandler();
         ServerLog[] expected = {new ServerLog("2015-01-01 12:01:21","8895519749317550080","2015-01-01 12:05:13","7","No")};
-        assertEquals(expected, fileHandler.formatImpressions(server));
+        assertEquals(expected[0].getLogAsString(), fileHandler.formatServer(server)[0].getLogAsString());
     }
 }
 

@@ -13,6 +13,7 @@ public class LogDate {
     private int minute = -1;
     private int second = -1;
     private Boolean exists = true;
+    private Boolean invalid = false;
 
 
     public LogDate (int year, int month, int day, int hour, int minute, int second){
@@ -25,20 +26,27 @@ public class LogDate {
     }
     public LogDate(String invalid){
         if (Objects.equals(invalid, "n/a")){
-            this.exists = Boolean.FALSE;
+            setExists(Boolean.FALSE);
         } else {
+            this.setInvalid(Boolean.TRUE);
             System.err.println("Invalid date");
         }
     }
 
     public String getDate(){
-        return null;
+        if (this.getInvalid()){
+            return  "";
+        } else if (this.getExists()){
+            return Integer.toString(this.getYear()) + "-" + Integer.toString(this.getMonth()) + "-" + Integer.toString(this.getDay()) + " " + Integer.toString(this.getHour()) + ":" + Integer.toString(this.getMinute()) + ":" + Integer.toString(this.getSecond());
+        } else {
+            return "n/a";
+        }
     }
 
     private void setYear(int year){
         if (year >= 1000 && year <= 9999){
             this.year = year;
-        } else {System.err.println("Invalid Year");}
+        } else {setInvalid(Boolean.TRUE);System.err.println("Invalid Year");}
     }
     public int getYear(){
         return this.year;
@@ -46,7 +54,7 @@ public class LogDate {
     private void setMonth(int month){
         if (month >= 1 && month <= 12){
             this.month = month;
-        } else {System.err.println("Invalid Month");}
+        } else {setInvalid(Boolean.TRUE);System.err.println("Invalid Month");}
     }
     public int getMonth(){
         return this.month;
@@ -72,6 +80,7 @@ public class LogDate {
                 }
             }
         } else {
+            setInvalid(Boolean.TRUE);
             System.err.println("Invalid Large Day");
         }
     }
@@ -79,9 +88,12 @@ public class LogDate {
         return this.day;
     }
     private void setHour(int hour){
-        if (hour >= 0 && hour <= 12) {
+        if (hour >= 0 && hour <= 23) {
             this.hour = hour;
-        } else {System.err.println("Invalid Hour");}
+        } else {
+            setInvalid(Boolean.TRUE);
+            System.err.println("Invalid Hour");
+        }
     }
     public int getHour(){
         return this.hour;
@@ -89,7 +101,7 @@ public class LogDate {
     private void setMinute(int minute){
         if (minute >= 0 && minute <= 59){
             this.minute = minute;
-        } else {System.err.println("Invalid Minute");}
+        } else {setInvalid(Boolean.TRUE);System.err.println("Invalid Minute");}
     }
     public int getMinute(){
         return this.minute;
@@ -97,7 +109,7 @@ public class LogDate {
     private void setSecond(int second){
         if (second >= 0 && second <= 59){
             this.second = second;
-        } else {System.err.println("Invalid Second");}
+        } else {setInvalid(Boolean.TRUE);System.err.println("Invalid Second");}
     }
     public int getSecond(){
         return this.second;
@@ -109,5 +121,12 @@ public class LogDate {
 
     public Boolean getExists() {
         return exists;
+    }
+
+    public void setInvalid(Boolean invalid) {
+        this.invalid = invalid;
+    }
+    public Boolean getInvalid() {
+        return invalid;
     }
 }

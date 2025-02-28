@@ -6,6 +6,9 @@ public class ClickLog implements LogFile {
     private Float clickCost;
 
     public ClickLog(String date, String id, String clickCost){
+        this.setDate(date);
+        this.setId(id);
+        this.setClickCost(clickCost);
 
     }
 
@@ -20,6 +23,8 @@ public class ClickLog implements LogFile {
     public void setId(String id) {
         if (id.matches("[0-9]*")){
             this.id = id;
+        } else {
+            this.id = "";
         }
     }
 
@@ -28,12 +33,18 @@ public class ClickLog implements LogFile {
     }
 
     public void setClickCost(String clickCost) {
-        if (clickCost.matches("[0.9]+\\.[0.9]{6}")){
+        if (clickCost.matches("[0-9]+\\.[0-9]{6}")){
             this.clickCost = Float.parseFloat(clickCost);
+        } else {
+            this.clickCost = (float) -1;
         }
     }
 
     public Float getClickCost() {
         return clickCost;
+    }
+
+    public String getLogAsString(){
+        return this.getDate().getDate() + "," + this.getId() + "," + this.getClickCost();
     }
 }
