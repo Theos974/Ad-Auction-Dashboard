@@ -30,9 +30,9 @@ public class CampaignMetrics {
 
     private void computeAllMetrics() {
 
-        ImpressionLog[] imps = campaign.getImpressionLog();
-        ServerLog[] srv = campaign.getServerLog();
-        ClickLog[] cls = campaign.getClickLog();
+        ImpressionLog[] imps = campaign.getImpressionLogs();
+        ServerLog[] srv = campaign.getServerLogs();
+        ClickLog[] cls = campaign.getClickLogs();
 
         this.numberOfImpressions = calculateImpressions(imps);
         this.numberOfClicks = calculateClicks(cls);
