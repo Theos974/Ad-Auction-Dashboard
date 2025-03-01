@@ -339,7 +339,8 @@ public class InputTests {
             out.closeEntry();
             out.close();
 
-            String[] expected = {"2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", "Date,ID,Click Cost\n" +
+            String[] expected = {"Date,ID,Gender,Age,Income,Context,Impression Cost\n" +
+                    "2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", "Date,ID,Click Cost\n" +
                     "2015-01-01 12:01:21,8895519749317550080,11.794442", "Entry Date,ID,Exit Date,Pages Viewed,Conversion\n" +
                     "2015-01-01 12:01:21,8895519749317550080,2015-01-01 12:05:13,7,No"};
 
@@ -367,7 +368,8 @@ public class InputTests {
             FileHandler fileHandler = new FileHandler();
             String output = fileHandler.readFromCsv("src/test/com/example/ad_auction_dashboard/impression_log.csv");
             f.delete();
-            assertEquals("2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", output, "Should be a valid csv");
+            assertEquals("Date,ID,Gender,Age,Income,Context,Impression Cost\n" +
+                    "2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", output, "Should be a valid csv");
         } catch (Exception e){
             System.err.println(e);
         }
