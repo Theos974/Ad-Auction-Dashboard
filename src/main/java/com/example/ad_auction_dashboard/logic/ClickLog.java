@@ -33,12 +33,13 @@ public class ClickLog implements LogFile {
     }
 
     public void setClickCost(String clickCost) {
-        if (clickCost.matches("[0-9]+\\.[0-9]{6}")){
+        if (clickCost.matches("[0-9]+\\.[0-9]{1,6}")){
             this.clickCost = Float.parseFloat(clickCost);
         } else {
             this.clickCost = (float) -1;
         }
     }
+
 
     public Float getClickCost() {
         return clickCost;
