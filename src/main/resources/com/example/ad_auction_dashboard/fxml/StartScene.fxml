@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.text.Text?>
+
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController"
             prefHeight="400.0" prefWidth="600.0">
-    <!-- Your UI nodes -->
     <children>
-        <VBox alignment="CENTER" spacing="20.0" AnchorPane.topAnchor="50.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0">
+        <VBox alignment="CENTER" spacing="20" AnchorPane.topAnchor="50.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
             <children>
                 <Button fx:id="loadZipBtn" text="Load ZIP File" onAction="#handleLoadZip"/>
                 <Text fx:id="statusText" text="No campaign loaded."/>
-                <Button fx:id="createCampaignBtn" text="Create Campaign" onAction="#handleShowCampaign"/>
+                <Button fx:id="createCampaignBtn" text="Create Campaign" onAction="#handleCreateCampaign"/>
             </children>
         </VBox>
     </children>
 </AnchorPane>
-

@@ -80,7 +80,7 @@ public class CampaignMetrics {
             LogDate entryLd = s.getEntryDate();
             LogDate exitLd  = s.getExitDate();
 
-            if (entryLd == null || exitLd == null) {
+            if (entryLd == null || exitLd == null || !entryLd.getExists() || !exitLd.getExists()) {
                 continue;
             }
 

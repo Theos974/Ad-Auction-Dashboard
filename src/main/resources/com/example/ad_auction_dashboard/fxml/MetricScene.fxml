@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.HBox?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
+    <!-- Top area for the dashboard caption -->
+    <top>
+        <Label text="SEG Dashboard" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <font>
+                <Font name="System Bold" size="16"/>
+            </font>
+        </Label>
+    </top>
+
+    <!-- Center area: A grid for the individual metrics -->
+    <center>
+        <VBox spacing="10" alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <!-- First row (5 metrics) -->
+            <HBox spacing="20" alignment="CENTER">
+                <VBox alignment="CENTER">
+                    <Label text="Impressions:"/>
+                    <Label fx:id="impressionsLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="Clicks:"/>
+                    <Label fx:id="clicksLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="Uniques:"/>
+                    <Label fx:id="uniquesLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="Bounces:"/>
+                    <Label fx:id="bouncesLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="Conversions:"/>
+                    <Label fx:id="conversionsLabel"/>
+                </VBox>
+            </HBox>
+            <!-- Second row (6 metrics) -->
+            <HBox spacing="20" alignment="CENTER">
+                <VBox alignment="CENTER">
+                    <Label text="Total Cost:"/>
+                    <Label fx:id="totalCostLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="CTR:"/>
+                    <Label fx:id="ctrLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="CPC:"/>
+                    <Label fx:id="cpcLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="CPA:"/>
+                    <Label fx:id="cpaLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="CPM:"/>
+                    <Label fx:id="cpmLabel"/>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Label text="Bounce Rate:"/>
+                    <Label fx:id="bounceRateLabel"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+
+    <!-- Bottom area: Chart area with a caption and the chart -->
+    <bottom>
+        <VBox spacing="10" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Chart Area" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+            <LineChart fx:id="lineChart" title="Metric Trends" prefHeight="300" prefWidth="600">
+                <xAxis>
+                    <NumberAxis fx:id="xAxis" label="Time"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis fx:id="yAxis" label="Value"/>
+                </yAxis>
+            </LineChart>
+        </VBox>
+    </bottom>
+</BorderPane>
