@@ -1,0 +1,75 @@
+.root {
+    -fx-background-image: url("../images/background.png");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+}
+.vbox-outlined {
+    -fx-border-color: #333;     /* or another color */
+    -fx-border-width: 2;       /* thickness of the border */
+    -fx-border-radius: 4;      /* rounded corners for the border */
+    -fx-background-radius: 4;  /* match border radius for smooth corners */
+    -fx-padding: 10;           /* space inside the VBox */
+    -fx-spacing: 8;            /* space between child nodes */
+}
+.button {
+    -fx-background-color: linear-gradient(black);
+    -fx-text-fill: black;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-width: 2px;
+    -fx-border-color: black;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 5, 0, 0, 2);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(black);
+    -fx-border-color: #388E3C;
+}
+
+.button:pressed {
+    -fx-background-color: linear-gradient(black);
+    -fx-border-color: #0D5302;
+    -fx-effect: none;
+}
+.vbox-greenish {
+    /* A simple solid color: */
+    /* -fx-background-color: #c8e6c9; */
+
+    /* Or a soft gradient: */
+    -fx-background-color: linear-gradient(to bottom right, #c8e6c9, #a5d6a7);
+
+    -fx-padding: 20;      /* space inside the VBox */
+    -fx-spacing: 15;      /* space between children */
+    -fx-background-radius: 8;  /* round the corners slightly */
+}
+
+/* 2. A style class for “dashboard” labels */
+.dashboard-label {
+    -fx-text-fill: #333333;      /* dark grey text */
+    -fx-font-size: 14px;         /* moderate text size */
+    -fx-font-weight: 600;        /* semi-bold */
+    -fx-font-family: "Segoe UI", sans-serif; /* or another modern font */
+
+    /* optional padding or background for a “pill” effect */
+    -fx-padding: 5 10;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 4;
+}
+
+/* If you have a bigger title label, you could define something like: */
+.dashboard-title {
+    -fx-text-fill: #212121;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label-tt-fors {
+    -fx-font-family: "TT Fors Display";
+    -fx-font-size: 18px;
+    -fx-text-fill: #333333; /* or another color */
+    -fx-font-weight: BOLD; /* or BOLD */
+}

@@ -2,52 +2,53 @@ package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import javafx.fxml.FXML;
-import javafx.scene.chart.LineChart;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Label;
+import javafx.scene.text.Text;
 
 public class MetricSceneController {
 
+    // These should match the fx:id's of the Text nodes in your FXML for displaying metric values.
     @FXML
-    private Label impressionsLabel;
+    private Text impressionsText;
     @FXML
-    private Label clicksLabel;
+    private Text clicksText;
     @FXML
-    private Label uniquesLabel;
+    private Text uniquesText;
     @FXML
-    private Label bouncesLabel;
+    private Text bouncesText;
     @FXML
-    private Label conversionsLabel;
+    private Text conversionsText;
     @FXML
-    private Label totalCostLabel;
+    private Text totalCostText;
     @FXML
-    private Label ctrLabel;
+    private Text ctrText;
     @FXML
-    private Label cpcLabel;
+    private Text cpcText;
     @FXML
-    private Label cpaLabel;
+    private Text cpaText;
     @FXML
-    private Label cpmLabel;
+    private Text cpmText;
     @FXML
-    private Label bounceRateLabel;
+    private Text bounceRateText;
 
+    // Change from LineChart to BarChart with a CategoryAxis for metric names.
     @FXML
-    private LineChart<Number, Number> lineChart;
+    private BarChart<String, Number> barChart;
     @FXML
-    private NumberAxis xAxis, yAxis;
+    private CategoryAxis xAxis;
+    @FXML
+    private NumberAxis yAxis;
 
-    private CampaignMetrics metrics; // model
+    private CampaignMetrics metrics; // the campaign data model
 
     @FXML
     public void initialize() {
-        // Optional: set up the chart with sample or placeholder data
-        XYChart.Series<Number, Number> series = new XYChart.Series<>();
-        series.setName("Metric Trend");
-        series.getData().add(new XYChart.Data<>(0, 0));
-        series.getData().add(new XYChart.Data<>(1, 1));
-        series.getData().add(new XYChart.Data<>(2, 0.5));
-        lineChart.getData().add(series);
+        // Set up the bar chart axes
+        xAxis.setLabel("Metric");
+        yAxis.setLabel("Value");
     }
 
     public void setMetrics(CampaignMetrics metrics) {
@@ -57,16 +58,37 @@ public class MetricSceneController {
 
     private void updateUI() {
         if (metrics == null) return;
-        impressionsLabel.setText(String.valueOf(metrics.getNumberOfImpressions()));
-        clicksLabel.setText(String.valueOf(metrics.getNumberOfClicks()));
-        uniquesLabel.setText(String.valueOf(metrics.getNumberOfUniques()));
-        bouncesLabel.setText(String.valueOf(metrics.getNumberOfBounces()));
-        conversionsLabel.setText(String.valueOf(metrics.getNumberOfConversions()));
-        totalCostLabel.setText(String.format("%.6f", metrics.getTotalCost()));
-        ctrLabel.setText(String.format("%.6f", metrics.getCTR()));
-        cpcLabel.setText(String.format("%.6f", metrics.getCPC()));
-        cpaLabel.setText(String.format("%.6f", metrics.getCPA()));
-        cpmLabel.setText(String.format("%.6f", metrics.getCPM()));
-        bounceRateLabel.setText(String.format("%.6f", metrics.getBounceRate()));
+
+        // Update the Text nodes with metric values
+        impressionsText.setText(String.valueOf(metrics.getNumberOfImpressions()));
+        clicksText.setText(String.valueOf(metrics.getNumberOfClicks()));
+        uniquesText.setText(String.valueOf(metrics.getNumberOfUniques()));
+        bouncesText.setText(String.valueOf(metrics.getNumberOfBounces()));
+        conversionsText.setText(String.valueOf(metrics.getNumberOfConversions()));
+        totalCostText.setText(String.format("%.6f", metrics.getTotalCost()));
+        ctrText.setText(String.format("%.6f", metrics.getCTR()));
+        cpcText.setText(String.format("%.6f", metrics.getCPC()));
+        cpaText.setText(String.format("%.6f", metrics.getCPA()));
+        cpmText.setText(String.format("%.6f", metrics.getCPM()));
+        bounceRateText.setText(String.format("%.6f", metrics.getBounceRate()));
+
+        // Build a bar chart series with all metrics
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Campaign Metrics");
+        series.getData().add(new XYChart.Data<>("Impressions", metrics.getNumberOfImpressions()));
+        series.getData().add(new XYChart.Data<>("Clicks", metrics.getNumberOfClicks()));
+        series.getData().add(new XYChart.Data<>("Uniques", metrics.getNumberOfUniques()));
+        series.getData().add(new XYChart.Data<>("Bounces", metrics.getNumberOfBounces()));
+        series.getData().add(new XYChart.Data<>("Conversions", metrics.getNumberOfConversions()));
+        series.getData().add(new XYChart.Data<>("Total Cost", metrics.getTotalCost()));
+        series.getData().add(new XYChart.Data<>("CTR", metrics.getCTR()));
+        series.getData().add(new XYChart.Data<>("CPA", metrics.getCPA()));
+        series.getData().add(new XYChart.Data<>("CPC", metrics.getCPC()));
+        series.getData().add(new XYChart.Data<>("CPM", metrics.getCPM()));
+        series.getData().add(new XYChart.Data<>("Bounce Rate", metrics.getBounceRate()));
+
+        // Clear any previous data and add the new series to the chart
+        barChart.getData().clear();
+        barChart.getData().add(series);
     }
 }

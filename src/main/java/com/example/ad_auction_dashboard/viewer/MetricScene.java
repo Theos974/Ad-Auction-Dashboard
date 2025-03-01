@@ -1,5 +1,7 @@
 package com.example.ad_auction_dashboard.viewer;
 
+import com.example.ad_auction_dashboard.controller.MetricSceneController;
+import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,6 +14,7 @@ public class MetricScene {
     private final int height;
     private final Stage stage;
     private Scene scene;
+    private MetricSceneController controller;
 
     public MetricScene(Stage stage, int width, int height) {
         this.width = width;
@@ -31,6 +34,8 @@ public class MetricScene {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene.fxml"));
             Parent root = loader.load();
+            // Retrieve the controller so we can set campaign metrics later
+            controller = loader.getController();
             this.scene = new Scene(root, width, height);
             stage.setScene(scene);
         } catch (IOException e) {
@@ -40,5 +45,12 @@ public class MetricScene {
 
     public Scene getScene() {
         return scene;
+    }
+
+    // New method to update the UI with campaign metrics
+    public void setCampaignMetrics(CampaignMetrics metrics) {
+        if (controller != null) {
+            controller.setMetrics(metrics);
+        }
     }
 }
