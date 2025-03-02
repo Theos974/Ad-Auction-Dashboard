@@ -73,3 +73,173 @@
     -fx-text-fill: #333333; /* or another color */
     -fx-font-weight: BOLD; /* or BOLD */
 }
+.menu {
+    -fx-padding: 10;
+}
+
+.menuItem {
+    -fx-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 32px;
+    -fx-font-weight: 700;
+    -fx-border-color: black;
+    -fx-stroke: black;
+    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+}
+
+.menuItem:hover {
+    -fx-fill: yellow;
+}
+
+.menuItem.selected {
+    -fx-fill: yellow;
+}
+
+.big-title {
+    -fx-fill: yellow;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 64px;
+    -fx-font-weight: 900;
+    -fx-border-color: black;
+    -fx-stroke: black;
+    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+}
+
+.title {
+    -fx-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 32px;
+    -fx-font-weight: 900;
+    -fx-border-color: black;
+    -fx-stroke: black;
+    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+}
+
+.heading {
+    -fx-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 20px;
+    -fx-font-weight: 700;
+    -fx-border-color: black;
+    -fx-stroke: black;
+    -fx-effect: dropshadow(gaussian, black, 1, 1.0, 1, 1);
+}
+
+.button2 {
+    -fx-background-color: #ff9900;
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+.fancy-button {
+    -fx-background-color: linear-gradient(#ff5400, #be1d00);
+    -fx-background-radius: 30;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 10 20 10 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 5, 0.0, 0, 1);
+}
+
+.fancy-button:hover {
+    -fx-background-color: linear-gradient(#ff5400, #d64400);
+}
+.button-glow {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 30px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.8), 15, 0.5, 0, 0);
+}
+
+.button-glow:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.8), 25, 0.7, 0, 0);
+    -fx-cursor: hand;
+}
+
+.button-glow:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.8), 5, 0.5, 0, 0);
+}
+
+
+
+.button-glow-red {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 30px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 15, 0.5, 0, 0); /* Changed to red glow */
+}
+
+.button-glow-red:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 25, 0.7, 0, 0); /* Changed to red glow */
+    -fx-cursor: hand;
+}
+
+.button-glow-red:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 5, 0.5, 0, 0); /* Changed to red glow */
+}
+
+
+.glow-red {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 20px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 15, 0.5, 0, 0); /* Changed to red glow */
+}
+
+.glow-red:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 25, 0.7, 0, 0); /* Changed to red glow */
+    -fx-cursor: hand;
+}
+
+.glow-red:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 5, 0.5, 0, 0); /* Changed to red glow */
+}
+
+
+.heading-glow-red {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 60px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 15, 0.5, 0, 0); /* Changed to red glow */
+}
+
+.heading-glow-red:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 25, 0.7, 0, 0); /* Changed to red glow */
+    -fx-cursor: hand;
+}
+
+.heading-glow-red:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(255,0,0,0.8), 5, 0.5, 0, 0); /* Changed to red glow */
+}
+
+.instructions-glow {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-family: 'Orbitron';
+    -fx-font-size: 20px;
+    -fx-padding: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.8), 15, 0.5, 0, 0);
+}
+
+.instructions-glow:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.8), 25, 0.7, 0, 0);
+    -fx-cursor: hand;
+}
+
+.instructions-glow:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(0,255,255,0.8), 5, 0.5, 0, 0);
+}
+
+
+
+
+

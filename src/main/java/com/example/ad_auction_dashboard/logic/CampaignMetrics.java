@@ -20,6 +20,14 @@ public class CampaignMetrics {
     private double cpa;   // cost-per-acquisition
     private double cpm;   // cost-per-thousand impressions
     private double bounceRate;
+    private int bouncePagesThreshold = 1;
+    private int bounceSecondsThreshold = 4;
+    private final ImpressionLog[] imps;
+    private final ServerLog[] srv;
+    private final ClickLog[] cls;
+
+    private final LocalDateTime campaignStart;
+    private final LocalDateTime getCampaignEnd;
 
 
     // Possibly store references if needed
@@ -27,14 +35,16 @@ public class CampaignMetrics {
 
     public CampaignMetrics(Campaign campaign) {
         this.campaign = campaign;
-        computeAllMetrics();
+         this.imps = campaign.getImpressionLogs();
+         this.srv = campaign.getServerLogs();
+         this.cls = campaign.getClickLogs();
+         this.campaignStart = getCampaignStartDate();
+         this.getCampaignEnd = getCampaignEndDate();
+         computeAllMetrics();
     }
 
     private void computeAllMetrics() {
 
-        ImpressionLog[] imps = campaign.getImpressionLogs();
-        ServerLog[] srv = campaign.getServerLogs();
-        ClickLog[] cls = campaign.getClickLogs();
 
         this.numberOfImpressions = calculateImpressions(imps);
         this.numberOfClicks = calculateClicks(cls);
@@ -98,10 +108,53 @@ public class CampaignMetrics {
             long diffSeconds = Duration.between(entry, exit).getSeconds();
 
 
-            if (s.getPagesViewed() == 1 || diffSeconds <= 4 ){
+            if (s.getPagesViewed() <= bouncePagesThreshold || diffSeconds <= bounceSecondsThreshold ){
                 this.numberOfBounces++;
             }
         }
+    }
+
+    // Recompute only the bounce-related metrics
+    public void recomputeBounceMetrics() {
+        // Reset bounce count
+        this.numberOfBounces = 0;
+        if (srv != null) {
+            for (ServerLog s : srv) {
+                LogDate entryLd = s.getEntryDate();
+                LogDate exitLd  = s.getExitDate();
+                if (entryLd == null || exitLd == null || !entryLd.getExists() || !exitLd.getExists()) {
+                    continue;
+                }
+                LocalDateTime entry = LocalDateTime.of(
+                    entryLd.getYear(), entryLd.getMonth(), entryLd.getDay(),
+                    entryLd.getHour(), entryLd.getMinute(), entryLd.getSecond()
+                );
+                LocalDateTime exit = LocalDateTime.of(
+                    exitLd.getYear(), exitLd.getMonth(), exitLd.getDay(),
+                    exitLd.getHour(), exitLd.getMinute(), exitLd.getSecond()
+                );
+                long diffSeconds = Duration.between(entry, exit).getSeconds();
+                if (s.getPagesViewed() <= bouncePagesThreshold || diffSeconds <= bounceSecondsThreshold) {
+                    this.numberOfBounces++;
+                }
+            }
+        }
+        // Update bounce rate (assuming bounce rate = bounces / clicks)
+        if (this.numberOfClicks != 0) {
+            this.bounceRate = (double) this.numberOfBounces / this.numberOfClicks;
+        } else {
+            this.bounceRate = 0;
+        }
+    }
+
+    public void setBounceCriteria(int pagesThreshold, int secondsThreshold) {
+        if (pagesThreshold < 0 || secondsThreshold < 0) {
+            throw new IllegalArgumentException("Bounce criteria must be non-negative.");
+        }
+        this.bouncePagesThreshold = pagesThreshold;
+        this.bounceSecondsThreshold = secondsThreshold;
+        // If desired, recompute bounce metrics immediately:
+        recomputeBounceMetrics();
     }
 
     private void calculateConversion(ServerLog[] srv){
@@ -160,6 +213,99 @@ public class CampaignMetrics {
         return (double) bounces/cls;
     }
 
+    public LocalDateTime getCampaignStartDate() {
+        LocalDateTime earliest = null;
+
+        // Check impressions
+        if (imps != null) {
+            for (ImpressionLog imp : imps) {
+                LogDate ld = imp.getDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime dt = LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDay(),
+                        ld.getHour(), ld.getMinute(), ld.getSecond());
+                    if (earliest == null || dt.isBefore(earliest)) {
+                        earliest = dt;
+                    }
+                }
+            }
+        }
+
+        // Check clicks
+        if (cls != null) {
+            for (ClickLog cl : cls) {
+                LogDate ld = cl.getDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime dt = LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDay(),
+                        ld.getHour(), ld.getMinute(), ld.getSecond());
+                    if (earliest == null || dt.isBefore(earliest)) {
+                        earliest = dt;
+                    }
+                }
+            }
+        }
+
+        // Check server logs (using entry date)
+        if (srv != null) {
+            for (ServerLog s : srv) {
+                LogDate ld = s.getEntryDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime dt = LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDay(),
+                        ld.getHour(), ld.getMinute(), ld.getSecond());
+                    if (earliest == null || dt.isBefore(earliest)) {
+                        earliest = dt;
+                    }
+                }
+            }
+        }
+        return earliest;
+    }
+
+    public LocalDateTime getCampaignEndDate() {
+        LocalDateTime latest = null;
+
+        // Check impressions
+        if (imps != null) {
+            for (ImpressionLog imp : imps) {
+                LogDate ld = imp.getDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime dt = LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDay(),
+                        ld.getHour(), ld.getMinute(), ld.getSecond());
+                    if (latest == null || dt.isAfter(latest)) {
+                        latest = dt;
+                    }
+                }
+            }
+        }
+
+        // Check clicks
+        if (cls != null) {
+            for (ClickLog cl : cls) {
+                LogDate ld = cl.getDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime dt = LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDay(),
+                        ld.getHour(), ld.getMinute(), ld.getSecond());
+                    if (latest == null || dt.isAfter(latest)) {
+                        latest = dt;
+                    }
+                }
+            }
+        }
+
+        // Check server logs (using entry date)
+        if (srv != null) {
+            for (ServerLog s : srv) {
+                LogDate ld = s.getEntryDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime dt = LocalDateTime.of(ld.getYear(), ld.getMonth(), ld.getDay(),
+                        ld.getHour(), ld.getMinute(), ld.getSecond());
+                    if (latest == null || dt.isAfter(latest)) {
+                        latest = dt;
+                    }
+                }
+            }
+        }
+        return latest;
+    }
 
     public int getNumberOfImpressions() {
         return numberOfImpressions;
@@ -203,6 +349,25 @@ public class CampaignMetrics {
 
     public double getBounceRate() {
         return bounceRate;
+    }
+
+    public ImpressionLog[] getImpressionLogs() {
+        return imps == null ? null : imps.clone();
+    }
+    public ClickLog[] getClickLogs() {
+        return cls == null ? null : cls.clone();
+    }
+
+    public ServerLog[] getServerLogs() {
+        return srv == null ? null : srv.clone();
+    }
+
+    public int getBouncePagesThreshold(){
+        return bouncePagesThreshold;
+    }
+
+    public int getBounceSecondsThreshold(){
+        return bounceSecondsThreshold;
     }
 
 }

@@ -1,112 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.chart.BarChart?>
-<?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.effect.Blend?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="622.0" prefWidth="910.0" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
-    <children>
-        <HBox alignment="CENTER" layoutX="171.0" layoutY="82.0" prefHeight="164.0" prefWidth="737.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <children>
-                <VBox focusTraversable="true" prefHeight="156.0" prefWidth="166.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="IMPRESSIONS" textAlignment="CENTER" />
-                        <Text fx:id="impressionsText" nodeOrientation="LEFT_TO_RIGHT" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="141.13671875">
-                            <effect>
-                                <Blend />
-                            </effect>
-                        </Text>
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="165.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="83.0" prefWidth="165.0" text="CLICKS" />
-                        <Text fx:id="clicksText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="149.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="165.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="85.0" prefWidth="165.0" text="UNIQUES" />
-                        <Text fx:id="uniquesText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="153.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="165.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="86.0" prefWidth="165.0" text="BOUNCES" />
-                        <Text fx:id="bouncesText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="151.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="106.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="BOUNCE RATE" textAlignment="CENTER" />
-                        <Text fx:id="bounceRateText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="112.13671875" />
-                    </children>
-                </VBox>
-            </children>
-         <opaqueInsets>
-            <Insets />
-         </opaqueInsets>
-        </HBox>
-        <HBox alignment="CENTER" layoutX="170.0" layoutY="242.0" prefHeight="164.0" prefWidth="910.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <children>
-                <VBox prefHeight="171.0" prefWidth="118.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="TOTAL COST" textAlignment="CENTER" />
-                        <Text fx:id="totalCostText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="117.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="102.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CTR" textAlignment="CENTER" />
-                        <Text fx:id="ctrText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="115.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="120.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CPA" textAlignment="CENTER" />
-                        <Text fx:id="cpaText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="121.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="126.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CPC" textAlignment="CENTER" />
-                        <Text fx:id="cpcText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="129.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="190.0" prefWidth="115.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CPM" textAlignment="CENTER" />
-                        <Text fx:id="cpmText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="119.13671875" />
-                    </children>
-                </VBox>
-                <VBox prefHeight="164.0" prefWidth="126.0" styleClass="vbox-outlined">
-                    <children>
-                        <Label alignment="CENTER" prefHeight="80.0" prefWidth="183.0" text="CONVERSIONS" />
-                        <Text fx:id="conversionsText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="115.13671875" />
-                    </children>
-                </VBox>
-            </children>
-        </HBox>
-        <HBox alignment="CENTER" layoutY="422.0" prefHeight="204.0" prefWidth="910.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-            <children>
-                <BarChart fx:id="barChart" prefHeight="173.0" prefWidth="662.0">
-                    <xAxis>
-                        <CategoryAxis side="BOTTOM" fx:id="xAxis" />
-                    </xAxis>
-                    <yAxis>
-                        <NumberAxis fx:id="yAxis" prefHeight="149.0" prefWidth="32.0" side="LEFT" />
-                    </yAxis>
-                </BarChart>
-            </children>
-        </HBox>
-      <Label alignment="CENTER" layoutX="477.0" layoutY="37.0" styleClass="label-tt-fors" text="METRICS VIEW" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-    </children>
-</AnchorPane>
+<BorderPane stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
+   <top>
+      <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="622.0" prefWidth="910.0" stylesheets="@../../../../styles/style.css" BorderPane.alignment="CENTER">
+          <children>
+              <HBox alignment="CENTER" layoutY="122.0" prefHeight="164.0" prefWidth="737.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                  <children>
+                      <VBox focusTraversable="true" prefHeight="156.0" prefWidth="166.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="IMPRESSIONS" textAlignment="CENTER" />
+                              <Text fx:id="impressionsText" nodeOrientation="LEFT_TO_RIGHT" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="141.13671875">
+                                  <effect>
+                                      <Blend />
+                                  </effect>
+                              </Text>
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="190.0" prefWidth="165.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="83.0" prefWidth="165.0" text="CLICKS" />
+                              <Text fx:id="clicksText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="149.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="190.0" prefWidth="165.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="85.0" prefWidth="165.0" text="UNIQUES" />
+                              <Text fx:id="uniquesText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="153.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="164.0" prefWidth="185.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="86.0" prefWidth="165.0" text="BOUNCES" />
+                              <Text fx:id="bouncesText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="151.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="164.0" prefWidth="154.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="BOUNCE RATE" textAlignment="CENTER" />
+                              <Text fx:id="bounceRateText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="112.13671875" />
+                          </children>
+                      </VBox>
+                  </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+              </HBox>
+              <HBox alignment="CENTER" layoutY="326.0" prefHeight="164.0" prefWidth="910.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                  <children>
+                      <VBox prefHeight="171.0" prefWidth="118.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="TOTAL COST" textAlignment="CENTER" />
+                              <Text fx:id="totalCostText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="117.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="190.0" prefWidth="102.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CTR" textAlignment="CENTER" />
+                              <Text fx:id="ctrText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="115.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="190.0" prefWidth="120.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CPA" textAlignment="CENTER" />
+                              <Text fx:id="cpaText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="121.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="190.0" prefWidth="126.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CPC" textAlignment="CENTER" />
+                              <Text fx:id="cpcText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="129.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="190.0" prefWidth="115.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="165.0" text="CPM" textAlignment="CENTER" />
+                              <Text fx:id="cpmText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="119.13671875" />
+                          </children>
+                      </VBox>
+                      <VBox prefHeight="164.0" prefWidth="126.0" styleClass="vbox-outlined">
+                          <children>
+                              <Label alignment="CENTER" prefHeight="80.0" prefWidth="183.0" text="CONVERSIONS" />
+                              <Text fx:id="conversionsText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" textAlignment="CENTER" wrappingWidth="115.13671875" />
+                          </children>
+                      </VBox>
+                  </children>
+              </HBox>
+            <Button fx:id="chartsViewButton" layoutX="649.0" layoutY="34.0" mnemonicParsing="false" onAction="#handleChartView" prefHeight="68.0" prefWidth="190.0" styleClass="root" text="Charts View" />
+            <Button fx:id="mainMenuButton" layoutX="450.0" layoutY="36.0" mnemonicParsing="false" onAction="#handleMainMenu" prefHeight="64.0" prefWidth="159.0" styleClass="root" text="Main Menu" />
+            <Label layoutX="76.0" layoutY="30.0" prefHeight="77.0" prefWidth="132.0" styleClass="dashboard-title" text="Metrics View" />
+          </children>
+      </AnchorPane>
+   </top>
+</BorderPane>

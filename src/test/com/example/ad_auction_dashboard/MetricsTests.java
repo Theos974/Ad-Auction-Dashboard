@@ -3,6 +3,7 @@ package com.example.ad_auction_dashboard;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.example.ad_auction_dashboard.logic.Campaign;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
@@ -246,5 +247,45 @@ public class MetricsTests {
         // If <= 4 is a bounce, expected bounce rate = 1.0.
         assertEquals(1, metrics.getNumberOfBounces());
         assertEquals(1.0, metrics.getBounceRate(), 1e-6);
+    }
+    @Test
+    @DisplayName("Test setting valid bounce criteria and recomputation")
+    public void testValidBounceCriteria() {
+        // Use a simple server log where bounce depends on threshold.
+        ServerLog s = new ServerLog("2025-03-16 05:28:00", "1", "2025-03-16 05:28:05", "3", "No");
+        ServerLog[] srvs = {s};
+        ClickLog c = new ClickLog("2025-03-16 05:28:01", "1", "0.50");
+        ClickLog[] cls = {c};
+        ImpressionLog[] imps = new ImpressionLog[0];
+        Campaign campaign = new Campaign(imps, cls, srvs);
+        CampaignMetrics metrics = new CampaignMetrics(campaign);
+
+        // Initially, with default criteria (pages <= 1, seconds <= 4),
+        // the log should not count as a bounce.
+        assertEquals(0, metrics.getNumberOfBounces(), "Initially, bounce count should be 0.");
+
+        // Now, change the bounce criteria so that visits up to 5 seconds qualify as a bounce.
+        metrics.setBounceCriteria(1, 5);
+
+        // Since there is only one log, we expect the bounce count to be 1.
+        assertEquals(1, metrics.getNumberOfBounces(), "After increasing threshold, bounce count should be 1.");
+        // And bounce rate should be 1.0 since there is 1 bounce and 1 click.
+        assertEquals(1.0, metrics.getBounceRate(), 1e-6, "Bounce rate should be 1.0 after updating threshold.");
+
+    }
+
+    @Test
+    @DisplayName("Test invalid bounce criteria")
+    public void testInvalidBounceCriteria() {
+        Campaign campaign = createCampaign(new ImpressionLog[0], new ClickLog[0], new ServerLog[0]);
+        CampaignMetrics metrics = new CampaignMetrics(campaign);
+        // Negative pages threshold should throw exception.
+        assertThrows(IllegalArgumentException.class, () -> {
+            metrics.setBounceCriteria(-1, 4);
+        }, "Setting negative pages threshold should throw IllegalArgumentException.");
+        // Negative seconds threshold should throw exception.
+        assertThrows(IllegalArgumentException.class, () -> {
+            metrics.setBounceCriteria(1, -4);
+        }, "Setting negative seconds threshold should throw IllegalArgumentException.");
     }
 }

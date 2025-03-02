@@ -12,11 +12,16 @@
 
 <AnchorPane prefHeight="619.0" prefWidth="907.0" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
     <children>
-        <VBox alignment="CENTER" layoutY="257.0" prefHeight="394.0" prefWidth="907.0" spacing="20" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="257.0">
+        <VBox alignment="CENTER" layoutY="16.0" prefHeight="635.0" prefWidth="907.0" spacing="20" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="16.0">
             <padding>
                 <Insets bottom="20" left="20" right="20" top="20" />
             </padding>
             <children>
+              <ImageView fitHeight="128.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+                  <image>
+                      <Image url="@../../../../images/small logo.png" />
+                  </image>
+              </ImageView>
                 <Text fx:id="statusText" styleClass="button" text="No campaign loaded." />
                 <Button fx:id="loadZipBtn" onAction="#handleLoadZip" prefHeight="47.0" prefWidth="121.0" text="Load ZIP File">
                     <font>
@@ -34,11 +39,6 @@
             <Image url="@../../../../images/X eleemnts.png" />
          </image>
       </ImageView>
-      <Label alignment="CENTER" contentDisplay="CENTER" layoutY="60.0" prefHeight="65.0" prefWidth="255.0" styleClass="label-tt-fors" text="SEG EFFICIENCY DASHBOARDS" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-        <ImageView fitHeight="128.0" fitWidth="120.0" layoutX="394.0" layoutY="153.0" pickOnBounds="true" preserveRatio="true">
-            <image>
-                <Image url="@../../../../images/small logo.png" />
-            </image>
-        </ImageView>
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutY="34.0" prefHeight="65.0" prefWidth="255.0" styleClass="label-tt-fors" text="SEG EFFICIENCY DASHBOARDS" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
     </children>
 </AnchorPane>
