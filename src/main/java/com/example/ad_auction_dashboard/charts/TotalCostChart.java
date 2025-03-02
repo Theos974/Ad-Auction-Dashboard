@@ -2,6 +2,10 @@ package com.example.ad_auction_dashboard.charts;
 
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -16,7 +20,8 @@ public class TotalCostChart implements Chart {
     @Override
     public VBox createChart(TimeFilteredMetrics timeFilteredMetrics,
                             LocalDateTime start,
-                            LocalDateTime end) {
+                            LocalDateTime end,
+                            String granularity) {
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel("Time");
@@ -28,21 +33,18 @@ public class TotalCostChart implements Chart {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Total Cost");
 
-        LocalDateTime pointer = start;
-        while (!pointer.isAfter(end)) {
-            LocalDateTime bucketEnd = pointer.plusDays(1).minusSeconds(1);
-            if (bucketEnd.isAfter(end)) {
-                bucketEnd = end;
-            }
+        // Get time-bucketed data using the granularity parameter
+        Map<String, TimeFilteredMetrics.ComputedMetrics> metricsByTime =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(start, end, granularity);
 
-            // Compute the cost for this daily bucket
-            timeFilteredMetrics.computeForTimeFrame(pointer, bucketEnd);
-            double costValue = timeFilteredMetrics.getTotalCost();
+        // Sort the keys to ensure chronological order
+        List<String> timeLabels = new ArrayList<>(metricsByTime.keySet());
+        Collections.sort(timeLabels);
 
-            String label = pointer.toLocalDate().toString();
-            series.getData().add(new XYChart.Data<>(label, costValue));
-
-            pointer = bucketEnd.plusSeconds(1);
+        // Add data points using the pre-computed metrics
+        for (String timeLabel : timeLabels) {
+            TimeFilteredMetrics.ComputedMetrics metrics = metricsByTime.get(timeLabel);
+            series.getData().add(new XYChart.Data<>(timeLabel, metrics.getTotalCost()));
         }
 
         lineChart.getData().add(series);

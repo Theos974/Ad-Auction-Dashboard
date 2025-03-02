@@ -2,6 +2,10 @@ package com.example.ad_auction_dashboard.charts;
 
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -14,7 +18,10 @@ import javafx.scene.layout.VBox;
 public class CPAChart implements Chart {
 
     @Override
-    public VBox createChart(TimeFilteredMetrics timeFilteredMetrics, LocalDateTime start, LocalDateTime end) {
+    public VBox createChart(TimeFilteredMetrics timeFilteredMetrics,
+                            LocalDateTime start,
+                            LocalDateTime end,
+                            String granularity) {
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel("Time");
@@ -26,19 +33,18 @@ public class CPAChart implements Chart {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("CPA");
 
-        LocalDateTime pointer = start;
-        while (!pointer.isAfter(end)) {
-            LocalDateTime bucketEnd = pointer.plusDays(1).minusSeconds(1);
-            if (bucketEnd.isAfter(end)) {
-                bucketEnd = end;
-            }
+        // Get time-bucketed data using the granularity parameter
+        Map<String, TimeFilteredMetrics.ComputedMetrics> metricsByTime =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(start, end, granularity);
 
-            timeFilteredMetrics.computeForTimeFrame(pointer, bucketEnd);
-            double cpaValue = timeFilteredMetrics.getCPA();
-            String label = pointer.toLocalDate().toString();
+        // Sort the keys to ensure chronological order
+        List<String> timeLabels = new ArrayList<>(metricsByTime.keySet());
+        Collections.sort(timeLabels);
 
-            series.getData().add(new XYChart.Data<>(label, cpaValue));
-            pointer = bucketEnd.plusSeconds(1);
+        // Add data points using the pre-computed metrics
+        for (String timeLabel : timeLabels) {
+            TimeFilteredMetrics.ComputedMetrics metrics = metricsByTime.get(timeLabel);
+            series.getData().add(new XYChart.Data<>(timeLabel, metrics.getCpa()));
         }
 
         lineChart.getData().add(series);

@@ -1,169 +1,196 @@
 package com.example.ad_auction_dashboard.controller;
 
+import com.example.ad_auction_dashboard.charts.Chart;
+import com.example.ad_auction_dashboard.charts.CPAChart;
+import com.example.ad_auction_dashboard.charts.CPCChart;
+import com.example.ad_auction_dashboard.charts.ConversionsChart;
+import com.example.ad_auction_dashboard.charts.ClicksChart;
+import com.example.ad_auction_dashboard.charts.ImpressionsChart;
+import com.example.ad_auction_dashboard.charts.CTRChart;
+import com.example.ad_auction_dashboard.charts.CPMChart;
+import com.example.ad_auction_dashboard.charts.BounceRateChart;
+import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
-import java.time.LocalDateTime;
-import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.chart.LineChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChartPaneController {
-    @FXML private LineChart<String, Number> lineChart;
-    @FXML private CategoryAxis xAxis;
-    @FXML private NumberAxis yAxis;
-    @FXML private ComboBox<String> metricComboBox;
-    @FXML private ComboBox<String> granularityComboBox;
-
-    private TimeFilteredMetrics timeFilteredMetrics;
-    private LocalDateTime currentStart;
-    private LocalDateTime currentEnd;
-    private String currentMetric = "Impressions";
+    @FXML
+    private ComboBox<String> timeGranularityComboBox;
 
     @FXML
+    private DatePicker startDatePicker;
+
+    @FXML
+    private DatePicker endDatePicker;
+
+    @FXML
+    private Pane chartContainer;
+
+    private CampaignMetrics campaignMetrics;
+    private TimeFilteredMetrics timeFilteredMetrics;
+    private String currentChartType;
+    private Map<String, Chart> charts = new HashMap<>();
+
+    // Current granularity selection
+    private String currentGranularity = "Daily"; // Default
+
     public void initialize() {
-        // Set up metric options.
-        metricComboBox.setItems(FXCollections.observableArrayList(
-            "Impressions", "Clicks", "Uniques", "Bounces", "Conversions",
-            "Total Cost", "CTR", "CPC", "CPA", "CPM", "Bounce Rate"
-        ));
-        metricComboBox.getSelectionModel().select("Impressions");
+        // Setup time granularity combo box
+        timeGranularityComboBox.getItems().addAll("Hourly", "Daily", "Weekly");
+        timeGranularityComboBox.setValue("Daily"); // Default
 
-        // Set up granularity options.
-        granularityComboBox.setItems(FXCollections.observableArrayList("Hourly", "Daily", "Weekly"));
-        granularityComboBox.getSelectionModel().select("Daily");
+        // Initialize chart types - add all chart implementations you have
+        charts.put("conversions", new ConversionsChart());
+        charts.put("cpa", new CPAChart());
+        charts.put("cpc", new CPCChart());
+        charts.put("clicks", new ClicksChart());
+        charts.put("impressions", new ImpressionsChart());
+        charts.put("ctr", new CTRChart());
+        charts.put("cpm", new CPMChart());
+        charts.put("bounce-rate", new BounceRateChart());
+        // Add other chart types as needed
+    }
 
-        // Set initial axis labels.
-        xAxis.setLabel("Time");
-        yAxis.setLabel(metricComboBox.getSelectionModel().getSelectedItem());
+    public void setCampaignMetrics(CampaignMetrics campaignMetrics) {
+        this.campaignMetrics = campaignMetrics;
 
-        // When the user changes the metric or granularity, update the chart.
-        metricComboBox.setOnAction(e -> {
-            currentMetric = metricComboBox.getSelectionModel().getSelectedItem();
-            yAxis.setLabel(currentMetric);
+        // Initialize TimeFilteredMetrics with data from campaignMetrics
+        this.timeFilteredMetrics = new TimeFilteredMetrics(
+            campaignMetrics.getImpressionLogs(),
+            campaignMetrics.getServerLogs(),
+            campaignMetrics.getClickLogs(),
+            campaignMetrics.getBouncePagesThreshold(),
+            campaignMetrics.getBounceSecondsThreshold()
+        );
+
+        // Set default date range using CampaignMetrics
+        LocalDateTime campaignStart = campaignMetrics.getCampaignStartDate();
+        LocalDateTime campaignEnd = campaignMetrics.getCampaignEndDate();
+
+        if (campaignStart != null && campaignEnd != null) {
+            startDatePicker.setValue(campaignStart.toLocalDate());
+            endDatePicker.setValue(campaignEnd.toLocalDate());
+        }
+
+        // Setup initial chart (if current chart type is set)
+        if (currentChartType != null) {
             updateChart();
-        });
-        granularityComboBox.setOnAction(e -> updateChart());
+        }
     }
 
-    /**
-     * Sets the TimeFilteredMetrics instance (shared across chart panes).
-     */
-    public void setTimeFilteredMetrics(TimeFilteredMetrics tfm) {
-        this.timeFilteredMetrics = tfm;
+    public void setChartType(String chartType) {
+        if (charts.containsKey(chartType)) {
+            this.currentChartType = chartType;
+            updateChart();
+        } else {
+            System.err.println("Unknown chart type: " + chartType);
+        }
     }
 
-    /**
-     * Updates the chart using the given time range.
-     */
-    public void updateTimeRange(LocalDateTime start, LocalDateTime end) {
-        this.currentStart = start;
-        this.currentEnd = end;
+    @FXML
+    public void handleUpdateTime(ActionEvent event) {
+        // Update time granularity based on selection
+        currentGranularity = timeGranularityComboBox.getValue();
+
+        // Update chart with new granularity
         updateChart();
     }
 
-    /**
-     * Aggregates data in buckets (based on granularity) and updates the LineChart.
-     */
+    @FXML
+    public void handleBackToMetrics(ActionEvent event) {
+        try {
+            // Load the metrics scene
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene.fxml"));
+            Parent root = loader.load();
+
+            // Get the controller and pass the campaignMetrics
+            MetricSceneController controller = loader.getController();
+            if (campaignMetrics != null) {
+                controller.setMetrics(campaignMetrics);
+            }
+
+            // Switch to the metrics scene
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) chartContainer.getScene().getWindow();
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void updateChart() {
-        if (currentStart == null || currentEnd == null || timeFilteredMetrics == null) {
+        if (campaignMetrics == null || currentChartType == null || !charts.containsKey(currentChartType)) {
             return;
         }
-        lineChart.getData().clear();
-        String granularity = granularityComboBox.getSelectionModel().getSelectedItem();
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName(currentMetric);
 
-        LocalDateTime pointer = currentStart;
-        while (!pointer.isAfter(currentEnd)) {
-            LocalDateTime bucketStart = pointer;
-            LocalDateTime bucketEnd;
-            // Determine the end of the current bucket.
-            switch (granularity) {
-                case "Hourly":
-                    bucketEnd = pointer.plusHours(1).minusSeconds(1);
-                    break;
-                case "Daily":
-                    bucketEnd = pointer.plusDays(1).minusSeconds(1);
-                    break;
-                case "Weekly":
-                    bucketEnd = pointer.plusWeeks(1).minusSeconds(1);
-                    break;
-                default:
-                    bucketEnd = pointer.plusDays(1).minusSeconds(1);
-            }
-            if (bucketEnd.isAfter(currentEnd)) {
-                bucketEnd = currentEnd;
-            }
-            // Format a label for the bucket.
-            String timeLabel = formatTimeLabel(pointer, granularity);
-            // Compute the aggregated value for this bucket.
-            Number aggregatedValue = getAggregatedValueForBucket(currentMetric, bucketStart, bucketEnd);
-            series.getData().add(new XYChart.Data<>(timeLabel, aggregatedValue));
+        // Get date range from pickers
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
 
-            pointer = bucketEnd.plusSeconds(1);
+        if (startDate == null || endDate == null) {
+            return;
         }
-        lineChart.getData().add(series);
-        // Optionally disable auto-ranging and set bounds manually if needed:
-        yAxis.setAutoRanging(false);
-        double minValue = 0; // compute or decide a minimum value
-        double maxValue = 100; // compute or decide a maximum value based on your data
-        yAxis.setLowerBound(minValue);
-        yAxis.setUpperBound(maxValue);
-        yAxis.setTickUnit((maxValue - minValue) / 10); // for example, 10 tick marks
 
-        // Force layout update:
-        lineChart.layout();
-    }
+        // Convert to LocalDateTime (start at beginning of day, end at end of day)
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.atTime(LocalTime.MAX);
 
-    /**
-     * Uses the TimeFilteredMetrics instance to compute the aggregated value for the specified metric in the given time bucket.
-     */
-    private Number getAggregatedValueForBucket(String metric, LocalDateTime bucketStart, LocalDateTime bucketEnd) {
-        timeFilteredMetrics.computeForTimeFrame(bucketStart, bucketEnd);
-        switch (metric) {
-            case "Impressions":
-                return timeFilteredMetrics.getNumberOfImpressions();
-            case "Clicks":
-                return timeFilteredMetrics.getNumberOfClicks();
-            case "Uniques":
-                return timeFilteredMetrics.getNumberOfUniques();
-            case "Bounces":
-                return timeFilteredMetrics.getNumberOfBounces();
-            case "Conversions":
-                return timeFilteredMetrics.getNumberOfConversions();
-            case "Total Cost":
-                return timeFilteredMetrics.getTotalCost();
-            case "CTR":
-                return timeFilteredMetrics.getCTR();
-            case "CPC":
-                return timeFilteredMetrics.getCPC();
-            case "CPA":
-                return timeFilteredMetrics.getCPA();
-            case "CPM":
-                return timeFilteredMetrics.getCPM();
-            case "Bounce Rate":
-                return timeFilteredMetrics.getBounceRate();
-            default:
-                return 0;
+        // Clear previous chart
+        chartContainer.getChildren().clear();
+
+        // Compute metrics with granularity
+        timeFilteredMetrics.computeForTimeFrame(start, end, currentGranularity);
+
+        // Get the chart implementation
+        Chart chart = charts.get(currentChartType);
+
+        try {
+            // Try to create chart with granularity parameter if supported
+            VBox chartNode = createChartWithGranularity(chart, start, end, currentGranularity);
+            chartContainer.getChildren().add(chartNode);
+        } catch (Exception e) {
+            // Fall back to standard method if granularity parameter isn't supported
+            System.err.println("Chart doesn't support granularity. Using standard method.");
         }
     }
 
-    /**
-     * Formats a LocalDateTime pointer as a string based on the selected granularity.
-     */
-    private String formatTimeLabel(LocalDateTime dt, String granularity) {
-        switch (granularity) {
-            case "Hourly":
-                return dt.getHour() + ":00";
-            case "Daily":
-                return dt.getMonthValue() + "/" + dt.getDayOfMonth();
-            case "Weekly":
-                return "Week " + (dt.getDayOfYear() / 7);
-            default:
-                return dt.toString();
+    // Helper method to try creating a chart with granularity parameter
+    private VBox createChartWithGranularity(Chart chart, LocalDateTime start, LocalDateTime end, String granularity) {
+        try {
+            // Use reflection to check if the chart has a method that accepts granularity
+            Method method = chart.getClass().getMethod(
+                "createChart",
+                TimeFilteredMetrics.class,
+                LocalDateTime.class,
+                LocalDateTime.class,
+                String.class
+            );
+
+            // Invoke the method with granularity
+            return (VBox) method.invoke(chart, timeFilteredMetrics, start, end, granularity);
+        } catch (Exception e) {
+            // Method not found or invocation failed, fallback to standard method
+            System.err.println("Chart doesn't support granularity. Using standard method.");
+            return null;
+
         }
     }
 }

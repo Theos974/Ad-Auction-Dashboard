@@ -2,6 +2,10 @@ package com.example.ad_auction_dashboard.charts;
 
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -10,19 +14,36 @@ import javafx.scene.layout.VBox;
 
 public class BounceChart implements Chart {
     @Override
-    public VBox createChart(TimeFilteredMetrics timeFilteredMetrics, LocalDateTime start, LocalDateTime end) {
-        LineChart<String, Number> chart = new LineChart<>(new CategoryAxis(), new NumberAxis());
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.setName("Bounce Rate");
+    public VBox createChart(TimeFilteredMetrics timeFilteredMetrics,
+                            LocalDateTime start,
+                            LocalDateTime end,
+                            String granularity) {
+        CategoryAxis xAxis = new CategoryAxis();
+        NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("Time");
+        yAxis.setLabel("Bounces");
 
-        LocalDateTime pointer = start;
-        while (!pointer.isAfter(end)) {
-            Number bounceRate = timeFilteredMetrics.filterBounces(pointer, pointer.plusDays(1));
-            series.getData().add(new XYChart.Data<>(pointer.toString(), bounceRate));
-            pointer = pointer.plusDays(1);
+        LineChart<String, Number> lineChart = new LineChart<>(xAxis, yAxis);
+        lineChart.setTitle("Bounces Over Time");
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Bounces");
+
+        // Get time-bucketed data using the granularity parameter
+        Map<String, TimeFilteredMetrics.ComputedMetrics> metricsByTime =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(start, end, granularity);
+
+        // Sort the keys to ensure chronological order
+        List<String> timeLabels = new ArrayList<>(metricsByTime.keySet());
+        Collections.sort(timeLabels);
+
+        // Add data points using the pre-computed metrics
+        for (String timeLabel : timeLabels) {
+            TimeFilteredMetrics.ComputedMetrics metrics = metricsByTime.get(timeLabel);
+            series.getData().add(new XYChart.Data<>(timeLabel, metrics.getNumberOfBounces()));
         }
 
-        chart.getData().add(series);
-        return new VBox(chart);
+        lineChart.getData().add(series);
+        return new VBox(lineChart);
     }
 }

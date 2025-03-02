@@ -2,6 +2,10 @@ package com.example.ad_auction_dashboard.charts;
 
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -16,8 +20,8 @@ public class UniquesChart implements Chart {
     @Override
     public VBox createChart(TimeFilteredMetrics timeFilteredMetrics,
                             LocalDateTime start,
-                            LocalDateTime end) {
-        // X-axis = time, Y-axis = number of uniques
+                            LocalDateTime end,
+                            String granularity) {
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
         xAxis.setLabel("Time");
@@ -29,27 +33,18 @@ public class UniquesChart implements Chart {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Uniques");
 
-        // Example: daily time buckets
-        LocalDateTime pointer = start;
-        while (!pointer.isAfter(end)) {
-            // define the bucket end (daily)
-            LocalDateTime bucketEnd = pointer.plusDays(1).minusSeconds(1);
-            if (bucketEnd.isAfter(end)) {
-                bucketEnd = end;
-            }
+        // Get time-bucketed data using the granularity parameter
+        Map<String, TimeFilteredMetrics.ComputedMetrics> metricsByTime =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(start, end, granularity);
 
-            // Filter the logs in [pointer, bucketEnd]
-            timeFilteredMetrics.computeForTimeFrame(pointer, bucketEnd);
-            int uniquesCount = timeFilteredMetrics.getNumberOfUniques();
+        // Sort the keys to ensure chronological order
+        List<String> timeLabels = new ArrayList<>(metricsByTime.keySet());
+        Collections.sort(timeLabels);
 
-            // Create a label (e.g., "yyyy-MM-dd")
-            String label = pointer.toLocalDate().toString();
-
-            // Add a data point
-            series.getData().add(new XYChart.Data<>(label, uniquesCount));
-
-            // Move pointer to next bucket
-            pointer = bucketEnd.plusSeconds(1);
+        // Add data points using the pre-computed metrics
+        for (String timeLabel : timeLabels) {
+            TimeFilteredMetrics.ComputedMetrics metrics = metricsByTime.get(timeLabel);
+            series.getData().add(new XYChart.Data<>(timeLabel, metrics.getNumberOfUniques()));
         }
 
         lineChart.getData().add(series);
