@@ -222,7 +222,7 @@ public class ChartSceneController {
     private void handleBackToMetrics(ActionEvent event) {
         try {
             // Load the metrics scene
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
             Parent root = loader.load();
 
             // Get the controller and pass the campaign metrics

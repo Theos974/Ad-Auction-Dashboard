@@ -142,6 +142,7 @@ public class CampaignMetrics {
         // Update bounce rate (assuming bounce rate = bounces / clicks)
         if (this.numberOfClicks != 0) {
             this.bounceRate = (double) this.numberOfBounces / this.numberOfClicks;
+
         } else {
             this.bounceRate = 0;
         }

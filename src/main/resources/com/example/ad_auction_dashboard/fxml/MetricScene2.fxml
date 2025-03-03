@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane styleClass="metrics-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
+    <center>
+        <AnchorPane styleClass="metrics-container" BorderPane.alignment="CENTER">
+            <children>
+                <!-- Left sidebar with icons - adjusted padding and width -->
+                <VBox alignment="TOP_CENTER" prefWidth="70.0" spacing="15" styleClass="sidebar-container" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <padding>
+                        <Insets top="80.0" />
+                    </padding>
+                    <children>
+                        <Button fx:id="mainMenuButton" onAction="#handleMainMenu" styleClass="sidebar-button">
+                            <graphic>
+                                <Label styleClass="sidebar-icon" text="⌂" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="sidebar-button">
+                            <graphic>
+                                <Label styleClass="sidebar-icon" text="💼" />
+                            </graphic>
+                        </Button>
+                        <Button styleClass="sidebar-button">
+                            <graphic>
+                                <Label styleClass="sidebar-icon" text="👥" />
+                            </graphic>
+                        </Button>
+                    </children>
+                </VBox>
+
+                <!-- Main content area -->
+                <AnchorPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <!-- Header with user info and title -->
+                        <HBox alignment="CENTER_LEFT" prefHeight="70.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+                            <children>
+                                <!-- User profile -->
+                                <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="300.0" spacing="15.0">
+                                    <Circle fill="LIGHTGRAY" radius="25.0" styleClass="user-avatar" />
+                                    <Label styleClass="header-text" text="Hello User" />
+                                </HBox>
+                            </children>
+                        </HBox>
+
+                        <!-- Main title -->
+                        <Label layoutX="20.0" layoutY="90.0" styleClass="titleMetricScene-text" text="Performance Overview" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="90.0" />
+
+                        <!-- Main content container - wraps metrics in scrollable area if needed -->
+                        <AnchorPane styleClass="content-container" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="130.0">
+                            <children>
+                                <!-- Performance Metrics Section (Impressions, Clicks, Uniques) -->
+                                <HBox alignment="CENTER" prefHeight="150.0" spacing="20.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <!-- Impressions Box -->
+                                        <VBox alignment="TOP_CENTER" prefHeight="150.0" styleClass="metric-container" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <Circle fill="#a365f5" radius="5.0" />
+                                                    <Label styleClass="metric-label" text="Total Impressions">
+                                                        <HBox.margin>
+                                                            <Insets left="5.0" />
+                                                        </HBox.margin>
+                                                    </Label>
+                                                </HBox>
+                                                <StackPane VBox.vgrow="ALWAYS">
+                                                    <Text fx:id="impressionsText" styleClass="metric-value" text="486104" />
+                                                </StackPane>
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                            </padding>
+                                        </VBox>
+
+                                        <!-- Clicks Box -->
+                                        <VBox alignment="TOP_CENTER" prefHeight="150.0" styleClass="metric-container" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <Circle fill="#a365f5" radius="5.0" />
+                                                    <Label styleClass="metric-label" text="Total Clicks">
+                                                        <HBox.margin>
+                                                            <Insets left="5.0" />
+                                                        </HBox.margin>
+                                                    </Label>
+                                                </HBox>
+                                                <StackPane VBox.vgrow="ALWAYS">
+                                                    <Text fx:id="clicksText" styleClass="metric-value" text="23923" />
+                                                </StackPane>
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                            </padding>
+                                        </VBox>
+
+                                        <!-- Uniques Box -->
+                                        <VBox alignment="TOP_CENTER" prefHeight="150.0" styleClass="metric-container" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT">
+                                                    <Circle fill="#a365f5" radius="5.0" />
+                                                    <Label styleClass="metric-label" text="Total Uniques">
+                                                        <HBox.margin>
+                                                            <Insets left="5.0" />
+                                                        </HBox.margin>
+                                                    </Label>
+                                                </HBox>
+                                                <StackPane VBox.vgrow="ALWAYS">
+                                                    <Text fx:id="uniquesText" styleClass="metric-value" text="23806" />
+                                                </StackPane>
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                            </padding>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+
+                                <!-- Engagement Metrics Section -->
+                                <VBox alignment="TOP_CENTER" prefHeight="300.0" prefWidth="280.0" styleClass="metric-container" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <Label styleClass="section-title" text="Engagement Metrics" />
+
+                                        <!-- Bounces Box -->
+                                        <VBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="250.0">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="200.0">
+                                                    <Circle fill="#a365f5" radius="5.0" />
+                                                    <Label styleClass="metric-label" text="Total Bounces">
+                                                        <HBox.margin>
+                                                            <Insets left="5.0" />
+                                                        </HBox.margin>
+                                                    </Label>
+                                                </HBox>
+                                                <Text fx:id="bouncesText" styleClass="metric-value" text="9424" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+                                            </padding>
+                                            <VBox.margin>
+                                                <Insets bottom="15.0" top="10.0" />
+                                            </VBox.margin>
+                                        </VBox>
+
+                                        <!-- Bounce Rate Box -->
+                                        <VBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="250.0">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" prefHeight="30.0" prefWidth="200.0">
+                                                    <Circle fill="#a365f5" radius="5.0" />
+                                                    <Label styleClass="metric-label" text="Bounce Rate">
+                                                        <HBox.margin>
+                                                            <Insets left="5.0" />
+                                                        </HBox.margin>
+                                                    </Label>
+                                                </HBox>
+                                                <Text fx:id="bounceRateText" styleClass="metric-value" text="0.393931" />
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+                                            </padding>
+                                            <VBox.margin>
+                                                <Insets bottom="15.0" />
+                                            </VBox.margin>
+                                        </VBox>
+
+                                        <!-- Change Bounce Button -->
+                                        <Button mnemonicParsing="false" onAction="#handleChangeBounce" prefHeight="40.0" prefWidth="200.0" styleClass="compare-button" text="Change Bounce" />
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                    </padding>
+                                </VBox>
+
+                                <!-- Costs and Conversions Section -->
+                                <VBox layoutX="10.0" layoutY="160.0" prefHeight="154.0" styleClass="metric-container" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="170.0">
+                                    <children>
+                                        <Label styleClass="section-title" text="Costs and Conversions" />
+                                        <HBox prefHeight="97.0" spacing="20.0">
+                                            <!-- Total Costs Box -->
+                                            <VBox alignment="TOP_CENTER" prefHeight="120.0" styleClass="inner-metric-container" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label styleClass="metric-label" text="Total Costs" />
+                                                    <StackPane VBox.vgrow="ALWAYS">
+                                                        <Text fx:id="totalCostText" styleClass="metric-value" text="\$2000" />
+                                                    </StackPane>
+                                                </children>
+                                                <padding>
+                                                    <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+                                                </padding>
+                                            </VBox>
+
+                                            <!-- Conversions Box -->
+                                            <VBox alignment="TOP_CENTER" prefHeight="120.0" styleClass="inner-metric-container" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label styleClass="metric-label" text="Conversions" />
+                                                    <StackPane VBox.vgrow="ALWAYS">
+                                                        <Text fx:id="conversionsText" styleClass="metric-value" text="36000" />
+                                                    </StackPane>
+                                                </children>
+                                                <padding>
+                                                    <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+                                                </padding>
+                                            </VBox>
+                                        </HBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </padding>
+                                </VBox>
+
+                                <!-- Compare Metrics Button with speedometer icon -->
+                                <Button fx:id="chartsViewButton" layoutX="210.0" layoutY="330.0" mnemonicParsing="false" onAction="#handleChartView" prefHeight="50.0" prefWidth="200.0" styleClass="compare-button" AnchorPane.leftAnchor="210.0" AnchorPane.topAnchor="330.0">
+                                    <graphic>
+                                        <HBox alignment="CENTER" spacing="10">
+                                            <children>
+                                                <Label text="COMPARE METRICS" textFill="WHITE" />
+                                                <SVGPath content="M12,16C10.34,16 9,14.66 9,13C9,11.88 9.61,10.9 10.5,10.39L20.21,4.77L14.68,14.35C14.18,15.33 13.17,16 12,16M12,3C13.81,3 15.5,3.5 16.97,4.32L14.87,5.53C14,5.19 13,5 12,5C8.13,5 5,8.13 5,12C5,13.09 5.29,14.12 5.78,15.03L3.93,16.01C3.33,14.79 3,13.43 3,12C3,7.03 7.03,3 12,3M12,21C10.19,21 8.5,20.5 7.03,19.68L9.13,18.47C10,18.81 11,19 12,19C15.87,19 19,15.87 19,12C19,10.91 18.71,9.88 18.22,8.97L20.07,7.99C20.67,9.21 21,10.57 21,12C21,16.97 16.97,21 12,21Z" fill="WHITE" />
+                                            </children>
+                                        </HBox>
+                                    </graphic>
+                                </Button>
+
+                                <!-- Performance Ratios Section -->
+                                <VBox layoutX="10.0" layoutY="386.0" prefHeight="164.0" prefWidth="600.0" styleClass="metric-container" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="386.0">
+                                    <children>
+                                        <Label styleClass="section-title" text="Performance Ratios" />
+                                        <HBox alignment="CENTER" prefHeight="120.0" spacing="20.0">
+                                            <!-- CPC Gauge -->
+                                            <VBox alignment="CENTER" prefHeight="110.0" prefWidth="130.0" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label styleClass="gauge-label" text="CPC" />
+                                                    <StackPane prefHeight="100.0" prefWidth="100.0" styleClass="gauge-container">
+                                                        <!-- Background circle -->
+                                                        <Circle fill="#e4e4e4" radius="40.0" styleClass="gauge-background" />
+                                                        <!-- Colored circle for the donut (displayed under the center hole) -->
+                                                        <Circle fill="#a365f5" radius="40.0" styleClass="gauge-fill" />
+                                                        <!-- Center hole to create the donut effect -->
+                                                        <Circle fill="#2d2d3b" radius="25.0" styleClass="gauge-hole" />
+                                                        <!-- Value text -->
+                                                        <Text fx:id="cpcText" styleClass="gauge-value" text="4.93" />
+                                                    </StackPane>
+                                                </children>
+                                            </VBox>
+
+                                            <!-- CPM Gauge -->
+                                            <VBox alignment="CENTER" prefHeight="110.0" prefWidth="130.0" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label styleClass="gauge-label" text="CPM" />
+                                                    <StackPane prefHeight="100.0" prefWidth="100.0" styleClass="gauge-container">
+                                                        <!-- Background circle -->
+                                                        <Circle fill="#e4e4e4" radius="40.0" styleClass="gauge-background" />
+                                                        <!-- Colored circle for the donut (displayed under the center hole) -->
+                                                        <Circle fill="#65a3f5" radius="40.0" styleClass="gauge-fill" />
+                                                        <!-- Center hole to create the donut effect -->
+                                                        <Circle fill="#2d2d3b" radius="25.0" styleClass="gauge-hole" />
+                                                        <!-- Value text -->
+                                                        <Text fx:id="cpmText" styleClass="gauge-value" text="24.29" />
+                                                    </StackPane>
+                                                </children>
+                                            </VBox>
+
+                                            <!-- CTR Gauge -->
+                                            <VBox alignment="CENTER" prefHeight="110.0" prefWidth="130.0" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label styleClass="gauge-label" text="CTR" />
+                                                    <StackPane prefHeight="100.0" prefWidth="100.0" styleClass="gauge-container">
+                                                        <!-- Background circle -->
+                                                        <Circle fill="#e4e4e4" radius="40.0" styleClass="gauge-background" />
+                                                        <!-- Colored circle for the donut (displayed under the center hole) -->
+                                                        <Circle fill="#f56565" radius="40.0" styleClass="gauge-fill" />
+                                                        <!-- Center hole to create the donut effect -->
+                                                        <Circle fill="#2d2d3b" radius="25.0" styleClass="gauge-hole" />
+                                                        <!-- Value text -->
+                                                        <Text fx:id="ctrText" styleClass="gauge-value" text="0.049" />
+                                                    </StackPane>
+                                                </children>
+                                            </VBox>
+
+                                            <!-- CPA Gauge -->
+                                            <VBox alignment="CENTER" prefHeight="110.0" prefWidth="130.0" HBox.hgrow="ALWAYS">
+                                                <children>
+                                                    <Label styleClass="gauge-label" text="CPA" />
+                                                    <StackPane prefHeight="100.0" prefWidth="100.0" styleClass="gauge-container">
+                                                        <!-- Background circle -->
+                                                        <Circle fill="#e4e4e4" radius="40.0" styleClass="gauge-background" />
+                                                        <!-- Colored circle for the donut (displayed under the center hole) -->
+                                                        <Circle fill="#65f565" radius="40.0" styleClass="gauge-fill" />
+                                                        <!-- Center hole to create the donut effect -->
+                                                        <Circle fill="#2d2d3b" radius="25.0" styleClass="gauge-hole" />
+                                                        <!-- Value text -->
+                                                        <Text fx:id="cpaText" styleClass="gauge-value" text="58.29" />
+                                                    </StackPane>
+                                                </children>
+                                            </VBox>
+                                        </HBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                    </padding>
+                                </VBox>
+
+                                <!-- Histograms Section -->
+                                <VBox layoutX="690.0" layoutY="320.0" prefHeight="230.0" prefWidth="280.0" styleClass="metric-container" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="320.0">
+                                    <children>
+                                        <Label styleClass="section-title" text="Histograms" />
+                                        <!-- Clickable histogram chart -->
+                                        <Button prefHeight="180.0" prefWidth="250.0" styleClass="histogram-button">
+                                            <graphic>
+                                                <!-- Bar chart SVG representation -->
+                                                <SVGPath content="M10,20V14H14V20H10M16,20V10H20V20H16M2,20V4H6V20H2M8,20V8H12V20H8" fill="WHITE" scaleX="5.0" scaleY="5.0" />
+                                            </graphic>
+                                        </Button>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                    </padding>
+                                </VBox>
+                            </children>
+                        </AnchorPane>
+                    </children>
+                </AnchorPane>
+            </children>
+        </AnchorPane>
+    </center>
+</BorderPane>

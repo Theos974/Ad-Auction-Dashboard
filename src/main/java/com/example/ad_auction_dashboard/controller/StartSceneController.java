@@ -55,7 +55,7 @@ public class StartSceneController {
         statusText.setText("Campaign created. Switching scene...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
             Parent root = loader.load();
             MetricSceneController controller = loader.getController();
             controller.setMetrics(metrics);

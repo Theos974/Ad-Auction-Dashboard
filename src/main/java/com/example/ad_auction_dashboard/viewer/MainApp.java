@@ -8,7 +8,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // Create your StartScene using the primary stage
-        new StartScene(primaryStage, 910, 622);
+        new StartScene(primaryStage, 930, 692);
         primaryStage.show();
     }
 

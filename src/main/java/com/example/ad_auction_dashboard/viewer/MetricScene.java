@@ -32,7 +32,7 @@ public class MetricScene {
 
     public void setupDefaultScene() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
             Parent root = loader.load();
             // Retrieve the controller so we can set campaign metrics later
             controller = loader.getController();
