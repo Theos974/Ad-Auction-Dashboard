@@ -166,13 +166,13 @@ public class InputTests {
     }
     @Test
     @DisplayName("Date Validation")
-    void datevalidation(){
+    void dateValidation(){
         LogDate log1 = new LogDate("no");
         LogDate log2 = new LogDate("n/a");
         LogDate log3 = new LogDate(2025, 3, 16, 5, 28, 6);
         assertEquals("", log1.getDate(), "no is not a valid Date");
         assertEquals("n/a", log2.getDate(), "n/a is valid as an 'invalid' date");
-        assertEquals("2025-3-16 5:28:6", log3.getDate(), "Is a valid Date");
+        assertEquals("2025-03-16 05:28:06", log3.getDate(), "Is a valid Date");
     }
     @Test
     @DisplayName("ID Validation")
@@ -339,7 +339,8 @@ public class InputTests {
             out.closeEntry();
             out.close();
 
-            String[] expected = {"2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", "Date,ID,Click Cost\n" +
+            String[] expected = {"Date,ID,Gender,Age,Income,Context,Impression Cost\n" +
+                    "2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713", "Date,ID,Click Cost\n" +
                     "2015-01-01 12:01:21,8895519749317550080,11.794442", "Entry Date,ID,Exit Date,Pages Viewed,Conversion\n" +
                     "2015-01-01 12:01:21,8895519749317550080,2015-01-01 12:05:13,7,No"};
 

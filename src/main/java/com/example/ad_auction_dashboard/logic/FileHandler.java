@@ -14,7 +14,7 @@ public class FileHandler {
 
     public static void main(String[] args) {
         FileHandler fileHandler = new FileHandler();
-        Campaign test = fileHandler.openZip("src/main/test.zip");
+        String temp = fileHandler.readFromCsv("src/main/test.csv");
 
     }
 
@@ -41,8 +41,24 @@ public class FileHandler {
         }
         return new Campaign(impressionLogs,clickLogs,serverLogs);
     }
-    public LogFile openIndividualCSV(String filePath){
-        return null;
+    public LogFile[] openIndividualCSV(String filePath){
+        String file = readFromCsv(filePath);
+        LogFile[] logs = new LogFile[0];
+        String[] splitFile = splitCsv(file);
+        switch (splitFile[0]){
+            case "Date,ID,Gender,Age,Income,Context,Impression Cost":
+                logs = formatImpressions(splitImpressions(splitFile));
+                break;
+            case "Entry Date,ID,Exit Date,Pages Viewed,Conversion":
+                logs = formatServer(splitServer(splitFile));
+                break;
+            case "Date,ID,Click Cost":
+                logs = formatClick(splitClick(splitFile));
+                break;
+            default:
+                break;
+        }
+        return logs;
     }
 
     public String[] readFromZip(String filePath){
@@ -72,13 +88,19 @@ public class FileHandler {
     }
 
     public String readFromCsv(String filePath){
+        StringBuilder output = new StringBuilder();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
-
+            File file = new File(filePath);
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null){
+                output.append(line).append("\n");
+            }
+            output.replace(output.length()-1, output.length(), "");
         } catch (Exception e){
             System.err.println(e);
         }
-        return null;
+        return output.toString();
     }
     public String[] splitCsv(String csvFile){
         return csvFile.split("\n");
