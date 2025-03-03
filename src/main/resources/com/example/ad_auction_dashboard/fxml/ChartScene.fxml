@@ -13,16 +13,7 @@
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
 
-            <HBox alignment="CENTER_LEFT" spacing="10">
-                <Label text="Chart Type:"/>
-                <ComboBox fx:id="chartTypeComboBox" prefWidth="150"/>
-
-                <Region HBox.hgrow="ALWAYS"/>
-
-                <Label text="Time Granularity:"/>
-                <ComboBox fx:id="timeGranularityComboBox" prefWidth="120"/>
-            </HBox>
-
+            <!-- Time range controls -->
             <HBox alignment="CENTER_LEFT" spacing="10">
                 <Label text="Date Range:"/>
                 <Label text="From:"/>
@@ -33,19 +24,48 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Button text="Back to Metrics" onAction="#handleBackToMetrics"/>
+                <Label text="Time Granularity:"/>
+                <ComboBox fx:id="timeGranularityComboBox" prefWidth="120"/>
+            </HBox>
+
+            <!-- Chart selection controls -->
+            <HBox alignment="CENTER" spacing="20">
+                <VBox alignment="CENTER" spacing="5">
+                    <Label text="Primary Chart"/>
+                    <ComboBox fx:id="primaryChartTypeComboBox" prefWidth="150"/>
+                </VBox>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <Label text="Comparison Chart"/>
+                    <HBox alignment="CENTER" spacing="10">
+                        <ComboBox fx:id="secondaryChartTypeComboBox" prefWidth="150"/>
+                        <ToggleButton fx:id="compareToggleButton" text="Show Comparison"/>
+                    </HBox>
+                </VBox>
             </HBox>
 
             <!-- Status message area -->
             <HBox>
                 <Label fx:id="statusLabel" style="-fx-text-fill: #555555; -fx-font-style: italic;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Button text="Back to Metrics" onAction="#handleBackToMetrics"/>
             </HBox>
         </VBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true" fitToHeight="true">
-            <Pane fx:id="chartContainer" minHeight="500" minWidth="800"/>
-        </ScrollPane>
+        <HBox fx:id="chartsContainer" alignment="CENTER" spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <!-- Primary chart container -->
+            <VBox fx:id="primaryChartContainer" HBox.hgrow="ALWAYS" minWidth="400" minHeight="500"/>
+
+            <!-- Secondary chart container (initially hidden) -->
+            <VBox fx:id="secondaryChartContainer" HBox.hgrow="ALWAYS" minWidth="400" minHeight="500" visible="false" managed="false"/>
+        </HBox>
     </center>
 </BorderPane>

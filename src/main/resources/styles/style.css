@@ -469,3 +469,189 @@
     -fx-padding: 15px;
     -fx-letter-spacing: 0.5px;
 }
+/* Add these styles to your style.css file */
+
+/* Chart scene specific styles */
+.chart-scene {
+    -fx-background-color: #2d2d3b;
+}
+
+.chart-box {
+    -fx-background-color: #363642;
+    -fx-background-radius: 8;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
+}
+
+.chart-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.chart-sublabel {
+    -fx-font-size: 12px;
+    -fx-text-fill: #a0a0a0;
+}
+
+.chart-section-title {
+    -fx-font-size: 16px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #ffcc66;
+    -fx-font-style: italic;
+}
+
+.nav-button {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-border-color: white;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+    -fx-padding: 8 15;
+}
+
+.nav-button:hover {
+    -fx-background-color: #454552;
+    -fx-cursor: hand;
+}
+
+.nav-button:pressed {
+    -fx-background-color: #555562;
+}
+
+/* Styling for the toggle button */
+.toggle-button {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-border-color: white;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+    -fx-padding: 8 15;
+}
+
+.toggle-button:hover {
+    -fx-background-color: #454552;
+    -fx-cursor: hand;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #565666;
+    -fx-text-fill: white;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 0);
+}
+
+/* Styling for the combo boxes */
+.combo-box {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-border-color: #a0a0a0;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-view {
+    -fx-background-color: #2d2d3b;
+    -fx-border-color: #a0a0a0;
+}
+
+.combo-box .list-view .list-cell:hover {
+    -fx-background-color: #454552;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-view .list-cell:selected {
+    -fx-background-color: #565666;
+    -fx-text-fill: white;
+}
+
+.combo-box .arrow {
+    -fx-background-color: white;
+}
+
+/* Date picker styling */
+.date-picker {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-border-color: #a0a0a0;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: #363642;
+    -fx-background-radius: 0 5 5 0;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: white;
+}
+
+.date-picker .text-field {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+}
+
+/* Style for the charts themselves */
+.chart {
+    -fx-background-color: transparent;
+    -fx-padding: 10;
+}
+
+.chart-plot-background {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: rgba(255, 255, 255, 0.1);
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: rgba(255, 255, 255, 0.1);
+}
+
+.chart-title {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.chart-legend-item {
+    -fx-text-fill: white;
+}
+
+.axis {
+    -fx-tick-label-fill: #a0a0a0;
+    -fx-tick-length: 8;
+}
+
+.axis-label {
+    -fx-text-fill: white;
+}
+.chart-box {
+    -fx-background-color: #2b2b3b;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+}
+
+.chart-scene {
+    -fx-background-color: #1e1e2e;
+}

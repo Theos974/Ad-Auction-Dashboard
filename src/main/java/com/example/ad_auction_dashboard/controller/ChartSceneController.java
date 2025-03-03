@@ -30,13 +30,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class ChartSceneController {
-    @FXML
-    private ComboBox<String> chartTypeComboBox;
 
     @FXML
     private ComboBox<String> timeGranularityComboBox;
@@ -48,10 +48,24 @@ public class ChartSceneController {
     private DatePicker endDatePicker;
 
     @FXML
-    private Pane chartContainer;
+    private Label statusLabel; // Add this to your FXML if not already present
+    @FXML
+    private ComboBox<String> primaryChartTypeComboBox;
 
     @FXML
-    private Label statusLabel; // Add this to your FXML if not already present
+    private ComboBox<String> secondaryChartTypeComboBox;
+
+    @FXML
+    private ToggleButton compareToggleButton;
+
+    @FXML
+    private VBox primaryChartContainer;
+
+    @FXML
+    private VBox secondaryChartContainer;
+
+    @FXML
+    private HBox chartsContainer;
 
     private CampaignMetrics campaignMetrics;
     private TimeFilteredMetrics timeFilteredMetrics;
@@ -75,19 +89,36 @@ public class ChartSceneController {
         chartRegistry.put("CPM", new CPMChart());
         chartRegistry.put("Bounce Rate", new BounceRateChart());
 
-        // Add chart types to combo box
-        chartTypeComboBox.getItems().addAll(chartRegistry.keySet());
-        chartTypeComboBox.setValue("Impressions"); // Default selection
+        // Add chart types to combo boxes
+        primaryChartTypeComboBox.getItems().addAll(chartRegistry.keySet());
+        primaryChartTypeComboBox.setValue("Impressions"); // Default selection
+
+        secondaryChartTypeComboBox.getItems().addAll(chartRegistry.keySet());
+        secondaryChartTypeComboBox.setValue("CPC"); // Default selection
 
         // Setup time granularity options
         timeGranularityComboBox.getItems().addAll("Hourly", "Daily", "Weekly");
         timeGranularityComboBox.setValue("Daily"); // Default
 
+        // Setup toggle button for comparison
+        compareToggleButton.setOnAction(e -> {
+            boolean showComparison = compareToggleButton.isSelected();
+            secondaryChartContainer.setVisible(showComparison);
+            secondaryChartContainer.setManaged(showComparison);
+            updateCharts();
+        });
+
         // Setup event listeners
-        chartTypeComboBox.setOnAction(e -> updateChart());
+        primaryChartTypeComboBox.setOnAction(e -> updateCharts());
+        secondaryChartTypeComboBox.setOnAction(e -> {
+            if (compareToggleButton.isSelected()) {
+                updateCharts();
+            }
+        });
+
         timeGranularityComboBox.setOnAction(e -> {
             currentGranularity = timeGranularityComboBox.getValue();
-            updateChart();
+            updateCharts();
 
             // Provide feedback about hourly view for long time periods
             if (currentGranularity.equals("Hourly")) {
@@ -104,12 +135,12 @@ public class ChartSceneController {
         // Date picker event listeners
         startDatePicker.setOnAction(e -> {
             validateDateRange();
-            updateChart();
+            updateCharts();
         });
 
         endDatePicker.setOnAction(e -> {
             validateDateRange();
-            updateChart();
+            updateCharts();
         });
 
         // Initialize status label if present
@@ -139,10 +170,9 @@ public class ChartSceneController {
             endDatePicker.setValue(campaignEnd.toLocalDate());
         }
 
-        // Show initial chart
-        updateChart();
+        // Show initial charts
+        updateCharts();
     }
-
     /**
      * Validates and corrects the date range if needed
      */
@@ -171,19 +201,12 @@ public class ChartSceneController {
         }
     }
 
-    private void updateChart() {
+    private void updateCharts() {
         if (campaignMetrics == null) return;
-
-        String selectedChartType = chartTypeComboBox.getValue();
-        if (selectedChartType == null) return;
-
-        Chart chartImpl = chartRegistry.get(selectedChartType);
-        if (chartImpl == null) return;
 
         // Get date range
         LocalDate startDate = startDatePicker.getValue();
         LocalDate endDate = endDatePicker.getValue();
-
         if (startDate == null || endDate == null) return;
 
         // Convert to LocalDateTime
@@ -191,7 +214,7 @@ public class ChartSceneController {
         LocalDateTime end = endDate.atTime(LocalTime.MAX);
 
         try {
-            // Update status if we're processing a lot of data
+            // Update status if processing a lot of data
             if (statusLabel != null && currentGranularity.equals("Hourly") &&
                 ChronoUnit.DAYS.between(startDate, endDate) > 14) {
                 statusLabel.setText("Processing large amount of hourly data...");
@@ -200,14 +223,29 @@ public class ChartSceneController {
             // Compute metrics for the time frame with granularity
             timeFilteredMetrics.computeForTimeFrame(start, end, currentGranularity);
 
-            // Create chart and display it
-            VBox chartNode = chartImpl.createChart(timeFilteredMetrics, start, end, currentGranularity);
+            // Create and display primary chart
+            String primaryChartType = primaryChartTypeComboBox.getValue();
+            Chart primaryChartImpl = chartRegistry.get(primaryChartType);
+            if (primaryChartImpl != null) {
+                VBox primaryChartNode = primaryChartImpl.createChart(
+                    timeFilteredMetrics, start, end, currentGranularity);
+                primaryChartContainer.getChildren().clear();
+                primaryChartContainer.getChildren().add(primaryChartNode);
+            }
 
-            // Update display
-            chartContainer.getChildren().clear();
-            chartContainer.getChildren().add(chartNode);
+            // Create and display secondary chart if comparison is enabled
+            if (compareToggleButton.isSelected()) {
+                String secondaryChartType = secondaryChartTypeComboBox.getValue();
+                Chart secondaryChartImpl = chartRegistry.get(secondaryChartType);
+                if (secondaryChartImpl != null) {
+                    VBox secondaryChartNode = secondaryChartImpl.createChart(
+                        timeFilteredMetrics, start, end, currentGranularity);
+                    secondaryChartContainer.getChildren().clear();
+                    secondaryChartContainer.getChildren().add(secondaryChartNode);
+                }
+            }
 
-            // Clear status if everything went well and we don't have any warnings
+            // Clear status if everything went well (except for hourly warning)
             if (statusLabel != null && !currentGranularity.equals("Hourly")) {
                 statusLabel.setText("");
             }
@@ -231,7 +269,8 @@ public class ChartSceneController {
 
             // Switch to the metrics scene
             Scene scene = new Scene(root);
-            Stage stage = (Stage) chartContainer.getScene().getWindow();
+            // Use primaryChartContainer instead of chartContainer to get the scene
+            Stage stage = (Stage) primaryChartContainer.getScene().getWindow();
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
