@@ -18,28 +18,72 @@ public class FileHandler {
 
     }
 
-    public Campaign openZip(String filePath){
-        String[] files = readFromZip(filePath);
-        ImpressionLog[] impressionLogs = new ImpressionLog[0];
-        ClickLog[] clickLogs = new ClickLog[0];
-        ServerLog[] serverLogs = new ServerLog[0];
-        for (String file: files) {
-            String[] splitFile = splitCsv(file);
-            switch (splitFile[0]){
-                case "Date,ID,Gender,Age,Income,Context,Impression Cost":
-                    impressionLogs = formatImpressions(splitImpressions(splitFile));
-                    break;
-                case "Entry Date,ID,Exit Date,Pages Viewed,Conversion":
-                    serverLogs = formatServer(splitServer(splitFile));
-                    break;
-                case "Date,ID,Click Cost":
-                    clickLogs = formatClick(splitClick(splitFile));
-                    break;
-                default:
-                    break;
+   //process each file line by line rather than entire
+    public Campaign openZip(String filePath) {
+        List<ImpressionLog> impressionLogs = new ArrayList<>();
+        List<ClickLog> clickLogs = new ArrayList<>();
+        List<ServerLog> serverLogs = new ArrayList<>();
+
+        try (ZipFile zipFile = new ZipFile(filePath)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+
+                try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8))) {
+
+                    // Read header to determine file type
+                    String header = reader.readLine();
+                    if (header == null) continue;
+
+                    String line;
+                    switch (header) {
+                        case "Date,ID,Gender,Age,Income,Context,Impression Cost":
+                            // Process impression logs line by line
+                            while ((line = reader.readLine()) != null) {
+                                String[] parts = line.split(",");
+                                if (parts.length == 7) {
+                                    impressionLogs.add(new ImpressionLog(
+                                        parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]));
+                                }
+                            }
+                            break;
+
+                        case "Entry Date,ID,Exit Date,Pages Viewed,Conversion":
+                            // Process server logs line by line
+                            while ((line = reader.readLine()) != null) {
+                                String[] parts = line.split(",");
+                                if (parts.length == 5) {
+                                    serverLogs.add(new ServerLog(
+                                        parts[0], parts[1], parts[2], parts[3], parts[4]));
+                                }
+                            }
+                            break;
+
+                        case "Date,ID,Click Cost":
+                            // Process click logs line by line
+                            while ((line = reader.readLine()) != null) {
+                                String[] parts = line.split(",");
+                                if (parts.length == 3) {
+                                    clickLogs.add(new ClickLog(
+                                        parts[0], parts[1], parts[2]));
+                                }
+                            }
+                            break;
+                    }
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Error processing zip file: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-        return new Campaign(impressionLogs,clickLogs,serverLogs);
+
+        return new Campaign(
+            impressionLogs.toArray(new ImpressionLog[0]),
+            clickLogs.toArray(new ClickLog[0]),
+            serverLogs.toArray(new ServerLog[0]));
     }
     public LogFile[] openIndividualCSV(String filePath){
         String file = readFromCsv(filePath);

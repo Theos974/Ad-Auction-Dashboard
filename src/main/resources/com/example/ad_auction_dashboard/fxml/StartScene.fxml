@@ -9,14 +9,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="start-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="start-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
     <children>
         <VBox alignment="CENTER" layoutX="250.0" layoutY="34.0" prefHeight="635.0" prefWidth="500.0" styleClass="main-container" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="250.0" AnchorPane.topAnchor="34.0">
             <padding>
                 <Insets bottom="20" left="20" right="20" top="20" />
             </padding>
             <children>
-                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="50.0" prefWidth="460.0" styleClass="title-text" text="SEG EFFICIENCY DASHBOARDS" />
+                <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="75.0" prefWidth="476.0" styleClass="title-text" text="SEG EFFICIENCY DASHBOARDS" />
 
                 <VBox alignment="CENTER" spacing="10" styleClass="logo-container">
                     <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">

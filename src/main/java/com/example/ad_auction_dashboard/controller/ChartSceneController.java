@@ -28,6 +28,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
@@ -161,18 +162,40 @@ public class ChartSceneController {
             metrics.getBounceSecondsThreshold()
         );
 
-        // Set date pickers to campaign date range
+        // Get campaign date boundaries
         LocalDateTime campaignStart = metrics.getCampaignStartDate();
         LocalDateTime campaignEnd = metrics.getCampaignEndDate();
 
         if (campaignStart != null && campaignEnd != null) {
-            startDatePicker.setValue(campaignStart.toLocalDate());
-            endDatePicker.setValue(campaignEnd.toLocalDate());
+            LocalDate startDate = campaignStart.toLocalDate();
+            LocalDate endDate = campaignEnd.toLocalDate();
+
+            // Set default values to campaign start and end dates
+            startDatePicker.setValue(startDate);
+            endDatePicker.setValue(endDate);
+
+            // Set date range constraints for both pickers
+            startDatePicker.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || date.isBefore(startDate) || date.isAfter(endDate));
+                }
+            });
+
+            endDatePicker.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || date.isBefore(startDate) || date.isAfter(endDate));
+                }
+            });
         }
 
         // Show initial charts
         updateCharts();
     }
+
     /**
      * Validates and corrects the date range if needed
      */

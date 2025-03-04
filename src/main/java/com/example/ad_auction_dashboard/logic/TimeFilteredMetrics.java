@@ -71,6 +71,8 @@ public class TimeFilteredMetrics {
 
     /**
      * Initializes hourly caches for all metrics
+     * Note: This doesn't need to change since we're adapting getCountFromHourlyCache
+     * to work with the existing cache format, rather than changing the cache format itself
      */
     private void initializeHourlyCaches() {
         if (hourlyDataCached) return;
@@ -144,7 +146,10 @@ public class TimeFilteredMetrics {
 
         hourlyDataCached = true;
     }
-    // Add this method to TimeFilteredMetrics to fill in missing hours
+    /**
+     * Adds empty data points for any missing hours in the time range
+     * to ensure complete and consistent chart display
+     */
     private Map<String, TimeFilteredMetrics.ComputedMetrics> ensureCompleteHourlyData(
         Map<String, TimeFilteredMetrics.ComputedMetrics> metricsByTime,
         LocalDateTime start,
@@ -156,12 +161,10 @@ public class TimeFilteredMetrics {
         LocalDateTime current = start.truncatedTo(ChronoUnit.HOURS);
         end = end.truncatedTo(ChronoUnit.HOURS);
 
-        // Create a date formatter that matches your existing labels
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:00"); // Adjust pattern to match your labels
-
         // For each hour in the range, ensure there's a data point
         while (!current.isAfter(end)) {
-            String timeLabel = formatter.format(current);
+            // Use the standardized formatter for consistency
+            String timeLabel = formatTimeLabel(current, "Hourly");
 
             // If this hour doesn't exist in the data, add it with zeros
             if (!metricsByTime.containsKey(timeLabel)) {
@@ -176,7 +179,6 @@ public class TimeFilteredMetrics {
 
         return completeData;
     }
-
     /**
      * Computes metrics for a time frame and updates currentMetrics.
      * Uses caching to avoid recomputing previously requested data.
@@ -211,13 +213,38 @@ public class TimeFilteredMetrics {
 
         cache.put(cacheKey, computed);
         currentMetrics = computed;
+
     }
+
+    /**
+     * Helper method for consistent time formatting across the class
+     * @param dateTime The datetime to format
+     * @param granularity The time granularity level (Hourly, Daily, Weekly)
+     * @return A formatted string representation of the time
+     */
+    private String formatTimeLabel(LocalDateTime dateTime, String granularity) {
+        switch (granularity) {
+            case "Hourly":
+                return String.format("%02d:00", dateTime.getHour());
+            case "Daily":
+                return dateTime.toLocalDate().toString();
+            case "Weekly":
+                return "Week " + dateTime.getDayOfYear() / 7;
+            default:
+                return dateTime.toLocalDate().toString();
+        }
+    }
+
 
     /**
      * Computes metrics for time buckets based on the specified granularity.
      * Uses caching to avoid recomputing previously requested data.
      */
-    public Map<String, ComputedMetrics> computeForTimeFrameWithGranularity(LocalDateTime start, LocalDateTime end, String granularity) {
+    public Map<String, ComputedMetrics> computeForTimeFrameWithGranularity(
+        LocalDateTime start,
+        LocalDateTime end,
+        String granularity) {
+
         String cacheKey = generateCacheKey(start, end, granularity);
 
         // Check if we already have this result cached
@@ -237,19 +264,19 @@ public class TimeFilteredMetrics {
             switch (granularity) {
                 case "Hourly":
                     bucketEnd = pointer.plusHours(1).minusSeconds(1);
-                    timeLabel = bucketStart.getHour() + ":00"; // "9:00", "10:00", etc.
+                    timeLabel = formatTimeLabel(bucketStart, granularity);
                     break;
                 case "Daily":
                     bucketEnd = pointer.plusDays(1).minusSeconds(1);
-                    timeLabel = bucketStart.toLocalDate().toString(); // "2025-03-02"
+                    timeLabel = formatTimeLabel(bucketStart, granularity);
                     break;
                 case "Weekly":
                     bucketEnd = pointer.plusWeeks(1).minusSeconds(1);
-                    timeLabel = "Week " + bucketStart.getDayOfYear() / 7; // "Week 10"
+                    timeLabel = formatTimeLabel(bucketStart, granularity);
                     break;
                 default:
                     bucketEnd = pointer.plusDays(1).minusSeconds(1);
-                    timeLabel = bucketStart.toLocalDate().toString();
+                    timeLabel = formatTimeLabel(bucketStart, granularity);
             }
 
             // Ensure bucketEnd does not exceed campaign end date
@@ -316,6 +343,8 @@ public class TimeFilteredMetrics {
 
         return results;
     }
+
+
 
     // Cache key generation based on time range and granularity
     private String generateCacheKey(LocalDateTime start, LocalDateTime end, String granularity) {
@@ -505,7 +534,10 @@ public class TimeFilteredMetrics {
         return totalCost;
     }
 
-    // Helper method to get count from hourly cache
+    /**
+     * Helper method to get count from hourly cache between specified dates
+     * Modified to use consistent hour formatting
+     */
     private int getCountFromHourlyCache(LocalDateTime start, LocalDateTime end, Map<String, Integer> cache) {
         int count = 0;
 
@@ -513,6 +545,7 @@ public class TimeFilteredMetrics {
         LocalDateTime endHour = end.truncatedTo(ChronoUnit.HOURS);
 
         while (!current.isAfter(endHour)) {
+            // Important: this must match how the cache was populated in initializeHourlyCaches
             String hourKey = current.toString();
             count += cache.getOrDefault(hourKey, 0);
             current = current.plusHours(1);
