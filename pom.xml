@@ -7,7 +7,8 @@
   <groupId>com.example</groupId>
   <artifactId>Ad_Auction_DashBoard</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Ad_Auction_DashBoard</name>
+    <packaging>jar</packaging>
+    <name>Ad_Auction_DashBoard</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,7 +27,13 @@
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
+
+      <dependency>
+          <groupId>com.mysql</groupId>
+          <artifactId>mysql-connector-j</artifactId>
+          <version>8.2.0</version>
+      </dependency>
+      <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
       <version>17.0.6</version>
@@ -36,6 +43,11 @@
       <artifactId>javafx-fxml</artifactId>
       <version>17.0.6</version>
     </dependency>
+      <dependency>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-graphics</artifactId>
+          <version>17.0.6</version>
+      </dependency>
 <dependency>
       <groupId>org.controlsfx</groupId>
       <artifactId>controlsfx</artifactId>
@@ -54,6 +66,18 @@
 
   <build>
     <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.3.0</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <mainClass>com.example.ad_auction_dashboard.viewer.MainApp</mainClass>
+                    </manifest>
+                </archive>
+            </configuration>
+        </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.5.2</version>

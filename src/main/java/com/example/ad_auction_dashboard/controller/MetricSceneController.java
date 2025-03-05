@@ -128,7 +128,7 @@ public class MetricSceneController {
         TextInputDialog pagesDialog = new TextInputDialog(String.valueOf(currentPagesThreshold));
         pagesDialog.setTitle("Bounce Settings");
         pagesDialog.setHeaderText("Set bounce pages threshold");
-        pagesDialog.setContentText("Pages viewed (1-10):");
+        pagesDialog.setContentText("Pages viewed:");
 
         // Show pages dialog and get result
         Optional<String> pagesResult = pagesDialog.showAndWait();
@@ -140,7 +140,7 @@ public class MetricSceneController {
                 TextInputDialog secondsDialog = new TextInputDialog(String.valueOf(currentSecondsThreshold));
                 secondsDialog.setTitle("Bounce Settings");
                 secondsDialog.setHeaderText("Set bounce time threshold");
-                secondsDialog.setContentText("Seconds on site (1-60):");
+                secondsDialog.setContentText("Seconds on site:");
 
                 // Show seconds dialog and get result
                 Optional<String> secondsResult = secondsDialog.showAndWait();
