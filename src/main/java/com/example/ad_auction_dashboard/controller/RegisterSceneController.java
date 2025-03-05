@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.UserDatabase;
+import com.example.ad_auction_dashboard.viewer.LoginScene;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -131,18 +132,10 @@ public class RegisterSceneController {
     }
 
     @FXML
-    private void handleBackToLogin(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/LoginScene.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) loginBtn.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            statusText.setText("Error navigating to login page");
-        }
+    private void handleBackToLogin(ActionEvent event) throws IOException {
+        // Create a new LoginScene using the current stage
+        Stage stage = (Stage) loginBtn.getScene().getWindow();
+        new LoginScene(stage, 930, 692);
+        stage.show();
     }
 }

@@ -15,115 +15,109 @@
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.RegisterSceneController">
     <top>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <children>
-                <Text fill="#392121" strokeType="OUTSIDE" strokeWidth="0.0" text="SEG EFFICIENCY Dashboards" textAlignment="CENTER">
-                    <font>
-                        <Font name="System Bold" size="36.0" />
-                    </font>
-                </Text>
-            </children>
+            <Text fill="#392121" strokeType="OUTSIDE" strokeWidth="0.0" text="SEG EFFICIENCY Dashboards"
+                  textAlignment="CENTER">
+                <font>
+                    <Font name="System Bold" size="36.0"/>
+                </font>
+            </Text>
         </HBox>
     </top>
     <center>
         <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" BorderPane.alignment="CENTER">
-            <children>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Create an Account">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Create an Account">
+                <font>
+                    <Font size="24.0"/>
+                </font>
+            </Text>
+            <VBox alignment="CENTER" prefHeight="350.0" prefWidth="100.0" spacing="8.0">
+                <padding>
+                    <Insets left="20.0" right="20.0"/>
+                </padding>
+                <Label text="Username">
                     <font>
-                        <Font size="24.0" />
+                        <Font size="14.0"/>
                     </font>
-                </Text>
-                <VBox alignment="CENTER" prefHeight="350.0" prefWidth="100.0" spacing="8.0">
-                    <children>
-                        <Label text="Username">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <TextField fx:id="usernameField" maxWidth="300.0" promptText="Enter your username">
-                            <VBox.margin>
-                                <Insets bottom="5.0" />
-                            </VBox.margin>
-                        </TextField>
-                        <Label text="Email">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <TextField fx:id="emailField" maxWidth="300.0" promptText="Enter your email">
-                            <VBox.margin>
-                                <Insets bottom="5.0" />
-                            </VBox.margin>
-                        </TextField>
-                        <Label text="Phone">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <TextField fx:id="phoneField" maxWidth="300.0" promptText="Enter your phone number">
-                            <VBox.margin>
-                                <Insets bottom="5.0" />
-                            </VBox.margin>
-                        </TextField>
-                        <Label text="Password">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Enter your password">
-                            <VBox.margin>
-                                <Insets bottom="5.0" />
-                            </VBox.margin>
-                        </PasswordField>
-                        <Label text="Confirm Password">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <PasswordField fx:id="confirmPasswordField" maxWidth="300.0" promptText="Confirm your password">
-                            <VBox.margin>
-                                <Insets bottom="5.0" />
-                            </VBox.margin>
-                        </PasswordField>
-                        <Label text="Role">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                        </Label>
-                        <ComboBox fx:id="roleComboBox" maxWidth="300.0" prefWidth="300.0" promptText="Select role">
-                            <VBox.margin>
-                                <Insets bottom="5.0" />
-                            </VBox.margin>
-                        </ComboBox>
-                        <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #27ae60;" text="Register" textFill="WHITE">
-                            <font>
-                                <Font size="14.0" />
-                            </font>
-                            <VBox.margin>
-                                <Insets top="10.0" />
-                            </VBox.margin>
-                        </Button>
-                        <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="5.0">
-                            <children>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Already have an account?" />
-                                <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleBackToLogin" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;" text="Login" />
-                            </children>
-                            <VBox.margin>
-                                <Insets top="5.0" />
-                            </VBox.margin>
-                        </HBox>
-                    </children>
-                    <padding>
-                        <Insets left="20.0" right="20.0" />
-                    </padding>
-                </VBox>
-            </children>
+                </Label>
+                <TextField fx:id="usernameField" maxWidth="300.0" promptText="Enter your username">
+                    <VBox.margin>
+                        <Insets bottom="5.0"/>
+                    </VBox.margin>
+                </TextField>
+                <Label text="Email">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <TextField fx:id="emailField" maxWidth="300.0" promptText="Enter your email">
+                    <VBox.margin>
+                        <Insets bottom="5.0"/>
+                    </VBox.margin>
+                </TextField>
+                <Label text="Phone">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <TextField fx:id="phoneField" maxWidth="300.0" promptText="Enter your phone number">
+                    <VBox.margin>
+                        <Insets bottom="5.0"/>
+                    </VBox.margin>
+                </TextField>
+                <Label text="Password">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Enter your password">
+                    <VBox.margin>
+                        <Insets bottom="5.0"/>
+                    </VBox.margin>
+                </PasswordField>
+                <Label text="Confirm Password">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <PasswordField fx:id="confirmPasswordField" maxWidth="300.0" promptText="Confirm your password">
+                    <VBox.margin>
+                        <Insets bottom="5.0"/>
+                    </VBox.margin>
+                </PasswordField>
+                <Label text="Role">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                </Label>
+                <ComboBox fx:id="roleComboBox" maxWidth="300.0" prefWidth="300.0" promptText="Select role">
+                    <VBox.margin>
+                        <Insets bottom="5.0"/>
+                    </VBox.margin>
+                </ComboBox>
+                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" prefHeight="30.0"
+                        prefWidth="150.0" style="-fx-background-color: #27ae60;" text="Register" textFill="WHITE">
+                    <font>
+                        <Font size="14.0"/>
+                    </font>
+                    <VBox.margin>
+                        <Insets top="10.0"/>
+                    </VBox.margin>
+                </Button>
+                <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="5.0">
+                    <VBox.margin>
+                        <Insets top="5.0"/>
+                    </VBox.margin>
+                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Already have an account?"/>
+                    <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleBackToLogin"
+                            style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;"
+                            text="Login"/>
+                </HBox>
+            </VBox>
         </VBox>
     </center>
     <bottom>
         <VBox alignment="CENTER" prefHeight="80.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-            <children>
-                <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />
-            </children>
+            <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0"/>
         </VBox>
     </bottom>
 </BorderPane>

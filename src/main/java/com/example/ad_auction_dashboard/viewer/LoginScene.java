@@ -23,7 +23,7 @@ public class LoginScene {
     public void setupStage() {
         stage.setTitle("Ad Auction Dashboard - Login");
         stage.setMinWidth(width);
-        stage.setMinHeight(height + 20);
+        stage.setMinHeight(height);
     }
 
     public void setupDefaultScene() {

@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.UserDatabase;
+import com.example.ad_auction_dashboard.viewer.RegisterScene;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -109,16 +110,12 @@ public class LoginSceneController {
 
     @FXML
     private void handleRegister(ActionEvent event) {
-        // Navigate to register page
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/RegisterScene.fxml"));
-            Parent root = loader.load();
-
+            // Create a new RegisterScene using the current stage
             Stage stage = (Stage) registerBtn.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            stage.setScene(scene);
+            new RegisterScene(stage, 930, 692);
             stage.show();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             statusText.setText("Error navigating to registration page");
         }
