@@ -1,0 +1,1178 @@
+[1mdiff --git a/.idea/dataSources.xml b/.idea/dataSources.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4f9829c[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/dataSources.xml[m
+[36m@@ -0,0 +1,19 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">[m
+[32m+[m[32m    <data-source source="LOCAL" name="ad_auction_user@localhost" uuid="770c6e5c-20d6-4591-b6b8-d149ac6bbc43">[m
+[32m+[m[32m      <driver-ref>mysql.8</driver-ref>[m
+[32m+[m[32m      <synchronize>true</synchronize>[m
+[32m+[m[32m      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>[m
+[32m+[m[32m      <jdbc-url>jdbc:mysql://localhost:3306/ad_auction_user</jdbc-url>[m
+[32m+[m[32m      <working-dir>$ProjectFileDir$</working-dir>[m
+[32m+[m[32m    </data-source>[m
+[32m+[m[32m    <data-source source="LOCAL" name="@localhost [2]" uuid="6cb5a724-c92b-4483-8e4e-30256f481f0f">[m
+[32m+[m[32m      <driver-ref>mysql.8</driver-ref>[m
+[32m+[m[32m      <synchronize>true</synchronize>[m
+[32m+[m[32m      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>[m
+[32m+[m[32m      <jdbc-url>jdbc:mysql://localhost:3306</jdbc-url>[m
+[32m+[m[32m      <working-dir>$ProjectFileDir$</working-dir>[m
+[32m+[m[32m    </data-source>[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/sqldialects.xml b/.idea/sqldialects.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..722fd6b[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/sqldialects.xml[m
+[36m@@ -0,0 +1,6 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="SqlDialectMappings">[m
+[32m+[m[32m    <file url="file://$PROJECT_DIR$/src/main/resources/database/user_management.sql" dialect="MySQL" />[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/pom.xml b/pom.xml[m
+[1mindex 5143451..7231f2c 100644[m
+[1m--- a/pom.xml[m
+[1m+++ b/pom.xml[m
+[36m@@ -7,7 +7,8 @@[m
+   <groupId>com.example</groupId>[m
+   <artifactId>Ad_Auction_DashBoard</artifactId>[m
+   <version>1.0-SNAPSHOT</version>[m
+[31m-  <name>Ad_Auction_DashBoard</name>[m
+[32m+[m[32m    <packaging>jar</packaging>[m
+[32m+[m[32m    <name>Ad_Auction_DashBoard</name>[m
+ [m
+   <properties>[m
+     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>[m
+[36m@@ -26,7 +27,13 @@[m
+   </dependencyManagement>[m
+ [m
+   <dependencies>[m
+[31m-    <dependency>[m
+[32m+[m
+[32m+[m[32m      <dependency>[m
+[32m+[m[32m          <groupId>com.mysql</groupId>[m
+[32m+[m[32m          <artifactId>mysql-connector-j</artifactId>[m
+[32m+[m[32m          <version>8.2.0</version>[m
+[32m+[m[32m      </dependency>[m
+[32m+[m[32m      <dependency>[m
+       <groupId>org.openjfx</groupId>[m
+       <artifactId>javafx-controls</artifactId>[m
+       <version>17.0.6</version>[m
+[36m@@ -36,6 +43,11 @@[m
+       <artifactId>javafx-fxml</artifactId>[m
+       <version>17.0.6</version>[m
+     </dependency>[m
+[32m+[m[32m      <dependency>[m
+[32m+[m[32m          <groupId>org.openjfx</groupId>[m
+[32m+[m[32m          <artifactId>javafx-graphics</artifactId>[m
+[32m+[m[32m          <version>17.0.6</version>[m
+[32m+[m[32m      </dependency>[m
+ <dependency>[m
+       <groupId>org.controlsfx</groupId>[m
+       <artifactId>controlsfx</artifactId>[m
+[36m@@ -54,6 +66,31 @@[m
+ [m
+   <build>[m
+     <plugins>[m
+[32m+[m[32m        <plugin>[m
+[32m+[m[32m            <groupId>org.apache.maven.plugins</groupId>[m
+[32m+[m[32m            <artifactId>maven-install-plugin</artifactId>[m
+[32m+[m[32m            <version>3.1.0</version>[m
+[32m+[m[32m            <executions>[m
+[32m+[m[32m                <execution>[m
+[32m+[m[32m                    <phase>install</phase>[m
+[32m+[m[32m                    <goals>[m
+[32m+[m[32m                        <goal>install</goal>[m
+[32m+[m[32m                    </goals>[m
+[32m+[m[32m                </execution>[m
+[32m+[m[32m            </executions>[m
+[32m+[m[32m        </plugin>[m
+[32m+[m[32m        <plugin>[m
+[32m+[m[32m            <groupId>org.apache.maven.plugins</groupId>[m
+[32m+[m[32m            <artifactId>maven-jar-plugin</artifactId>[m
+[32m+[m[32m            <version>3.3.0</version>[m
+[32m+[m[32m            <configuration>[m
+[32m+[m[32m                <archive>[m
+[32m+[m[32m                    <manifest>[m
+[32m+[m[32m                        <mainClass>com.example.ad_auction_dashboard.viewer.MainApp</mainClass>[m
+[32m+[m[32m                    </manifest>[m
+[32m+[m[32m                </archive>[m
+[32m+[m[32m            </configuration>[m
+[32m+[m[32m        </plugin>[m
+       <plugin>[m
+         <artifactId>maven-surefire-plugin</artifactId>[m
+         <version>3.5.2</version>[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/controller/LoginSceneController.java b/src/main/java/com/example/ad_auction_dashboard/controller/LoginSceneController.java[m
+[1mnew file mode 100644[m
+[1mindex 0000000..0b57d0c[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/controller/LoginSceneController.java[m
+[36m@@ -0,0 +1,123 @@[m
+[32m+[m[32mpackage com.example.ad_auction_dashboard.controller;[m
+[32m+[m
+[32m+[m[32mimport com.example.ad_auction_dashboard.logic.UserDatabase;[m
+[32m+[m[32mimport com.example.ad_auction_dashboard.viewer.RegisterScene;[m
+[32m+[m[32mimport java.io.IOException;[m
+[32m+[m[32mimport javafx.event.ActionEvent;[m
+[32m+[m[32mimport javafx.fxml.FXML;[m
+[32m+[m[32mimport javafx.fxml.FXMLLoader;[m
+[32m+[m[32mimport javafx.scene.Parent;[m
+[32m+[m[32mimport javafx.scene.Scene;[m
+[32m+[m[32mimport javafx.scene.control.Button;[m
+[32m+[m[32mimport javafx.scene.control.PasswordField;[m
+[32m+[m[32mimport javafx.scene.control.TextField;[m
+[32m+[m[32mimport javafx.scene.text.Text;[m
+[32m+[m[32mimport javafx.stage.Stage;[m
+[32m+[m
+[32m+[m[32mpublic class LoginSceneController {[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private TextField usernameField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private PasswordField passwordField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private Button loginBtn;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private Button registerBtn;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private Text statusText;[m
+[32m+[m
+[32m+[m[32m    // Initialize method for any setup[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    public void initialize() {[m
+[32m+[m[32m        // Clear any previous status messages[m
+[32m+[m[32m        statusText.setText("");[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private void handleLogin(ActionEvent event) {[m
+[32m+[m[32m        String username = usernameField.getText().trim();[m
+[32m+[m[32m        String password = passwordField.getText();[m
+[32m+[m
+[32m+[m[32m        // Basic validation[m
+[32m+[m[32m        if (username.isEmpty() || password.isEmpty()) {[m
+[32m+[m[32m            statusText.setText("Please enter both username and password");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Authenticate user with database[m
+[32m+[m[32m        boolean isAuthenticated = UserDatabase.authenticateUser(username, password);[m
+[32m+[m
+[32m+[m[32m        if (isAuthenticated) {[m
+[32m+[m[32m            // Get the user's role[m
+[32m+[m[32m            String role = UserDatabase.getUserRole(username);[m
+[32m+[m
+[32m+[m[32m            try {[m
+[32m+[m[32m                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/StartScene.fxml"));[m
+[32m+[m[32m                Parent root = loader.load();[m
+[32m+[m
+[32m+[m[32m                // Get the controller and pass the user info[m
+[32m+[m[32m                StartSceneController controller = loader.getController();[m
+[32m+[m
+[32m+[m[32m                // Pass user info to the controller if method exists[m
+[32m+[m[32m                if (controller != null) {[m
+[32m+[m[32m                    // Store current user information in the controller[m
+[32m+[m[32m                    try {[m
+[32m+[m[32m                        // Using reflection to check if the method exists[m
+[32m+[m[32m                        controller.getClass().getMethod("setUserInfo", String.class, String.class)[m
+[32m+[m[32m                            .invoke(controller, username, role);[m
+[32m+[m[32m                    } catch (NoSuchMethodException e) {[m
+[32m+[m[32m                        // Method doesn't exist, which is fine - just log it[m
+[32m+[m[32m                        System.out.println("Note: setUserInfo method not found in StartSceneController");[m
+[32m+[m[32m                    } catch (Exception e) {[m
+[32m+[m[32m                        e.printStackTrace();[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }[m
+[32m+[m
+[32m+[m[32m                // Display a welcome message based on role[m
+[32m+[m[32m                String welcomeMessage = "admin".equals(role) ?[m
+[32m+[m[32m                    "Welcome, Administrator!" : "Welcome to Ad Auction Dashboard!";[m
+[32m+[m[32m                statusText.setText(welcomeMessage);[m
+[32m+[m
+[32m+[m[32m                // Add a small delay before transition for the message to be visible[m
+[32m+[m[32m                new Thread(() -> {[m
+[32m+[m[32m                    try {[m
+[32m+[m[32m                        Thread.sleep(1000);[m
+[32m+[m[32m                        javafx.application.Platform.runLater(() -> {[m
+[32m+[m[32m                            // Navigate to main scene[m
+[32m+[m[32m                            Stage stage = (Stage) loginBtn.getScene().getWindow();[m
+[32m+[m[32m                            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());[m
+[32m+[m[32m                            stage.setScene(scene);[m
+[32m+[m[32m                            stage.show();[m
+[32m+[m[32m                        });[m
+[32m+[m[32m                    } catch (InterruptedException e) {[m
+[32m+[m[32m                        e.printStackTrace();[m
+[32m+[m[32m                    }[m
+[32m+[m[32m                }).start();[m
+[32m+[m
+[32m+[m[32m            } catch (IOException e) {[m
+[32m+[m[32m                e.printStackTrace();[m
+[32m+[m[32m                statusText.setText("Error navigating to main page");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            statusText.setText("Invalid username or password");[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private void handleRegister(ActionEvent event) {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            // Create a new RegisterScene using the current stage[m
+[32m+[m[32m            Stage stage = (Stage) registerBtn.getScene().getWindow();[m
+[32m+[m[32m            new RegisterScene(stage, 930, 692);[m
+[32m+[m[32m            stage.show();[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m            statusText.setText("Error navigating to registration page");[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/controller/MetricSceneController.java b/src/main/java/com/example/ad_auction_dashboard/controller/MetricSceneController.java[m
+[1mindex d2e956d..dd484d9 100644[m
+[1m--- a/src/main/java/com/example/ad_auction_dashboard/controller/MetricSceneController.java[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/controller/MetricSceneController.java[m
+[36m@@ -128,7 +128,7 @@[m [mpublic class MetricSceneController {[m
+         TextInputDialog pagesDialog = new TextInputDialog(String.valueOf(currentPagesThreshold));[m
+         pagesDialog.setTitle("Bounce Settings");[m
+         pagesDialog.setHeaderText("Set bounce pages threshold");[m
+[31m-        pagesDialog.setContentText("Pages viewed (1-10):");[m
+[32m+[m[32m        pagesDialog.setContentText("Pages viewed:");[m
+ [m
+         // Show pages dialog and get result[m
+         Optional<String> pagesResult = pagesDialog.showAndWait();[m
+[36m@@ -140,7 +140,7 @@[m [mpublic class MetricSceneController {[m
+                 TextInputDialog secondsDialog = new TextInputDialog(String.valueOf(currentSecondsThreshold));[m
+                 secondsDialog.setTitle("Bounce Settings");[m
+                 secondsDialog.setHeaderText("Set bounce time threshold");[m
+[31m-                secondsDialog.setContentText("Seconds on site (1-60):");[m
+[32m+[m[32m                secondsDialog.setContentText("Seconds on site:");[m
+ [m
+                 // Show seconds dialog and get result[m
+                 Optional<String> secondsResult = secondsDialog.showAndWait();[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/controller/RegisterSceneController.java b/src/main/java/com/example/ad_auction_dashboard/controller/RegisterSceneController.java[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e392539[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/controller/RegisterSceneController.java[m
+[36m@@ -0,0 +1,141 @@[m
+[32m+[m[32mpackage com.example.ad_auction_dashboard.controller;[m
+[32m+[m
+[32m+[m[32mimport com.example.ad_auction_dashboard.logic.UserDatabase;[m
+[32m+[m[32mimport com.example.ad_auction_dashboard.viewer.LoginScene;[m
+[32m+[m[32mimport java.io.IOException;[m
+[32m+[m[32mimport javafx.event.ActionEvent;[m
+[32m+[m[32mimport javafx.fxml.FXML;[m
+[32m+[m[32mimport javafx.fxml.FXMLLoader;[m
+[32m+[m[32mimport javafx.scene.Parent;[m
+[32m+[m[32mimport javafx.scene.Scene;[m
+[32m+[m[32mimport javafx.scene.control.Button;[m
+[32m+[m[32mimport javafx.scene.control.ComboBox;[m
+[32m+[m[32mimport javafx.scene.control.PasswordField;[m
+[32m+[m[32mimport javafx.scene.control.TextField;[m
+[32m+[m[32mimport javafx.scene.text.Text;[m
+[32m+[m[32mimport javafx.stage.Stage;[m
+[32m+[m
+[32m+[m[32mpublic class RegisterSceneController {[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private TextField usernameField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private TextField emailField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private TextField phoneField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private PasswordField passwordField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private PasswordField confirmPasswordField;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private ComboBox<String> roleComboBox;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private Button registerBtn;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private Button loginBtn;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private Text statusText;[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    public void initialize() {[m
+[32m+[m[32m        // Initialize the role dropdown - only "user" available during registration[m
+[32m+[m[32m        roleComboBox.getItems().add("user");[m
+[32m+[m[32m        roleComboBox.setValue("user");[m
+[32m+[m[32m        roleComboBox.setDisable(true); // Disable role selection - regular users can only sign up as "user"[m
+[32m+[m
+[32m+[m[32m        // Clear any previous status messages[m
+[32m+[m[32m        statusText.setText("");[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private void handleRegister(ActionEvent event) {[m
+[32m+[m[32m        String username = usernameField.getText().trim();[m
+[32m+[m[32m        String email = emailField.getText().trim();[m
+[32m+[m[32m        String phone = phoneField.getText().trim();[m
+[32m+[m[32m        String password = passwordField.getText();[m
+[32m+[m[32m        String confirmPassword = confirmPasswordField.getText();[m
+[32m+[m[32m        String role = roleComboBox.getValue();[m
+[32m+[m
+[32m+[m[32m        // Basic validation[m
+[32m+[m[32m        if (username.isEmpty() || email.isEmpty() || phone.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {[m
+[32m+[m[32m            statusText.setText("Please fill in all fields");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Validate username format (alphanumeric)[m
+[32m+[m[32m        if (!username.matches("^[a-zA-Z0-9_]{3,20}$")) {[m
+[32m+[m[32m            statusText.setText("Username must be 3-20 characters, alphanumeric with underscores only");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Validate email format (simple check)[m
+[32m+[m[32m        if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {[m
+[32m+[m[32m            statusText.setText("Please enter a valid email address");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Validate phone format (simple check)[m
+[32m+[m[32m        if (!phone.matches("^[0-9]{10,15}$")) {[m
+[32m+[m[32m            statusText.setText("Please enter a valid phone number (10-15 digits)");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Check if passwords match[m
+[32m+[m[32m        if (!password.equals(confirmPassword)) {[m
+[32m+[m[32m            statusText.setText("Passwords do not match");[m
+[32m+[m[32m            return;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            // Attempt to add the user to the database[m
+[32m+[m[32m            UserDatabase.addUser(username, email, phone, password, role);[m
+[32m+[m
+[32m+[m[32m            // Show success message and navigate to login[m
+[32m+[m[32m            statusText.setText("Registration successful! Redirecting to login...");[m
+[32m+[m
+[32m+[m[32m            // Slight delay before redirecting[m
+[32m+[m[32m            new Thread(() -> {[m
+[32m+[m[32m                try {[m
+[32m+[m[32m                    Thread.sleep(1500);[m
+[32m+[m
+[32m+[m[32m                    // Use JavaFX thread to update UI[m
+[32m+[m[32m                    javafx.application.Platform.runLater(() -> {[m
+[32m+[m[32m                        try {[m
+[32m+[m[32m                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/LoginScene.fxml"));[m
+[32m+[m[32m                            Parent root = loader.load();[m
+[32m+[m
+[32m+[m[32m                            Stage stage = (Stage) registerBtn.getScene().getWindow();[m
+[32m+[m[32m                            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());[m
+[32m+[m[32m                            stage.setScene(scene);[m
+[32m+[m[32m                            stage.show();[m
+[32m+[m[32m                        } catch (IOException e) {[m
+[32m+[m[32m                            e.printStackTrace();[m
+[32m+[m[32m                        }[m
+[32m+[m[32m                    });[m
+[32m+[m[32m                } catch (InterruptedException e) {[m
+[32m+[m[32m                    e.printStackTrace();[m
+[32m+[m[32m                }[m
+[32m+[m[32m            }).start();[m
+[32m+[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            statusText.setText("Error during registration: " + e.getMessage());[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    @FXML[m
+[32m+[m[32m    private void handleBackToLogin(ActionEvent event) throws IOException {[m
+[32m+[m[32m        // Create a new LoginScene using the current stage[m
+[32m+[m[32m        Stage stage = (Stage) loginBtn.getScene().getWindow();[m
+[32m+[m[32m        new LoginScene(stage, 930, 692);[m
+[32m+[m[32m        stage.show();[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/logic/DataBaseManager.java b/src/main/java/com/example/ad_auction_dashboard/logic/DataBaseManager.java[m
+[1mdeleted file mode 100644[m
+[1mindex 72ed0ea..0000000[m
+[1m--- a/src/main/java/com/example/ad_auction_dashboard/logic/DataBaseManager.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,75 +0,0 @@[m
+[31m-package com.example.ad_auction_dashboard.logic;[m
+[31m-[m
+[31m-import java.io.File;[m
+[31m-import java.net.URL;[m
+[31m-import java.sql.*;[m
+[31m-[m
+[31m-public class DataBaseManager {[m
+[31m-    // Database connection string[m
+[31m-    private static String dbUrl = null;[m
+[31m-[m
+[31m-    // Initialize the database connection URL[m
+[31m-    static {[m
+[31m-        try {[m
+[31m-            // Get the resource URL[m
+[31m-            URL resourceUrl = DataBaseManager.class.getClassLoader().getResource("userdata.db");[m
+[31m-[m
+[31m-            if (resourceUrl != null) {[m
+[31m-                // Convert URL to file path for SQLite[m
+[31m-                String dbPath = new File(resourceUrl.toURI()).getAbsolutePath();[m
+[31m-                dbUrl = "jdbc:sqlite:" + dbPath;[m
+[31m-            } else {[m
+[31m-                // Fall back to a relative path if the resource is not found[m
+[31m-                dbUrl = "jdbc:sqlite:userdata.db";[m
+[31m-                System.err.println("Warning: Database resource not found, using fallback path.");[m
+[31m-            }[m
+[31m-        } catch (Exception e) {[m
+[31m-            System.err.println("Error initializing database URL: " + e.getMessage());[m
+[31m-            // Fall back to a relative path if there's an exception[m
+[31m-            dbUrl = "jdbc:sqlite:userdata.db";[m
+[31m-        }[m
+[31m-    }[m
+[31m-    // Get database connection[m
+[31m-    public static Connection getConnection() throws SQLException {[m
+[31m-        return DriverManager.getConnection(dbUrl);[m
+[31m-    }[m
+[31m-    // Authenticate a user[m
+[31m-    public static boolean authenticateUser(String username, String password) {[m
+[31m-        String query = "SELECT * FROM users WHERE username = ? AND password = ?";[m
+[31m-[m
+[31m-        try (Connection conn = getConnection();[m
+[31m-             PreparedStatement stmt = conn.prepareStatement(query)) {[m
+[31m-[m
+[31m-            stmt.setString(1, username);[m
+[31m-            stmt.setString(2, password); // In a real app, you'd hash passwords[m
+[31m-[m
+[31m-            ResultSet rs = stmt.executeQuery();[m
+[31m-            return rs.next(); // Return true if user exists[m
+[31m-[m
+[31m-        } catch (SQLException e) {[m
+[31m-            e.printStackTrace();[m
+[31m-            return false;[m
+[31m-        }[m
+[31m-    }[m
+[31m-[m
+[31m-    // Get user role[m
+[31m-    public static String getUserRole(String username) {[m
+[31m-        String query = "SELECT role FROM users WHERE username = ?";[m
+[31m-[m
+[31m-        try (Connection conn = getConnection();[m
+[31m-             PreparedStatement stmt = conn.prepareStatement(query)) {[m
+[31m-[m
+[31m-            stmt.setString(1, username);[m
+[31m-            ResultSet rs = stmt.executeQuery();[m
+[31m-[m
+[31m-            if (rs.next()) {[m
+[31m-                return rs.getString("role");[m
+[31m-            }[m
+[31m-[m
+[31m-        } catch (SQLException e) {[m
+[31m-            e.printStackTrace();[m
+[31m-        }[m
+[31m-[m
+[31m-        return null;[m
+[31m-    }[m
+[31m-}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/logic/DatabaseInitializer.java b/src/main/java/com/example/ad_auction_dashboard/logic/DatabaseInitializer.java[m
+[1mnew file mode 100644[m
+[1mindex 0000000..bb37260[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/logic/DatabaseInitializer.java[m
+[36m@@ -0,0 +1,115 @@[m
+[32m+[m[32mpackage com.example.ad_auction_dashboard.logic;[m
+[32m+[m
+[32m+[m[32mimport java.nio.file.*;[m
+[32m+[m[32mimport java.sql.*;[m
+[32m+[m
+[32m+[m[32mpublic class DatabaseInitializer {[m
+[32m+[m[32m    // Default admin credentials[m
+[32m+[m[32m    private static final String DEFAULT_ADMIN_USERNAME = "admin";[m
+[32m+[m[32m    private static final String DEFAULT_ADMIN_EMAIL = "admin@example.com";[m
+[32m+[m[32m    private static final String DEFAULT_ADMIN_PHONE = "1234567890";[m
+[32m+[m[32m    private static final String DEFAULT_ADMIN_PASSWORD = "admin123";[m
+[32m+[m
+[32m+[m[32m    public static void initializeDatabase() {[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection([m
+[32m+[m[32m            "jdbc:mysql://localhost:3306",[m
+[32m+[m[32m            "root",[m
+[32m+[m[32m            "COMP2211");[m
+[32m+[m[32m             Statement stmt = conn.createStatement()) {[m
+[32m+[m
+[32m+[m[32m            // Check if database exists[m
+[32m+[m[32m            ResultSet rs = stmt.executeQuery("SHOW DATABASES LIKE 'ad_auction_user'");[m
+[32m+[m[32m            if (!rs.next()) {[m
+[32m+[m[32m                // Database does not exist, so create it[m
+[32m+[m[32m                stmt.executeUpdate("CREATE DATABASE ad_auction_user");[m
+[32m+[m[32m                System.out.println("Database created successfully.");[m
+[32m+[m
+[32m+[m[32m                // Now create and initialize the database with the schema[m
+[32m+[m[32m                String sqlFile = "src/main/resources/database/user_management.sql";[m
+[32m+[m[32m                String sql = new String(Files.readAllBytes(Paths.get(sqlFile)));[m
+[32m+[m
+[32m+[m[32m                // Use the newly created database[m
+[32m+[m[32m                stmt.executeUpdate("USE ad_auction_user");[m
+[32m+[m[32m                stmt.executeUpdate(sql);[m
+[32m+[m[32m                System.out.println("Database schema initialized successfully.");[m
+[32m+[m
+[32m+[m[32m                // Add default admin user[m
+[32m+[m[32m                addDefaultAdmin();[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                System.out.println("Database already exists. Skipping initialization.");[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            System.err.println("Error initializing database: " + e.getMessage());[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    /**[m
+[32m+[m[32m     * Adds a default admin user to the database if no admin exists yet[m
+[32m+[m[32m     */[m
+[32m+[m[32m    private static void addDefaultAdmin() {[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection([m
+[32m+[m[32m            "jdbc:mysql://localhost:3306/ad_auction_user",[m
+[32m+[m[32m            "root",[m
+[32m+[m[32m            "COMP2211");[m
+[32m+[m[32m             Statement stmt = conn.createStatement()) {[m
+[32m+[m
+[32m+[m[32m            // Check if admin already exists[m
+[32m+[m[32m            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users WHERE username = '" + DEFAULT_ADMIN_USERNAME + "'");[m
+[32m+[m[32m            if (rs.next() && rs.getInt(1) == 0) {[m
+[32m+[m[32m                // Admin doesn't exist, add it[m
+[32m+[m[32m                PreparedStatement pstmt = conn.prepareStatement([m
+[32m+[m[32m                    "INSERT INTO users (username, email, phone, password, role) VALUES (?, ?, ?, ?, 'admin')");[m
+[32m+[m[32m                pstmt.setString(1, DEFAULT_ADMIN_USERNAME);[m
+[32m+[m[32m                pstmt.setString(2, DEFAULT_ADMIN_EMAIL);[m
+[32m+[m[32m                pstmt.setString(3, DEFAULT_ADMIN_PHONE);[m
+[32m+[m[32m                pstmt.setString(4, DEFAULT_ADMIN_PASSWORD);[m
+[32m+[m[32m                pstmt.executeUpdate();[m
+[32m+[m
+[32m+[m[32m                System.out.println("Default admin account created successfully:");[m
+[32m+[m[32m                System.out.println("Username: " + DEFAULT_ADMIN_USERNAME);[m
+[32m+[m[32m                System.out.println("Password: " + DEFAULT_ADMIN_PASSWORD);[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                System.out.println("Default admin already exists.");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            System.err.println("Error adding default admin: " + e.getMessage());[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    /**[m
+[32m+[m[32m     * Utility method to verify database structure and check if it's properly set up[m
+[32m+[m[32m     */[m
+[32m+[m[32m    public static void verifyDatabaseStructure() {[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection([m
+[32m+[m[32m            "jdbc:mysql://localhost:3306/ad_auction_user",[m
+[32m+[m[32m            "root",[m
+[32m+[m[32m            "COMP2211");[m
+[32m+[m[32m             Statement stmt = conn.createStatement()) {[m
+[32m+[m
+[32m+[m[32m            // Get table structure[m
+[32m+[m[32m            ResultSet rs = stmt.executeQuery("DESCRIBE users");[m
+[32m+[m[32m            System.out.println("Current database structure:");[m
+[32m+[m[32m            System.out.println("=========================");[m
+[32m+[m
+[32m+[m[32m            while (rs.next()) {[m
+[32m+[m[32m                System.out.println(rs.getString("Field") + " - " + rs.getString("Type"));[m
+[32m+[m[32m            }[m
+[32m+[m[32m            System.out.println("=========================");[m
+[32m+[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            System.err.println("Error verifying database structure: " + e.getMessage());[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static void main(String[] args) {[m
+[32m+[m[32m        // Initialize the database only if it doesn't exist[m
+[32m+[m[32m        initializeDatabase();[m
+[32m+[m
+[32m+[m[32m        // Verify the database structure[m
+[32m+[m[32m        verifyDatabaseStructure();[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/logic/UserDatabase.java b/src/main/java/com/example/ad_auction_dashboard/logic/UserDatabase.java[m
+[1mnew file mode 100644[m
+[1mindex 0000000..cb9bc69[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/logic/UserDatabase.java[m
+[36m@@ -0,0 +1,133 @@[m
+[32m+[m[32mpackage com.example.ad_auction_dashboard.logic;[m
+[32m+[m
+[32m+[m[32mimport java.sql.*;[m
+[32m+[m
+[32m+[m[32mpublic class UserDatabase {[m
+[32m+[m[32m    private static final String URL = "jdbc:mysql://localhost:3306/ad_auction_user";[m
+[32m+[m[32m    private static final String USER = "root";[m
+[32m+[m[32m    private static final String PASSWORD = "COMP2211";[m
+[32m+[m
+[32m+[m[32m    static {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            Class.forName("com.mysql.cj.jdbc.Driver");[m
+[32m+[m[32m        } catch (ClassNotFoundException e) {[m
+[32m+[m[32m            throw new RuntimeException("MySQL JDBC Driver not found", e);[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static void addUser(String username, String email, String phone, String password, String role) {[m
+[32m+[m[32m        String sql = "CALL AddUser(?, ?, ?, ?, ?)";[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);[m
+[32m+[m[32m             PreparedStatement stmt = conn.prepareStatement(sql)) {[m
+[32m+[m[32m            stmt.setString(1, username);[m
+[32m+[m[32m            stmt.setString(2, email);[m
+[32m+[m[32m            stmt.setString(3, phone);[m
+[32m+[m[32m            stmt.setString(4, password);[m
+[32m+[m[32m            stmt.setString(5, role);[m
+[32m+[m[32m            stmt.execute();[m
+[32m+[m[32m        } catch (SQLException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static void deleteUser(int id) {[m
+[32m+[m[32m        String sql = "CALL DeleteUser(?)";[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);[m
+[32m+[m[32m             PreparedStatement stmt = conn.prepareStatement(sql)) {[m
+[32m+[m[32m            stmt.setInt(1, id);[m
+[32m+[m[32m            stmt.execute();[m
+[32m+[m[32m        } catch (SQLException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static void updateUser(int id, String username, String email, String phone, String password, String role) {[m
+[32m+[m[32m        String sql = "CALL UpdateUser(?, ?, ?, ?, ?, ?)";[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);[m
+[32m+[m[32m             PreparedStatement stmt = conn.prepareStatement(sql)) {[m
+[32m+[m[32m            stmt.setInt(1, id);[m
+[32m+[m[32m            stmt.setString(2, username);[m
+[32m+[m[32m            stmt.setString(3, email);[m
+[32m+[m[32m            stmt.setString(4, phone);[m
+[32m+[m[32m            stmt.setString(5, password);[m
+[32m+[m[32m            stmt.setString(6, role);[m
+[32m+[m[32m            stmt.execute();[m
+[32m+[m[32m        } catch (SQLException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static boolean authenticateUser(String username, String password) {[m
+[32m+[m[32m        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);[m
+[32m+[m[32m             PreparedStatement stmt = conn.prepareStatement(sql)) {[m
+[32m+[m[32m            stmt.setString(1, username);[m
+[32m+[m[32m            stmt.setString(2, password);[m
+[32m+[m[32m            ResultSet rs = stmt.executeQuery();[m
+[32m+[m[32m            return rs.next(); // Returns true if user exists[m
+[32m+[m[32m        } catch (SQLException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m            return false;[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static String getUserRole(String username) {[m
+[32m+[m[32m        String sql = "SELECT role FROM users WHERE username = ?";[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);[m
+[32m+[m[32m             PreparedStatement stmt = conn.prepareStatement(sql)) {[m
+[32m+[m[32m            stmt.setString(1, username);[m
+[32m+[m[32m            ResultSet rs = stmt.executeQuery();[m
+[32m+[m[32m            if (rs.next()) {[m
+[32m+[m[32m                return rs.getString("role");[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (SQLException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return null;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public static User getUser(String username) {[m
+[32m+[m[32m        String sql = "SELECT * FROM users WHERE username = ?";[m
+[32m+[m[32m        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);[m
+[32m+[m[32m             PreparedStatement stmt = conn.prepareStatement(sql)) {[m
+[32m+[m[32m            stmt.setString(1, username);[m
+[32m+[m[32m            ResultSet rs = stmt.executeQuery();[m
+[32m+[m[32m            if (rs.next()) {[m
+[32m+[m[32m                return new User([m
+[32m+[m[32m                    rs.getInt("id"),[m
+[32m+[m[32m                    rs.getString("username"),[m
+[32m+[m[32m                    rs.getString("email"),[m
+[32m+[m[32m                    rs.getString("phone"),[m
+[32m+[m[32m                    rs.getString("role")[m
+[32m+[m[32m                );[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (SQLException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m        return null;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // User class to represent user data[m
+[32m+[m[32m    public static class User {[m
+[32m+[m[32m        private int id;[m
+[32m+[m[32m        private String username;[m
+[32m+[m[32m        private String email;[m
+[32m+[m[32m        private String phone;[m
+[32m+[m[32m        private String role;[m
+[32m+[m
+[32m+[m[32m        public User(int id, String username, String email, String phone, String role) {[m
+[32m+[m[32m            this.id = id;[m
+[32m+[m[32m            this.username = username;[m
+[32m+[m[32m            this.email = email;[m
+[32m+[m[32m            this.phone = phone;[m
+[32m+[m[32m            this.role = role;[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Getters[m
+[32m+[m[32m        public int getId() { return id; }[m
+[32m+[m[32m        public String getUsername() { return username; }[m
+[32m+[m[32m        public String getEmail() { return email; }[m
+[32m+[m[32m        public String getPhone() { return phone; }[m
+[32m+[m[32m        public String getRole() { return role; }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/viewer/LoginScene.java b/src/main/java/com/example/ad_auction_dashboard/viewer/LoginScene.java[m
+[1mnew file mode 100644[m
+[1mindex 0000000..40bedbe[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/viewer/LoginScene.java[m
+[36m@@ -0,0 +1,43 @@[m
+[32m+[m[32mpackage com.example.ad_auction_dashboard.viewer;[m
+[32m+[m
+[32m+[m[32mimport java.io.IOException;[m
+[32m+[m[32mimport javafx.fxml.FXMLLoader;[m
+[32m+[m[32mimport javafx.scene.Parent;[m
+[32m+[m[32mimport javafx.scene.Scene;[m
+[32m+[m[32mimport javafx.stage.Stage;[m
+[32m+[m
+[32m+[m[32mpublic class LoginScene {[m
+[32m+[m[32m    private final int width;[m
+[32m+[m[32m    private final int height;[m
+[32m+[m[32m    private final Stage stage;[m
+[32m+[m[32m    private Scene scene;[m
+[32m+[m
+[32m+[m[32m    public LoginScene(Stage stage, int width, int height) {[m
+[32m+[m[32m        this.width = width;[m
+[32m+[m[32m        this.height = height;[m
+[32m+[m[32m        this.stage = stage;[m
+[32m+[m[32m        setupStage();[m
+[32m+[m[32m        setupDefaultScene();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public void setupStage() {[m
+[32m+[m[32m        stage.setTitle("Ad Auction Dashboard - Login");[m
+[32m+[m[32m        stage.setMinWidth(width);[m
+[32m+[m[32m        stage.setMinHeight(height);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public void setupDefaultScene() {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/LoginScene.fxml"));[m
+[32m+[m[32m            Parent root = loader.load();[m
+[32m+[m[32m            this.scene = new Scene(root, width, height);[m
+[32m+[m[32m            stage.setScene(scene);[m
+[32m+[m[32m        } catch (IOException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public Scene getScene() {[m
+[32m+[m[32m        return scene;[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/viewer/MainApp.java b/src/main/java/com/example/ad_auction_dashboard/viewer/MainApp.java[m
+[1mindex 47b2249..daaf169 100644[m
+[1m--- a/src/main/java/com/example/ad_auction_dashboard/viewer/MainApp.java[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/viewer/MainApp.java[m
+[36m@@ -1,18 +1,36 @@[m
+ package com.example.ad_auction_dashboard.viewer;[m
+ [m
+[31m-import com.example.ad_auction_dashboard.viewer.StartScene;[m
+[32m+[m[32mimport com.example.ad_auction_dashboard.logic.DatabaseInitializer;[m
+ import javafx.application.Application;[m
+[32m+[m[32mimport javafx.fxml.FXMLLoader;[m
+[32m+[m[32mimport javafx.scene.Parent;[m
+[32m+[m[32mimport javafx.scene.Scene;[m
+ import javafx.stage.Stage;[m
+ [m
+ public class MainApp extends Application {[m
+     @Override[m
+     public void start(Stage primaryStage) {[m
+[31m-        // Create your StartScene using the primary stage[m
+[31m-        new StartScene(primaryStage, 930, 692);[m
+[31m-        primaryStage.show();[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            // Initialize the database on startup[m
+[32m+[m[32m            DatabaseInitializer.initializeDatabase();[m
+[32m+[m
+[32m+[m[32m            // Load the login scene[m
+[32m+[m[32m            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/LoginScene.fxml"));[m
+[32m+[m[32m            Parent root = loader.load();[m
+[32m+[m
+[32m+[m[32m            // Set the scene[m
+[32m+[m[32m            Scene scene = new Scene(root, 930, 692);[m
+[32m+[m[32m            primaryStage.setTitle("Ad Auction Dashboard");[m
+[32m+[m[32m            primaryStage.setScene(scene);[m
+[32m+[m[32m            primaryStage.setMinWidth(930);[m
+[32m+[m[32m            primaryStage.setMinHeight(712); // Adding extra height for window decorations[m
+[32m+[m[32m            primaryStage.show();[m
+[32m+[m[32m        } catch (Exception e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+     }[m
+ [m
+     public static void main(String[] args) {[m
+         launch(args);[m
+     }[m
+[31m-}[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/java/com/example/ad_auction_dashboard/viewer/RegisterScene.java b/src/main/java/com/example/ad_auction_dashboard/viewer/RegisterScene.java[m
+[1mnew file mode 100644[m
+[1mindex 0000000..d9ec4aa[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/java/com/example/ad_auction_dashboard/viewer/RegisterScene.java[m
+[36m@@ -0,0 +1,43 @@[m
+[32m+[m[32mpackage com.example.ad_auction_dashboard.viewer;[m
+[32m+[m
+[32m+[m[32mimport java.io.IOException;[m
+[32m+[m[32mimport javafx.fxml.FXMLLoader;[m
+[32m+[m[32mimport javafx.scene.Parent;[m
+[32m+[m[32mimport javafx.scene.Scene;[m
+[32m+[m[32mimport javafx.stage.Stage;[m
+[32m+[m
+[32m+[m[32mpublic class RegisterScene {[m
+[32m+[m[32m    private final int width;[m
+[32m+[m[32m    private final int height;[m
+[32m+[m[32m    private final Stage stage;[m
+[32m+[m[32m    private Scene scene;[m
+[32m+[m
+[32m+[m[32m    public RegisterScene(Stage stage, int width, int height) {[m
+[32m+[m[32m        this.width = width;[m
+[32m+[m[32m        this.height = height;[m
+[32m+[m[32m        this.stage = stage;[m
+[32m+[m[32m        setupStage();[m
+[32m+[m[32m        setupDefaultScene();[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public void setupStage() {[m
+[32m+[m[32m        stage.setTitle("Ad Auction Dashboard - Registration");[m
+[32m+[m[32m        stage.setMinWidth(width);[m
+[32m+[m[32m        stage.setMinHeight(height + 20);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public void setupDefaultScene() {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/RegisterScene.fxml"));[m
+[32m+[m[32m            Parent root = loader.load();[m
+[32m+[m[32m            this.scene = new Scene(root, width, height);[m
+[32m+[m[32m            stage.setScene(scene);[m
+[32m+[m[32m        } catch (IOException e) {[m
+[32m+[m[32m            e.printStackTrace();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    public Scene getScene() {[m
+[32m+[m[32m        return scene;[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/src/main/resources/com/example/ad_auction_dashboard/fxml/LoginScene.fxml b/src/main/resources/com/example/ad_auction_dashboard/fxml/LoginScene.fxml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..9888eed[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/resources/com/example/ad_auction_dashboard/fxml/LoginScene.fxml[m
+[36m@@ -0,0 +1,95 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m
+[32m+[m[32m<?import javafx.geometry.Insets?>[m
+[32m+[m[32m<?import javafx.scene.control.Button?>[m
+[32m+[m[32m<?import javafx.scene.control.Label?>[m
+[32m+[m[32m<?import javafx.scene.control.PasswordField?>[m
+[32m+[m[32m<?import javafx.scene.control.TextField?>[m
+[32m+[m[32m<?import javafx.scene.image.Image?>[m
+[32m+[m[32m<?import javafx.scene.image.ImageView?>[m
+[32m+[m[32m<?import javafx.scene.layout.BorderPane?>[m
+[32m+[m[32m<?import javafx.scene.layout.HBox?>[m
+[32m+[m[32m<?import javafx.scene.layout.VBox?>[m
+[32m+[m[32m<?import javafx.scene.text.Font?>[m
+[32m+[m[32m<?import javafx.scene.text.Text?>[m
+[32m+[m
+[32m+[m[32m<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.LoginSceneController">[m
+[32m+[m[32m    <top>[m
+[32m+[m[32m        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">[m
+[32m+[m[32m            <children>[m
+[32m+[m[32m                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="SEG EFFICIENCY Dashboards" textAlignment="CENTER">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font name="System Bold" size="33.0" />[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Text>[m
+[32m+[m[32m            </children>[m
+[32m+[m[32m        </HBox>[m
+[32m+[m[32m    </top>[m
+[32m+[m[32m    <center>[m
+[32m+[m[32m        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="20.0" BorderPane.alignment="CENTER">[m
+[32m+[m[32m            <children>[m
+[32m+[m[32m            <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">[m
+[32m+[m[32m               <image>[m
+[32m+[m[32m                  <Image url="@../../../../images/small logo.png" />[m
+[32m+[m[32m               </image>[m
+[32m+[m[32m            </ImageView>[m
+[32m+[m[32m                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Login to Your Account">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="24.0" />[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Text>[m
+[32m+[m[32m                <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">[m
+[32m+[m[32m                    <children>[m
+[32m+[m[32m                        <Label text="Username">[m
+[32m+[m[32m                            <font>[m
+[32m+[m[32m                                <Font size="14.0" />[m
+[32m+[m[32m                            </font>[m
+[32m+[m[32m                        </Label>[m
+[32m+[m[32m                        <TextField fx:id="usernameField" maxWidth="300.0" promptText="Enter your username">[m
+[32m+[m[32m                            <VBox.margin>[m
+[32m+[m[32m                                <Insets bottom="10.0" />[m
+[32m+[m[32m                            </VBox.margin>[m
+[32m+[m[32m                        </TextField>[m
+[32m+[m[32m                        <Label text="Password">[m
+[32m+[m[32m                            <font>[m
+[32m+[m[32m                                <Font size="14.0" />[m
+[32m+[m[32m                            </font>[m
+[32m+[m[32m                        </Label>[m
+[32m+[m[32m                        <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Enter your password">[m
+[32m+[m[32m                            <VBox.margin>[m
+[32m+[m[32m                                <Insets bottom="10.0" />[m
+[32m+[m[32m                            </VBox.margin>[m
+[32m+[m[32m                        </PasswordField>[m
+[32m+[m[32m                        <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleLogin" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #3498db;" text="Login" textFill="WHITE">[m
+[32m+[m[32m                            <font>[m
+[32m+[m[32m                                <Font size="14.0" />[m
+[32m+[m[32m                            </font>[m
+[32m+[m[32m                            <VBox.margin>[m
+[32m+[m[32m                                <Insets top="10.0" />[m
+[32m+[m[32m                            </VBox.margin>[m
+[32m+[m[32m                        </Button>[m
+[32m+[m[32m                        <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="5.0">[m
+[32m+[m[32m                            <children>[m
+[32m+[m[32m                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Don't have an account?" />[m
+[32m+[m[32m                                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;" text="Register" />[m
+[32m+[m[32m                            </children>[m
+[32m+[m[32m                            <VBox.margin>[m
+[32m+[m[32m                                <Insets top="10.0" />[m
+[32m+[m[32m                            </VBox.margin>[m
+[32m+[m[32m                        </HBox>[m
+[32m+[m[32m                    </children>[m
+[32m+[m[32m                    <padding>[m
+[32m+[m[32m                        <Insets left="20.0" right="20.0" />[m
+[32m+[m[32m                    </padding>[m
+[32m+[m[32m                </VBox>[m
+[32m+[m[32m            </children>[m
+[32m+[m[32m        </VBox>[m
+[32m+[m[32m    </center>[m
+[32m+[m[32m    <bottom>[m
+[32m+[m[32m        <VBox alignment="CENTER" prefHeight="100.0" prefWidth="100.0" BorderPane.alignment="CENTER">[m
+[32m+[m[32m            <children>[m
+[32m+[m[32m                <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />[m
+[32m+[m[32m            </children>[m
+[32m+[m[32m        </VBox>[m
+[32m+[m[32m    </bottom>[m
+[32m+[m[32m</BorderPane>[m
+[1mdiff --git a/src/main/resources/com/example/ad_auction_dashboard/fxml/RegisterScene.fxml b/src/main/resources/com/example/ad_auction_dashboard/fxml/RegisterScene.fxml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..95ec2e8[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/resources/com/example/ad_auction_dashboard/fxml/RegisterScene.fxml[m
+[36m@@ -0,0 +1,123 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m
+[32m+[m[32m<?import javafx.geometry.Insets?>[m
+[32m+[m[32m<?import javafx.scene.control.Button?>[m
+[32m+[m[32m<?import javafx.scene.control.ComboBox?>[m
+[32m+[m[32m<?import javafx.scene.control.Label?>[m
+[32m+[m[32m<?import javafx.scene.control.PasswordField?>[m
+[32m+[m[32m<?import javafx.scene.control.TextField?>[m
+[32m+[m[32m<?import javafx.scene.layout.BorderPane?>[m
+[32m+[m[32m<?import javafx.scene.layout.HBox?>[m
+[32m+[m[32m<?import javafx.scene.layout.VBox?>[m
+[32m+[m[32m<?import javafx.scene.text.Font?>[m
+[32m+[m[32m<?import javafx.scene.text.Text?>[m
+[32m+[m
+[32m+[m[32m<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.RegisterSceneController">[m
+[32m+[m[32m    <top>[m
+[32m+[m[32m        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">[m
+[32m+[m[32m            <Text fill="#392121" strokeType="OUTSIDE" strokeWidth="0.0" text="SEG EFFICIENCY Dashboards"[m
+[32m+[m[32m                  textAlignment="CENTER">[m
+[32m+[m[32m                <font>[m
+[32m+[m[32m                    <Font name="System Bold" size="36.0"/>[m
+[32m+[m[32m                </font>[m
+[32m+[m[32m            </Text>[m
+[32m+[m[32m        </HBox>[m
+[32m+[m[32m    </top>[m
+[32m+[m[32m    <center>[m
+[32m+[m[32m        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" BorderPane.alignment="CENTER">[m
+[32m+[m[32m            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Create an Account">[m
+[32m+[m[32m                <font>[m
+[32m+[m[32m                    <Font size="24.0"/>[m
+[32m+[m[32m                </font>[m
+[32m+[m[32m            </Text>[m
+[32m+[m[32m            <VBox alignment="CENTER" prefHeight="350.0" prefWidth="100.0" spacing="8.0">[m
+[32m+[m[32m                <padding>[m
+[32m+[m[32m                    <Insets left="20.0" right="20.0"/>[m
+[32m+[m[32m                </padding>[m
+[32m+[m[32m                <Label text="Username">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Label>[m
+[32m+[m[32m                <TextField fx:id="usernameField" maxWidth="300.0" promptText="Enter your username">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets bottom="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </TextField>[m
+[32m+[m[32m                <Label text="Email">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Label>[m
+[32m+[m[32m                <TextField fx:id="emailField" maxWidth="300.0" promptText="Enter your email">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets bottom="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </TextField>[m
+[32m+[m[32m                <Label text="Phone">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Label>[m
+[32m+[m[32m                <TextField fx:id="phoneField" maxWidth="300.0" promptText="Enter your phone number">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets bottom="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </TextField>[m
+[32m+[m[32m                <Label text="Password">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Label>[m
+[32m+[m[32m                <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Enter your password">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets bottom="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </PasswordField>[m
+[32m+[m[32m                <Label text="Confirm Password">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Label>[m
+[32m+[m[32m                <PasswordField fx:id="confirmPasswordField" maxWidth="300.0" promptText="Confirm your password">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets bottom="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </PasswordField>[m
+[32m+[m[32m                <Label text="Role">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                </Label>[m
+[32m+[m[32m                <ComboBox fx:id="roleComboBox" maxWidth="300.0" prefWidth="300.0" promptText="Select role">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets bottom="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </ComboBox>[m
+[32m+[m[32m                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" prefHeight="30.0"[m
+[32m+[m[32m                        prefWidth="150.0" style="-fx-background-color: #27ae60;" text="Register" textFill="WHITE">[m
+[32m+[m[32m                    <font>[m
+[32m+[m[32m                        <Font size="14.0"/>[m
+[32m+[m[32m                    </font>[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets top="10.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                </Button>[m
+[32m+[m[32m                <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="5.0">[m
+[32m+[m[32m                    <VBox.margin>[m
+[32m+[m[32m                        <Insets top="5.0"/>[m
+[32m+[m[32m                    </VBox.margin>[m
+[32m+[m[32m                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Already have an account?"/>[m
+[32m+[m[32m                    <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleBackToLogin"[m
+[32m+[m[32m                            style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;"[m
+[32m+[m[32m                            text="Login"/>[m
+[32m+[m[32m                </HBox>[m
+[32m+[m[32m            </VBox>[m
+[32m+[m[32m        </VBox>[m
+[32m+[m[32m    </center>[m
+[32m+[m[32m    <bottom>[m
+[32m+[m[32m        <VBox alignment="CENTER" prefHeight="80.0" prefWidth="100.0" BorderPane.alignment="CENTER">[m
+[32m+[m[32m            <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0"/>[m
+[32m+[m[32m        </VBox>[m
+[32m+[m[32m    </bottom>[m
+[32m+[m[32m</BorderPane>[m
+[1mdiff --git a/src/main/resources/database/user_management.sql b/src/main/resources/database/user_management.sql[m
+[1mnew file mode 100644[m
+[1mindex 0000000..763c7a9[m
+[1m--- /dev/null[m
+[1m+++ b/src/main/resources/database/user_management.sql[m
+[36m@@ -0,0 +1,26 @@[m
+[32m+[m[32mCREATE DATABASE IF NOT EXISTS ad_auction_user;[m
+[32m+[m[32mUSE ad_auction_user;[m
+[32m+[m
+[32m+[m[32mCREATE TABLE IF NOT EXISTS users ([m
+[32m+[m[32m     id INT PRIMARY KEY AUTO_INCREMENT,[m
+[32m+[m[32m     username VARCHAR(50) UNIQUE NOT NULL,[m
+[32m+[m[32m     email VARCHAR(255) UNIQUE NOT NULL,[m
+[32m+[m[32m     phone VARCHAR(20) UNIQUE NOT NULL,[m
+[32m+[m[32m     password VARCHAR(255) NOT NULL,[m
+[32m+[m[32m     role ENUM('admin', 'user') NOT NULL DEFAULT 'user'[m
+[32m+[m[32m);[m
+[32m+[m
+[32m+[m[32mCREATE PROCEDURE IF NOT EXISTS AddUser(IN p_username VARCHAR(50), IN p_email VARCHAR(255), IN p_phone VARCHAR(20), IN p_password VARCHAR(255), IN p_role ENUM('admin', 'user'))[m
+[32m+[m[32mBEGIN[m
+[32m+[m[32m    INSERT INTO users (username, email, phone, password, role) VALUES (p_username, p_email, p_phone, p_password, p_role);[m
+[32m+[m[32mEND;[m
+[32m+[m
+[32m+[m[32mCREATE PROCEDURE IF NOT EXISTS DeleteUser(IN p_id INT)[m
+[32m+[m[32mBEGIN[m
+[32m+[m[32m    DELETE FROM users WHERE id = p_id;[m
+[32m+[m[32mEND;[m
+[32m+[m
+[32m+[m[32mCREATE PROCEDURE IF NOT EXISTS UpdateUser(IN p_id INT, IN p_username VARCHAR(50), IN p_email VARCHAR(255), IN p_phone VARCHAR(20), IN p_password VARCHAR(255), IN p_role ENUM('admin', 'user'))[m
+[32m+[m[32mBEGIN[m
+[32m+[m[32m    UPDATE users SET username = p_username, email = p_email, phone = p_phone, password = p_password, role = p_role WHERE id = p_id;[m
+[32m+[m[32mEND;[m
+\ No newline at end of file[m
+[1mdiff --git a/src/test/com/example/ad_auction_dashboard/impression_log.csv b/src/test/com/example/ad_auction_dashboard/impression_log.csv[m
+[1mdeleted file mode 100644[m
+[1mindex ebe3308..0000000[m
+[1m--- a/src/test/com/example/ad_auction_dashboard/impression_log.csv[m
+[1m+++ /dev/null[m
+[36m@@ -1,2 +0,0 @@[m
+[31m-Date,ID,Gender,Age,Income,Context,Impression Cost[m
+[31m-2015-01-01 12:00:02,4620864431353617408,Male,25-34,High,Blog,0.001713[m
+\ No newline at end of file[m
+[1mdiff --git a/src/test/com/example/ad_auction_dashboard/test.zip b/src/test/com/example/ad_auction_dashboard/test.zip[m
+[1mindex 6e67c32..472d51d 100644[m
+Binary files a/src/test/com/example/ad_auction_dashboard/test.zip and b/src/test/com/example/ad_auction_dashboard/test.zip differ
