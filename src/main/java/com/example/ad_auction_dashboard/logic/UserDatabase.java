@@ -17,39 +17,39 @@ public class UserDatabase {
             // Make sure database directory exists
             new File(DB_FOLDER).mkdirs();
 
-            // Check if database already exists in the destination
-            File dbFile = new File(DB_FOLDER + File.separator + DB_NAME + ".mv.db");
+            // Check if database already exists in resources first
+            boolean dbCopied = false;
+            try (InputStream in = UserDatabase.class.getResourceAsStream("/database/userdb.mv.db")) {
+                if (in != null) {
+                    // Destination file in user's home directory
+                    File dbFile = new File(DB_FOLDER + File.separator + DB_NAME + ".mv.db");
 
-            // If database doesn't exist in user home, check resources folder
-            if (!dbFile.exists()) {
-                boolean dbCopied = false;
-
-                // Try to copy from resources
-                try (InputStream in = UserDatabase.class.getResourceAsStream("/userdb.mv.db")) {
-                    if (in != null) {
-                        try (OutputStream out = new FileOutputStream(dbFile)) {
-                            byte[] buffer = new byte[1024];
-                            int length;
-                            while ((length = in.read(buffer)) > 0) {
-                                out.write(buffer, 0, length);
-                            }
+                    try (OutputStream out = new FileOutputStream(dbFile)) {
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = in.read(buffer)) > 0) {
+                            out.write(buffer, 0, length);
                         }
-                        System.out.println("Database copied from resources to: " + dbFile.getAbsolutePath());
-                        dbCopied = true;
-                    } else {
-                        System.out.println("No database found in resources, will create new one");
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("Error copying database from resources");
+                    System.out.println("Database copied from resources to: " + dbFile.getAbsolutePath());
+                    dbCopied = true;
+                } else {
+                    System.out.println("No database found in resources");
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error copying database from resources");
+            }
 
-                // If copying failed, create a new database
-                if (!dbCopied) {
+            // If no database in resources or copying failed, check user home directory
+            if (!dbCopied) {
+                File dbFile = new File(DB_FOLDER + File.separator + DB_NAME + ".mv.db");
+
+                if (!dbFile.exists()) {
                     System.out.println("Creating new database at: " + dbFile.getAbsolutePath());
+                } else {
+                    System.out.println("Using existing database at: " + dbFile.getAbsolutePath());
                 }
-            } else {
-                System.out.println("Using existing database at: " + dbFile.getAbsolutePath());
             }
 
             // Load H2 driver
