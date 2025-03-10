@@ -2,13 +2,15 @@ package com.example.ad_auction_dashboard.logic;
 
 import java.sql.*;
 import java.io.*;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class UserDatabase {
-    // Uses H2 database that will be stored in the user's home directory
+    // Database configuration
     private static final String DB_FOLDER = System.getProperty("user.home") + File.separator + ".ad_auction_dashboard";
     private static final String DB_NAME = "userdb";
-    private static final String URL = "jdbc:h2:" + DB_FOLDER + File.separator + DB_NAME;
+    private static final String URL = "jdbc:h2:file:" + DB_FOLDER + File.separator + DB_NAME;
     private static final String USER = "sa";
     private static final String PASSWORD = "";
 
@@ -17,40 +19,11 @@ public class UserDatabase {
             // Make sure database directory exists
             new File(DB_FOLDER).mkdirs();
 
-            // Check if database already exists in resources first
-            boolean dbCopied = false;
-            try (InputStream in = UserDatabase.class.getResourceAsStream("/database/userdb.mv.db")) {
-                if (in != null) {
-                    // Destination file in user's home directory
-                    File dbFile = new File(DB_FOLDER + File.separator + DB_NAME + ".mv.db");
+            // Check if database already exists
+            File dbFile = new File(DB_FOLDER + File.separator + DB_NAME + ".mv.db");
 
-                    try (OutputStream out = new FileOutputStream(dbFile)) {
-                        byte[] buffer = new byte[1024];
-                        int length;
-                        while ((length = in.read(buffer)) > 0) {
-                            out.write(buffer, 0, length);
-                        }
-                    }
-                    System.out.println("Database copied from resources to: " + dbFile.getAbsolutePath());
-                    dbCopied = true;
-                } else {
-                    System.out.println("No database found in resources");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Error copying database from resources");
-            }
-
-            // If no database in resources or copying failed, check user home directory
-            if (!dbCopied) {
-                File dbFile = new File(DB_FOLDER + File.separator + DB_NAME + ".mv.db");
-
-                if (!dbFile.exists()) {
-                    System.out.println("Creating new database at: " + dbFile.getAbsolutePath());
-                } else {
-                    System.out.println("Using existing database at: " + dbFile.getAbsolutePath());
-                }
-            }
+            // Print the absolute path for the database file
+            System.out.println("Database location: " + dbFile.getAbsolutePath());
 
             // Load H2 driver
             Class.forName("org.h2.Driver");
@@ -87,12 +60,19 @@ public class UserDatabase {
             );
 
             if (rs.next() && rs.getInt(1) == 0) {
-                // Create default admin user
+                // Create default admin user with required credentials
                 stmt.execute(
                     "INSERT INTO users (username, email, phone, password, role) " +
                         "VALUES ('admin', 'admin@example.com', '1234567890', 'admin123', 'admin')"
                 );
-                System.out.println("Default admin user created");
+                System.out.println("Default admin user created with username 'admin' and password 'admin123'");
+            }
+
+            // List all tables for debugging
+            System.out.println("Tables in the database:");
+            ResultSet tables = stmt.executeQuery("SHOW TABLES");
+            while (tables.next()) {
+                System.out.println("- " + tables.getString(1));
             }
 
         } catch (SQLException e) {
@@ -117,6 +97,7 @@ public class UserDatabase {
             stmt.setString(4, password);
             stmt.setString(5, role);
             stmt.executeUpdate();
+            System.out.println("User added: " + username);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -197,6 +178,35 @@ public class UserDatabase {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Utility method to list all users in the database
+     */
+    public static void listAllUsers() {
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM users");
+            System.out.println("\nUsers in database:");
+            while (rs.next()) {
+                System.out.println(rs.getString("username") + " - " + rs.getString("role"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Test method to check database setup
+    public static void main(String[] args) {
+        System.out.println("Database URL: " + URL);
+
+        // Initialize database
+        initDatabase();
+
+        // List all users
+        listAllUsers();
+
+        System.out.println("Database test completed.");
     }
 
     // User class to represent user data

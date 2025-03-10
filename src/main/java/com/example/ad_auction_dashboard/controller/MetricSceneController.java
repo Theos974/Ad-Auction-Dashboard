@@ -169,6 +169,31 @@ public class MetricSceneController {
         }
     }
 
+    // Add this method to MetricSceneController
+
+    @FXML
+    private void handleHistogramView(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                "/com/example/ad_auction_dashboard/fxml/HistogramScene.fxml"));
+            Parent root = loader.load();
+
+            // Get controller and pass data
+            HistogramController controller = loader.getController();
+            controller.setCampaignMetrics(metrics);
+
+            // Default to click cost histogram (currently the only one required)
+            controller.setHistogramType("Click Cost");
+
+            // Switch scene
+            Stage stage = (Stage) impressionsText.getScene().getWindow();
+            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Shows an alert dialog with the specified message
      */
