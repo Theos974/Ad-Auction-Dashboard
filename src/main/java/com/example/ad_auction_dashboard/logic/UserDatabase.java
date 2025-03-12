@@ -5,6 +5,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDatabase {
     // Database configuration
@@ -171,7 +173,8 @@ public class UserDatabase {
                     rs.getString("username"),
                     rs.getString("email"),
                     rs.getString("phone"),
-                    rs.getString("role")
+                    rs.getString("role"),
+                    rs.getString("password")
                 );
             }
         } catch (SQLException e) {
@@ -196,6 +199,41 @@ public class UserDatabase {
         }
     }
 
+    // Add to UserDatabase class
+    public static boolean changeUserRole(String username, String newRole) {
+        String sql = "UPDATE users SET role = ? WHERE username = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newRole);
+            stmt.setString(2, username);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM users")) {
+
+            while (rs.next()) {
+                users.add(new User(
+                    rs.getInt("id"),
+                    rs.getString("username"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("role"),
+                    rs.getString("password")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
     // Test method to check database setup
     public static void main(String[] args) {
         System.out.println("Database URL: " + URL);
@@ -216,13 +254,15 @@ public class UserDatabase {
         private String email;
         private String phone;
         private String role;
+        private String password;
 
-        public User(int id, String username, String email, String phone, String role) {
+        public User(int id, String username, String email, String phone, String role,String password) {
             this.id = id;
             this.username = username;
             this.email = email;
             this.phone = phone;
             this.role = role;
+            this.password = password;
         }
 
         // Getters
@@ -231,5 +271,18 @@ public class UserDatabase {
         public String getEmail() { return email; }
         public String getPhone() { return phone; }
         public String getRole() { return role; }
+        public String getPassword(){return password;}
+
+        public boolean isAdmin() {
+            return "admin".equals(role);
+        }
+
+        public boolean isEditor() {
+            return "admin".equals(role) || "editor".equals(role);
+        }
+
+        public boolean isViewer() {
+            return true; // Everyone has at least viewer permissions
+        }
     }
 }

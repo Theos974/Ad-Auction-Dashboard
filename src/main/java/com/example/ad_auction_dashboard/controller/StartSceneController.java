@@ -3,6 +3,9 @@ package com.example.ad_auction_dashboard.controller;
 import com.example.ad_auction_dashboard.logic.Campaign;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.FileHandler;
+import com.example.ad_auction_dashboard.logic.LogoutHandler;
+import com.example.ad_auction_dashboard.logic.UserSession;
+import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,6 +13,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import java.io.File;
@@ -19,12 +23,53 @@ public class StartSceneController {
 
     @FXML
     private Button loadZipBtn;
+
     @FXML
     private Button createCampaignBtn;
+
+    @FXML
+    private Button adminPanelBtn;
+
+    @FXML
+    private Button loadFromDbBtn;
+
+    @FXML
+    private Button logoutBtn;
+
+    @FXML
+    private Label userWelcomeLabel;
+
     @FXML
     private Text statusText;
 
     private Campaign campaign;
+
+    @FXML
+    public void initialize() {
+        UserSession session = UserSession.getInstance();
+
+        // Update welcome message with username
+        if (session.getUser() != null) {
+            userWelcomeLabel.setText("Hello, " + session.getUser().getUsername());
+        }
+
+        // Handle different permission levels
+        if (!session.isEditor()) {
+            // Viewers can't import ZIP files
+            loadZipBtn.setDisable(true);
+            loadZipBtn.setVisible(false);
+
+            // Show alternative button for loading from database
+            loadFromDbBtn.setVisible(true);
+        }
+
+        if (session.isAdmin()) {
+            // Show admin panel button only for admins
+            adminPanelBtn.setVisible(true);
+        } else {
+            adminPanelBtn.setVisible(false);
+        }
+    }
 
     // Event handler for loading a ZIP file and creating the campaign
     @FXML
@@ -55,6 +100,7 @@ public class StartSceneController {
         statusText.setText("Campaign created. Switching scene...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
         try {
+            UserSession.getInstance().setPreviousScene("StartScene");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
             Parent root = loader.load();
             MetricSceneController controller = loader.getController();
@@ -68,4 +114,30 @@ public class StartSceneController {
         }
     }
 
+    // Event handler for loading from database (for viewers)
+    @FXML
+    private void handleLoadFromDatabase(ActionEvent event) {
+        // TODO: Implement database loading functionality
+        statusText.setText("Loading from database is not yet implemented.");
+    }
+
+    // Event handler for opening the admin panel
+    @FXML
+    private void handleAdminPanel(ActionEvent event) {
+        try {
+            UserSession.getInstance().setPreviousScene("StartScene");
+            Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
+            new AdminPanelScene(stage, 930, 692);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            statusText.setText("Error opening admin panel.");
+        }
+    }
+
+    // Event handler for logout button
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        LogoutHandler.handleLogout(event);
+    }
 }

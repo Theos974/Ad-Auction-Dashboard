@@ -47,8 +47,8 @@ public class RegisterSceneController {
     @FXML
     public void initialize() {
         // Initialize the role dropdown - only "user" available during registration
-        roleComboBox.getItems().add("user");
-        roleComboBox.setValue("user");
+        roleComboBox.getItems().add("Viewer");
+        roleComboBox.setValue("Viewer");
         roleComboBox.setDisable(true); // Disable role selection - regular users can only sign up as "user"
 
         // Clear any previous status messages

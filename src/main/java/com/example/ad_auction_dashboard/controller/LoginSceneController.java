@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.UserDatabase;
+import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.RegisterScene;
 import java.io.IOException;
 import javafx.event.ActionEvent;
@@ -31,6 +32,8 @@ public class LoginSceneController {
     @FXML
     private Text statusText;
 
+    private UserDatabase.User user;
+
     // Initialize method for any setup
     @FXML
     public void initialize() {
@@ -53,60 +56,49 @@ public class LoginSceneController {
         boolean isAuthenticated = UserDatabase.authenticateUser(username, password);
 
         if (isAuthenticated) {
-            // Get the user's role
-            String role = UserDatabase.getUserRole(username);
+            // Get user info and create session
+            UserDatabase.User user = UserDatabase.getUser(username);
+            UserSession.getInstance().setUser(user);
 
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/StartScene.fxml"));
-                Parent root = loader.load();
+            // Show welcome message
+            loginBtn.setDisable(true); // Prevent multiple clicks
+            statusText.setFill(javafx.scene.paint.Color.GREEN);
+            statusText.setText("Welcome, " + username + "! Logging you in...");
 
-                // Get the controller and pass the user info
-                StartSceneController controller = loader.getController();
-
-                // Pass user info to the controller if method exists
-                if (controller != null) {
-                    // Store current user information in the controller
-                    try {
-                        // Using reflection to check if the method exists
-                        controller.getClass().getMethod("setUserInfo", String.class, String.class)
-                            .invoke(controller, username, role);
-                    } catch (NoSuchMethodException e) {
-                        // Method doesn't exist, which is fine - just log it
-                        System.out.println("Note: setUserInfo method not found in StartSceneController");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            // Create a delay with animation
+            javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
+            delay.setOnFinished(e -> {
+                try {
+                    // Navigate to main screen
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/StartScene.fxml"));
+                    Parent root = loader.load();
+                    Stage stage = (Stage) loginBtn.getScene().getWindow();
+                    Scene scene = new Scene(root);
+                    stage.setScene(scene);
+                    stage.show();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    statusText.setFill(javafx.scene.paint.Color.RED);
+                    statusText.setText("Error navigating to main page");
+                    loginBtn.setDisable(false); // Re-enable button
                 }
-
-                // Display a welcome message based on role
-                String welcomeMessage = "admin".equals(role) ?
-                    "Welcome, Administrator!" : "Welcome to Ad Auction Dashboard!";
-                statusText.setText(welcomeMessage);
-
-                // Add a small delay before transition for the message to be visible
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(1000);
-                        javafx.application.Platform.runLater(() -> {
-                            // Navigate to main scene
-                            Stage stage = (Stage) loginBtn.getScene().getWindow();
-                            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-                            stage.setScene(scene);
-                            stage.show();
-                        });
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                statusText.setText("Error navigating to main page");
-            }
+            });
+            delay.play();
         } else {
-            statusText.setText("Invalid username or password");
+            // Show error for incorrect credentials
+            statusText.setFill(javafx.scene.paint.Color.RED);
+            statusText.setText("Incorrect username or password");
+
+            // Subtle shake animation for feedback
+            javafx.animation.TranslateTransition shake = new javafx.animation.TranslateTransition(javafx.util.Duration.millis(100), loginBtn);
+            shake.setFromX(0);
+            shake.setByX(10);
+            shake.setCycleCount(4);
+            shake.setAutoReverse(true);
+            shake.play();
         }
     }
+
 
     @FXML
     private void handleRegister(ActionEvent event) {

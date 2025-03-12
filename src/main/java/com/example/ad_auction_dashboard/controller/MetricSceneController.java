@@ -1,19 +1,19 @@
 package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
+import com.example.ad_auction_dashboard.logic.LogoutHandler;
+import com.example.ad_auction_dashboard.logic.UserSession;
+import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -43,13 +43,23 @@ public class MetricSceneController {
     private Text cpmText;
     @FXML
     private Text bounceRateText;
+    @FXML
+    private Button adminPanelBtn;
 
+    @FXML
+    private Label userWelcomeLabel; // This might be already in your FXML or we need to add it
+
+    @FXML
+    private Button logoutBtn; // This might be already in your FXML or we need to add it
 
     private CampaignMetrics metrics; // the campaign data model
 
     @FXML
     public void initialize() {
-
+        // Update welcome message with username if the label exists
+        if (userWelcomeLabel != null && UserSession.getInstance().getUser() != null) {
+            userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername());
+        }
     }
 
     public void setMetrics(CampaignMetrics metrics) {
@@ -72,8 +82,6 @@ public class MetricSceneController {
         cpaText.setText(String.format("%.6f", metrics.getCPA()));
         cpmText.setText(String.format("%.6f", metrics.getCPM()));
         bounceRateText.setText(String.format("%.6f", metrics.getBounceRate()));
-
-
     }
 
     // Transition back to the Main Menu (StartScene)
@@ -96,15 +104,13 @@ public class MetricSceneController {
     @FXML
     private void handleChartView(ActionEvent event) {
         try {
+            UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/ChartScene.fxml"));
             Parent root = loader.load();
             // Retrieve the ChartSceneController
             ChartSceneController chartController = loader.getController();
-            // Obtain campaign start/end dates from your metrics object
-            // (Assuming metrics has been set and computed in this scene)
-            LocalDate campaignStart = metrics.getCampaignStartDate().toLocalDate();
-            LocalDate campaignEnd = metrics.getCampaignEndDate().toLocalDate();
-            // Pass the campaign date range to the ChartSceneController so the DatePickers are restricted.
+            // Pass the campaign data
             chartController.setCampaignMetrics(metrics);
 
             Stage stage = (Stage) impressionsText.getScene().getWindow();
@@ -114,6 +120,7 @@ public class MetricSceneController {
             e.printStackTrace();
         }
     }
+
     /**
      * Handles the Change Bounce button click.
      * Uses a simple dialog to get new bounce threshold values and updates the metrics.
@@ -169,11 +176,11 @@ public class MetricSceneController {
         }
     }
 
-    // Add this method to MetricSceneController
-
     @FXML
     private void handleHistogramView(ActionEvent event) {
         try {
+            UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
                 "/com/example/ad_auction_dashboard/fxml/HistogramScene.fxml"));
             Parent root = loader.load();
@@ -182,7 +189,7 @@ public class MetricSceneController {
             HistogramController controller = loader.getController();
             controller.setCampaignMetrics(metrics);
 
-            // Default to click cost histogram (currently the only one required)
+            // Default to click cost histogram
             controller.setHistogramType("Click Cost");
 
             // Switch scene
@@ -191,6 +198,33 @@ public class MetricSceneController {
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    // Event handler for opening the admin panel
+    @FXML
+    private void handleAdminPanel(ActionEvent event) {
+
+        if (!UserSession.getInstance().isAdmin()) {
+            showAlert("Admin Level Access Required");
+            return;
+        }
+
+        try {
+            UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+            UserSession.getInstance().setPreviousScene("MetricScene");
+            Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
+            new AdminPanelScene(stage, 930, 692);
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error accessing Admin panel");
+        }
+    }
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        if (logoutBtn != null) {
+            LogoutHandler.handleLogout(event);
         }
     }
 
@@ -204,5 +238,4 @@ public class MetricSceneController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
 }

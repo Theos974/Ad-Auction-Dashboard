@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.AdminPanelController">
+    <top>
+        <HBox alignment="CENTER" prefHeight="80.0" prefWidth="200.0" spacing="20.0" BorderPane.alignment="CENTER">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="User Management" textAlignment="CENTER">
+                <font>
+                    <Font name="System Bold" size="36.0" />
+                </font>
+            </Text>
+            <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBack" text="Back to Dashboard" />
+                <Button fx:id="logoutBtn" mnemonicParsing="false" onAction="#handleLogout" text="Logout">
+                    <HBox.margin>
+                        <Insets left="10.0" right="10.0" />
+                    </HBox.margin>
+                </Button>
+            </HBox>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+            </padding>
+            <TableView fx:id="userTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
+                    <TableColumn fx:id="usernameColumn" prefWidth="150.0" text="Username" />
+                    <TableColumn fx:id="emailColumn" prefWidth="250.0" text="Email" />
+                    <TableColumn fx:id="phoneColumn" prefWidth="150.0" text="Phone" />
+                    <TableColumn fx:id="roleColumn" prefWidth="100.0" text="Role" />
+                    <TableColumn fx:id="rolePassword" prefWidth="100.0" text="Password" />
+                </columns>
+            </TableView>
+
+            <HBox alignment="CENTER" spacing="10.0">
+                <VBox prefHeight="150.0" prefWidth="400.0" spacing="10.0">
+                    <Label text="Change Role" textAlignment="CENTER">
+                        <font>
+                            <Font name="System Bold" size="14.0" />
+                        </font>
+                    </Label>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="Selected User:" />
+                        <Label fx:id="selectedUserLabel" text="None" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="New Role:" />
+                        <ComboBox fx:id="roleComboBox" prefWidth="150.0" />
+                    </HBox>
+                    <Button mnemonicParsing="false" onAction="#handleChangeRole" text="Apply Role Change" />
+                </VBox>
+
+                <VBox prefHeight="150.0" prefWidth="400.0" spacing="10.0">
+                    <Label text="Create New User" textAlignment="CENTER">
+                        <font>
+                            <Font name="System Bold" size="14.0" />
+                        </font>
+                    </Label>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="Username:" prefWidth="80.0" />
+                        <TextField fx:id="newUsernameField" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="Email:" prefWidth="80.0" />
+                        <TextField fx:id="newEmailField" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="Phone:" prefWidth="80.0" />
+                        <TextField fx:id="newPhoneField" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="Password:" prefWidth="80.0" />
+                        <TextField fx:id="newPasswordField" />
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                        <Label text="Role:" prefWidth="80.0" />
+                        <ComboBox fx:id="newRoleComboBox" prefWidth="150.0" />
+                    </HBox>
+                    <Button mnemonicParsing="false" onAction="#handleAddUser" text="Add User" />
+                </VBox>
+            </HBox>
+
+            <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />
+        </VBox>
+    </center>
+</BorderPane>

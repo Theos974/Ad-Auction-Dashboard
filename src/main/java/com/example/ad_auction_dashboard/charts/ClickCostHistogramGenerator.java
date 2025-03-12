@@ -6,6 +6,7 @@ import com.example.ad_auction_dashboard.logic.LogDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -21,7 +22,7 @@ public class ClickCostHistogramGenerator implements HistogramGenerator {
 
         // Get all click logs
         ClickLog[] clickLogs = metrics.getClickLogs();
-        Map<String, Integer> histogramData = new TreeMap<>();
+        Map<String, Integer> histogramData = new LinkedHashMap<>();
 
         if (clickLogs == null || clickLogs.length == 0) {
             // Return empty map with placeholder bin if no data

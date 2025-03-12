@@ -1,3 +1,4 @@
+
 /* Base styles */
 .root {
     -fx-background-color: #f0f0f0;
@@ -654,4 +655,32 @@
 
 .chart-scene {
     -fx-background-color: #1e1e2e;
+}
+
+/* Transparent Button Style with Opaque Icon */
+.transparent-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.transparent-button .label {
+    /* Ensure the label/icon remains fully visible */
+    -fx-background-color: transparent;
+    -fx-text-fill: black; /* Adjust color as needed */
+    -fx-font-size: 16px;
+}
+
+.transparent-button:hover .label {
+    /* Optional: add a subtle background on hover */
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.transparent-button:pressed .label {
+    /* Optional: add a pressed effect */
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+}
+.big-label {
+    -fx-font-size: 38px !important;
+    -fx-font-weight: bold;
 }
