@@ -47,10 +47,10 @@ public class MetricSceneController {
     private Button adminPanelBtn;
 
     @FXML
-    private Label userWelcomeLabel; // This might be already in your FXML or we need to add it
+    private Label userWelcomeLabel;
 
     @FXML
-    private Button logoutBtn; // This might be already in your FXML or we need to add it
+    private Button logoutBtn;
 
     private CampaignMetrics metrics; // the campaign data model
 

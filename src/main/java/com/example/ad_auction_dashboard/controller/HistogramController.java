@@ -3,6 +3,7 @@ package com.example.ad_auction_dashboard.controller;
 import com.example.ad_auction_dashboard.charts.ClickCostHistogramGenerator;
 import com.example.ad_auction_dashboard.charts.HistogramGenerator;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
+import com.example.ad_auction_dashboard.logic.LogoutHandler;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,6 +20,8 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
@@ -57,10 +60,16 @@ public class HistogramController {
     private TextArea descriptionTextArea;
 
     @FXML
-    private Label campaignDateRangeLabel;
+    private Label statusLabel; // Optional: can add this to your FXML for status messages
 
     private CampaignMetrics campaignMetrics;
     private final Map<String, HistogramGenerator> histogramGenerators = new HashMap<>();
+
+    @FXML
+    private Label histogramTitleLabel;
+
+    @FXML
+    private Button logoutBtn;
 
     @FXML
     public void initialize() {
@@ -77,15 +86,81 @@ public class HistogramController {
         binSizeSlider.setMin(5);
         binSizeSlider.setMax(20);
         binSizeSlider.setValue(10);
+
+        // Set the initial bin size label
+        updateBinSizeLabel((int)binSizeSlider.getValue());
+
+        // Add listener for when the slider value changes
         binSizeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            binSizeLabel.setText(String.format("Bins: %d", newVal.intValue()));
+            // Ensure we're working with integers and update the label properly
+            int binCount = (int)Math.round(newVal.doubleValue());
+            updateBinSizeLabel(binCount);
+
+            // Debug output to trace value changes
+            System.out.println("Slider raw value: " + newVal + ", Rounded bin count: " + binCount);
+
             updateHistogram();
         });
 
-        // Set up event handlers
+        // Set up event handlers with date validation
         histogramTypeComboBox.setOnAction(e -> updateHistogram());
-        startDatePicker.setOnAction(e -> updateHistogram());
-        endDatePicker.setOnAction(e -> updateHistogram());
+
+        // Add validation when changing dates
+        startDatePicker.setOnAction(e -> {
+            validateDateRange();
+            updateHistogram();
+        });
+
+        endDatePicker.setOnAction(e -> {
+            validateDateRange();
+            updateHistogram();
+        });
+
+        // Ensure the text area is initialized with empty text instead of placeholder
+        if (descriptionTextArea != null) {
+            descriptionTextArea.setText("");
+        }
+    }
+
+    /**
+     * Validates and corrects the date range if needed
+     */
+    private void validateDateRange() {
+        if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+            if (endDatePicker.getValue().isBefore(startDatePicker.getValue())) {
+                // End date is before start date, correct it
+                endDatePicker.setValue(startDatePicker.getValue());
+
+                // Show alert to user
+                showAlert("Invalid date range detected. End date has been adjusted to match start date.");
+            }
+        }
+    }
+
+    /**
+     * Shows an alert to the user
+     */
+    private void showAlert(String message) {
+        // First check if there's a status label to display the message
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+        } else {
+            // Otherwise show an alert dialog
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        }
+    }
+
+    /**
+     * Helper method to update the bin size label with consistent formatting
+     */
+    private void updateBinSizeLabel(int binCount) {
+        if (binSizeLabel != null) {
+            binSizeLabel.setText(String.format("Num: %d", binCount));
+        }
     }
 
     /**
@@ -112,15 +187,6 @@ public class HistogramController {
             // Set default values to campaign start and end dates
             startDatePicker.setValue(startDate);
             endDatePicker.setValue(endDate);
-
-            // Update campaign date range label if it exists
-            if (campaignDateRangeLabel != null) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-                campaignDateRangeLabel.setText(String.format(
-                    "Campaign period: %s to %s",
-                    startDate.format(formatter),
-                    endDate.format(formatter)));
-            }
 
             // Set date range constraints for start date picker
             startDatePicker.setDayCellFactory(picker -> new DateCell() {
@@ -160,6 +226,14 @@ public class HistogramController {
         LocalDate endDate = endDatePicker.getValue();
         if (startDate == null || endDate == null) return;
 
+        // Additional validation to ensure start date is not after end date
+        if (startDate.isAfter(endDate)) {
+            endDatePicker.setValue(startDate);
+            endDate = startDate;
+            showAlert("Start date cannot be after end date. Both dates have been set to the same day.");
+            return; // Skip processing to let the user see the message
+        }
+
         // Validate date range against campaign boundaries
         if (campaignMetrics.getCampaignStartDate() != null && campaignMetrics.getCampaignEndDate() != null) {
             LocalDate campaignStartDate = campaignMetrics.getCampaignStartDate().toLocalDate();
@@ -169,11 +243,13 @@ public class HistogramController {
             if (startDate.isBefore(campaignStartDate)) {
                 startDate = campaignStartDate;
                 startDatePicker.setValue(startDate);
+                showAlert("Start date adjusted to campaign start date.");
             }
 
             if (endDate.isAfter(campaignEndDate)) {
                 endDate = campaignEndDate;
                 endDatePicker.setValue(endDate);
+                showAlert("End date adjusted to campaign end date.");
             }
         }
 
@@ -186,10 +262,20 @@ public class HistogramController {
         HistogramGenerator generator = histogramGenerators.get(selectedType);
 
         if (generator != null) {
-            // Update chart labels
-            histogramChart.setTitle(generator.getTitle());
-            xAxis.setLabel(generator.getXAxisLabel());
-            yAxis.setLabel(generator.getYAxisLabel());
+            // Update chart labels - ensure they're checked for null
+            if (histogramTitleLabel != null) {
+                histogramTitleLabel.setText(generator.getTitle());
+                // Ensure the title is visible
+                histogramTitleLabel.setVisible(true);
+            }
+
+            if (xAxis != null) {
+                xAxis.setLabel(generator.getXAxisLabel());
+            }
+
+            if (yAxis != null) {
+                yAxis.setLabel(generator.getYAxisLabel());
+            }
 
             // Ensure description is visible and set
             if (descriptionTextArea != null) {
@@ -197,8 +283,8 @@ public class HistogramController {
                 descriptionTextArea.setVisible(true);
             }
 
-            // Get bin count from slider
-            int binCount = (int) binSizeSlider.getValue();
+            // Get bin count from slider with proper rounding
+            int binCount = (int)Math.round(binSizeSlider.getValue());
 
             try {
                 // Calculate histogram data
@@ -224,13 +310,22 @@ public class HistogramController {
 
                 histogramChart.getData().add(series);
 
+                // Apply styling to the bars to make them green
+                for (XYChart.Data<String, Number> data : series.getData()) {
+                    if (data.getNode() != null) {
+                        data.getNode().setStyle("-fx-bar-fill: #4CAF50;");
+                    }
+                }
+
                 // Set y-axis to start at 0
-                NumberAxis yAxis = (NumberAxis) histogramChart.getYAxis();
-                yAxis.setForceZeroInRange(true);
+                if (yAxis != null) {
+                    yAxis.setForceZeroInRange(true);
+                }
 
                 // Improve x-axis label display
-                CategoryAxis xAxis = (CategoryAxis) histogramChart.getXAxis();
-                xAxis.setTickLabelRotation(45);
+                if (xAxis != null) {
+                    xAxis.setTickLabelRotation(45);
+                }
 
             } catch (Exception e) {
                 // Handle errors gracefully
@@ -260,6 +355,13 @@ public class HistogramController {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        if (logoutBtn != null) {
+            LogoutHandler.handleLogout(event);
         }
     }
 }

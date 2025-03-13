@@ -1,14 +1,16 @@
-
-/* Base styles */
+/* ===== BASE STYLES ===== */
 .root {
+    -fx-font-family: 'System';
     -fx-background-color: #f0f0f0;
     -fx-border-color: #c0c0c0;
     -fx-border-radius: 3;
 }
 
-/* Scene-specific backgrounds */
+
+/* ===== SCENE-SPECIFIC BACKGROUNDS ===== */
 .start-scene {
-    -fx-background-image: url("../images/background.png");
+    /* Fixed path to match standard JavaFX resource path */
+    -fx-background-image: url("/images/background.png");
     -fx-background-size: cover;
     -fx-background-repeat: no-repeat;
 }
@@ -21,7 +23,7 @@
     -fx-background-color: #2d2d3b;
 }
 
-/* Main dashboard containers */
+/* ===== CONTAINER STYLES ===== */
 .metrics-container {
     -fx-background-color: #2d2d3b;
 }
@@ -38,7 +40,6 @@
     -fx-max-width: 70px;
 }
 
-/* Metric containers */
 .metric-container {
     -fx-background-color: #363642;
     -fx-background-radius: 8;
@@ -52,25 +53,38 @@
     -fx-min-height: 80px;
 }
 
-/* Sidebar styling */
-.sidebar-icon {
-    -fx-font-size: 24px;
-    -fx-text-fill: white;
-}
-
-.sidebar-button {
-    -fx-background-color: transparent;
-    -fx-padding: 15 0;
+.main-container {
     -fx-alignment: center;
-    -fx-min-height: 60px;
+    -fx-spacing: 20px;
+    -fx-padding: 40px;
 }
 
-.sidebar-button:hover {
-    -fx-background-color: rgba(255,255,255,0.1);
-    -fx-cursor: hand;
+.logo-container {
+    -fx-alignment: center;
+    -fx-padding: 20px;
 }
 
-/* Text and labels */
+.chart-box {
+    -fx-background-color: #2b2b3b;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+}
+
+.gauge-container {
+    -fx-alignment: center;
+}
+
+.vbox-outlined {
+    -fx-border-color: #333;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 10;
+    -fx-spacing: 8;
+}
+
+/* ===== TEXT AND LABELS ===== */
 .header-text {
     -fx-font-size: 16px;
     -fx-text-fill: white;
@@ -120,24 +134,101 @@
     -fx-font-weight: bold;
 }
 
-/* Gauge styling for donut charts */
-.gauge-container {
+.title-text {
+    -fx-font-family: 'Poppins', sans-serif;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 0, 0, 1);
+    -fx-padding: 20px;
     -fx-alignment: center;
 }
 
-.gauge-background {
-    -fx-opacity: 0.2;
+.subtitle-text {
+    -fx-font-family: 'Poppins', sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+    -fx-alignment: center;
 }
 
-.gauge-fill {
-    -fx-opacity: 0.7;
+.status-text {
+    -fx-font-family: 'Poppins', sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #777777;
+    -fx-padding: 10px;
+    -fx-alignment: center;
 }
 
-.gauge-hole {
-    -fx-opacity: 1.0;
+.dashboard-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
 }
 
-/* Buttons */
+.modern-title {
+    -fx-font-family: 'Poppins', sans-serif;
+    -fx-font-size: 28px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #292929;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 0, 0, 1);
+    -fx-padding: 20px;
+    -fx-letter-spacing: 1px;
+}
+
+.subtle-title {
+    -fx-font-family: 'Poppins', sans-serif;
+    -fx-font-size: 24px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #444444;
+    -fx-padding: 15px;
+    -fx-letter-spacing: 0.5px;
+}
+
+.chart-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.chart-sublabel {
+    -fx-font-size: 12px;
+    -fx-text-fill: #a0a0a0;
+}
+
+.chart-section-title {
+    -fx-font-size: 16px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #ffcc66;
+    -fx-font-style: italic;
+}
+
+.big-label {
+    -fx-font-size: 38px !important;
+    -fx-font-weight: bold;
+}
+
+/* ===== BUTTON STYLES ===== */
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-padding: 15 0;
+    -fx-alignment: center;
+    -fx-min-height: 60px;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-cursor: hand;
+}
+
+.sidebar-icon {
+    -fx-font-size: 24px;
+    -fx-text-fill: white;
+}
+
 .compare-button {
     -fx-background-color: #363642;
     -fx-text-fill: white;
@@ -160,7 +251,6 @@
     -fx-background-color: #555562;
 }
 
-/* Histogram button styling */
 .histogram-button {
     -fx-background-color: transparent;
     -fx-background-radius: 8;
@@ -177,77 +267,6 @@
     -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.2), 5, 0, 0, 0);
 }
 
-/* Legacy styles maintained for backward compatibility */
-.vbox-outlined {
-    -fx-border-color: #333;
-    -fx-border-width: 2;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
-    -fx-padding: 10;
-    -fx-spacing: 8;
-}
-
-.dashboard-title {
-    -fx-font-size: 20px;
-    -fx-font-weight: bold;
-}
-
-/* Support for screens of different sizes */
-/* Small screens */
-.small-screen {
-    -fx-font-size: 90%;
-}
-
-.small-screen .metric-value {
-    -fx-font-size: 24px;
-}
-
-.small-screen .title-text {
-    -fx-font-size: 20px;
-}
-
-/* Large screens */
-.large-screen {
-    -fx-font-size: 110%;
-}
-
-.large-screen .metric-value {
-    -fx-font-size: 32px;
-}
-
-.large-screen .title-text {
-    -fx-font-size: 28px;
-}
-/* Font imports - Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-/* Start Scene specific styling */
-.start-scene {
-    -fx-background-image: url("../images/background.png");
-    -fx-background-size: cover;
-    -fx-background-repeat: no-repeat;
-}
-
-/* Main title styling */
-.title-text {
-    -fx-font-family: 'Poppins', sans-serif;
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333333;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 0, 0, 1);
-    -fx-padding: 20px;
-    -fx-alignment: center;
-}
-
-/* Subtitle styling */
-.subtitle-text {
-    -fx-font-family: 'Poppins', sans-serif;
-    -fx-font-size: 14px;
-    -fx-text-fill: #666666;
-    -fx-alignment: center;
-}
-
-/* Primary large button - for main actions like "Create Campaign" */
 .primary-button {
     -fx-background-color: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
     -fx-background-radius: 5px;
@@ -273,7 +292,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Secondary button - for actions like "Load ZIP File" */
 .secondary-button {
     -fx-background-color: linear-gradient(to bottom, #f8f8f8, #f0f0f0);
     -fx-background-radius: 4px;
@@ -299,30 +317,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Status text styling */
-.status-text {
-    -fx-font-family: 'Poppins', sans-serif;
-    -fx-font-size: 14px;
-    -fx-text-fill: #777777;
-    -fx-padding: 10px;
-    -fx-alignment: center;
-}
-
-/* Logo/image container */
-.logo-container {
-    -fx-alignment: center;
-    -fx-padding: 20px;
-}
-
-/* Main content vertical container */
-.main-container {
-    -fx-alignment: center;
-    -fx-spacing: 20px;
-    -fx-padding: 40px;
-}
-/* Alternative button styles you can use */
-
-/* Option 1: Modern gradient buttons */
 .modern-button {
     -fx-background-color: linear-gradient(to right, #f0f0f0, #e5e5e5);
     -fx-background-radius: 8px;
@@ -347,7 +341,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Option 2: Flat minimalist buttons */
 .flat-button {
     -fx-background-color: #f5f5f5;
     -fx-background-radius: 5px;
@@ -371,7 +364,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Option 3: Outlined buttons */
 .outlined-button {
     -fx-background-color: transparent;
     -fx-background-radius: 6px;
@@ -396,7 +388,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Option 4: Create Campaign special button */
 .campaign-button {
     -fx-background-color: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
     -fx-background-radius: 8px;
@@ -425,7 +416,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Option 5: Glass effect buttons (modern look) */
 .glass-button {
     -fx-background-color: rgba(255, 255, 255, 0.8);
     -fx-background-radius: 10px;
@@ -451,62 +441,6 @@
     -fx-translate-y: 1px;
 }
 
-/* Option 6: Title styles */
-.modern-title {
-    -fx-font-family: 'Poppins', sans-serif;
-    -fx-font-size: 28px;
-    -fx-font-weight: 600;
-    -fx-text-fill: #292929;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 1, 0, 0, 1);
-    -fx-padding: 20px;
-    -fx-letter-spacing: 1px;
-}
-
-.subtle-title {
-    -fx-font-family: 'Poppins', sans-serif;
-    -fx-font-size: 24px;
-    -fx-font-weight: 500;
-    -fx-text-fill: #444444;
-    -fx-padding: 15px;
-    -fx-letter-spacing: 0.5px;
-}
-/* Add these styles to your style.css file */
-
-/* Chart scene specific styles */
-.chart-scene {
-    -fx-background-color: #2d2d3b;
-}
-
-.chart-box {
-    -fx-background-color: #363642;
-    -fx-background-radius: 8;
-    -fx-padding: 15;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
-}
-
-.chart-label {
-    -fx-font-size: 14px;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-}
-
-.chart-sublabel {
-    -fx-font-size: 12px;
-    -fx-text-fill: #a0a0a0;
-}
-
-.chart-section-title {
-    -fx-font-size: 16px;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-}
-
-.status-label {
-    -fx-font-size: 12px;
-    -fx-text-fill: #ffcc66;
-    -fx-font-style: italic;
-}
-
 .nav-button {
     -fx-background-color: #363642;
     -fx-text-fill: white;
@@ -526,7 +460,27 @@
     -fx-background-color: #555562;
 }
 
-/* Styling for the toggle button */
+.transparent-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.transparent-button .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: black;
+    -fx-font-size: 16px;
+}
+
+.transparent-button:hover .label {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.transparent-button:pressed .label {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* ===== UI CONTROL ELEMENTS ===== */
 .toggle-button {
     -fx-background-color: #363642;
     -fx-text-fill: white;
@@ -548,7 +502,6 @@
     -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 0);
 }
 
-/* Styling for the combo boxes */
 .combo-box {
     -fx-background-color: #363642;
     -fx-text-fill: white;
@@ -582,7 +535,6 @@
     -fx-background-color: white;
 }
 
-/* Date picker styling */
 .date-picker {
     -fx-background-color: #363642;
     -fx-text-fill: white;
@@ -606,7 +558,20 @@
     -fx-text-fill: white;
 }
 
-/* Style for the charts themselves */
+/* ===== GAUGE STYLES ===== */
+.gauge-background {
+    -fx-opacity: 0.2;
+}
+
+.gauge-fill {
+    -fx-opacity: 0.7;
+}
+
+.gauge-hole {
+    -fx-opacity: 1.0;
+}
+
+/* ===== CHART AND GRAPH STYLES ===== */
 .chart {
     -fx-background-color: transparent;
     -fx-padding: 10;
@@ -646,41 +611,135 @@
 .axis-label {
     -fx-text-fill: white;
 }
-.chart-box {
-    -fx-background-color: #2b2b3b;
-    -fx-background-radius: 5;
-    -fx-border-radius: 5;
+
+/* ===== RESPONSIVE DESIGN ===== */
+.small-screen {
+    -fx-font-size: 90%;
+}
+
+.small-screen .metric-value {
+    -fx-font-size: 24px;
+}
+
+.small-screen .title-text {
+    -fx-font-size: 20px;
+}
+
+.large-screen {
+    -fx-font-size: 110%;
+}
+
+.large-screen .metric-value {
+    -fx-font-size: 32px;
+}
+
+.large-screen .title-text {
+    -fx-font-size: 28px;
+}
+
+/* ===== HISTOGRAM SCENE SPECIFIC STYLES ===== */
+.histogram-scene {
+    -fx-background-color: #2d2d3b;
+}
+
+/* Custom styles to match FXML preferences */
+.histogram-scene .top-container {
+    -fx-background-color: #363642;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
     -fx-padding: 10;
 }
 
-.chart-scene {
-    -fx-background-color: #1e1e2e;
+/* Chart styling to match FXML */
+.histogram-scene .chart {
+    -fx-background-color: #363642;
+    -fx-plot-background-color: #363642;
+    -fx-border-color: #a365f5;
+    -fx-border-width: 2;
+    -fx-border-radius: 15;
+    -fx-background-radius: 15;
+    -fx-padding: 10;
 }
 
-/* Transparent Button Style with Opaque Icon */
-.transparent-button {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-    -fx-background-insets: 0;
+.histogram-scene .chart-plot-background {
+    -fx-background-color: #363642;
 }
 
-.transparent-button .label {
-    /* Ensure the label/icon remains fully visible */
-    -fx-background-color: transparent;
-    -fx-text-fill: black; /* Adjust color as needed */
+/* Histogram text area styling to match FXML */
+.histogram-scene .text-area {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-border-color: #363642;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.histogram-scene .text-area .content {
+    -fx-background-color: #363642;
+}
+
+/* Control labels styling (Date Range, bins, etc.) */
+.histogram-scene .control-label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+}
+
+/* Date picker styling for histogram scene */
+.histogram-scene .date-picker {
+    -fx-background-color: #363642;
+    -fx-border-color: #363642;
+    -fx-border-radius: 3;
+}
+
+.histogram-scene .date-picker .arrow-button {
+    -fx-background-color: #363642;
+}
+
+.histogram-scene .date-picker .text-field {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #aaaaaa;
+}
+
+/* Slider styling for histogram */
+.histogram-scene .slider .track {
+    -fx-background-color: #8884;
+    -fx-background-radius: 2;
+}
+
+.histogram-scene .slider .thumb {
+    -fx-background-color: white;
+    -fx-background-radius: 50%;
+}
+
+/* Make the bars light green with more specific selectors */
+.histogram-scene .default-color0.chart-bar {
+    -fx-bar-fill: #4CAF50;
+}
+
+.histogram-scene .chart-bar {
+    -fx-background-color: #4CAF50;
+    -fx-bar-fill: #4CAF50;
+}
+
+/* Histogram title */
+.histogram-scene .histogram-title {
+    -fx-text-fill: white;
     -fx-font-size: 16px;
+    -fx-font-weight: normal;
+    -fx-alignment: center;
 }
 
-.transparent-button:hover .label {
-    /* Optional: add a subtle background on hover */
-    -fx-background-color: rgba(0, 0, 0, 0.1);
+/* Bin size label */
+.histogram-scene .bin-size-label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
 }
 
-.transparent-button:pressed .label {
-    /* Optional: add a pressed effect */
-    -fx-background-color: rgba(0, 0, 0, 0.2);
-}
-.big-label {
-    -fx-font-size: 38px !important;
-    -fx-font-weight: bold;
+/* Rounded button style for histogram */
+.histogram-scene .rounded-button {
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-background-color: #363642;
 }
