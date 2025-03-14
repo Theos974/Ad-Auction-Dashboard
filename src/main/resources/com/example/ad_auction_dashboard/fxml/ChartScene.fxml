@@ -28,6 +28,23 @@
                 <ComboBox fx:id="timeGranularityComboBox" prefWidth="120"/>
             </HBox>
 
+            <!-- New: Audience and Context Filters -->
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: rgba(0,0,0,0.05); -fx-background-radius: 5; -fx-padding: 5;">
+                <Label text="Filters:" style="-fx-font-weight: bold;"/>
+
+                <Label text="Gender:"/>
+                <ComboBox fx:id="genderFilterComboBox" prefWidth="100"/>
+
+                <Region HBox.hgrow="ALWAYS" minWidth="20"/>
+
+                <Label text="Context:"/>
+                <ComboBox fx:id="contextFilterComboBox" prefWidth="150"/>
+
+                <Region HBox.hgrow="ALWAYS" minWidth="20"/>
+
+                <Button fx:id="resetFiltersButton" text="Reset Filters" style="-fx-background-color: #555562; -fx-text-fill: white;"/>
+            </HBox>
+
             <!-- Chart selection controls -->
             <HBox alignment="CENTER" spacing="20">
                 <VBox alignment="CENTER" spacing="5">

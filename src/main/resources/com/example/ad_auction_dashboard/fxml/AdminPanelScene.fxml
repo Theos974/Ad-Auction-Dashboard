@@ -83,7 +83,7 @@
                         <Label text="New Role:" textFill="#ebe7e7" />
                         <ComboBox fx:id="roleComboBox" prefWidth="150.0" />
                     </HBox>
-                    <Button mnemonicParsing="false" onAction="#handleChangeRole" styleClass="flat-button" text="Apply Role Change" />
+                    <Button mnemonicParsing="false" onAction="#handleChangeRole" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Apply Role Change" />
                 </VBox>
 
                 <!-- Second VBox with different color -->
@@ -115,6 +115,7 @@
                     </HBox>
                     <Button mnemonicParsing="false" onAction="#handleAddUser" prefHeight="39.0" prefWidth="118.0" styleClass="flat-button" text="Add User" />
                 </VBox>
+            <Button mnemonicParsing="false" onAction="#handleDelete" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Delete User" />
             </HBox>
 
             <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />

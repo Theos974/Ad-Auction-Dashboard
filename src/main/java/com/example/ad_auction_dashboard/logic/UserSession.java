@@ -1,10 +1,15 @@
 package com.example.ad_auction_dashboard.logic;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class UserSession {
     private static UserSession instance;
     private UserDatabase.User currentUser;
     private String previousScene;
     private CampaignMetrics currentCampaignMetrics;
+    private Map<String, String> filterSettings = new HashMap<>();
+
     private UserSession() {}
 
     public static UserSession getInstance() {
@@ -65,10 +70,23 @@ public class UserSession {
         return this.currentCampaignMetrics;
     }
 
-    // Modify logout to clear metrics
+    public void setFilterSetting(String key, String value) {
+        filterSettings.put(key, value);
+    }
+
+    public String getFilterSetting(String key) {
+        return filterSettings.get(key);
+    }
+
+    public void clearFilterSettings() {
+        filterSettings.clear();
+    }
+
+    // Modify the logout method to clear filters as well
     public void logout() {
         currentUser = null;
         previousScene = null;
         currentCampaignMetrics = null;
+        filterSettings.clear();
     }
 }

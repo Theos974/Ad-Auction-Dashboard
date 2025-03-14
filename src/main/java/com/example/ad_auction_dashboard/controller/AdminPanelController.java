@@ -150,7 +150,18 @@ public class AdminPanelController {
             statusText.setText("Please select a user first.");
         }
     }
+    @FXML
+    private void handleDelete(ActionEvent event) {
+        UserDatabase.User selectedUser = userTable.getSelectionModel().getSelectedItem();
+        if (selectedUser != null) {
+            UserDatabase.deleteUser(selectedUser.getId());
+            statusText.setText("User deleted successfully");
+        } else {
+            statusText.setText("Error: Select User to delete");
+        }
+        refreshUserTable();
 
+    }
 
     @FXML
     private void handleAddUser(ActionEvent event) {

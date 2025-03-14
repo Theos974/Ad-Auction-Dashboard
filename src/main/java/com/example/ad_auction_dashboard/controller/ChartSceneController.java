@@ -27,6 +27,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
@@ -50,11 +51,21 @@ public class ChartSceneController {
 
     @FXML
     private Label statusLabel; // Add this to your FXML if not already present
+
     @FXML
     private ComboBox<String> primaryChartTypeComboBox;
 
     @FXML
     private ComboBox<String> secondaryChartTypeComboBox;
+
+    @FXML
+    private ComboBox<String> genderFilterComboBox; // New: gender filter dropdown
+
+    @FXML
+    private ComboBox<String> contextFilterComboBox; // New: context filter dropdown
+
+    @FXML
+    private Button resetFiltersButton; // New: reset filters button
 
     @FXML
     private ToggleButton compareToggleButton;
@@ -101,6 +112,15 @@ public class ChartSceneController {
         timeGranularityComboBox.getItems().addAll("Hourly", "Daily", "Weekly");
         timeGranularityComboBox.setValue("Daily"); // Default
 
+        // Setup audience filter options - gender
+        genderFilterComboBox.getItems().addAll("All", "Male", "Female");
+        genderFilterComboBox.setValue("All"); // Default
+
+        // Setup context filter options
+        contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
+            "Blog", "Hobbies", "Travel");
+        contextFilterComboBox.setValue("All"); // Default
+
         // Setup toggle button for comparison
         compareToggleButton.setOnAction(e -> {
             boolean showComparison = compareToggleButton.isSelected();
@@ -109,6 +129,11 @@ public class ChartSceneController {
             updateCharts();
         });
 
+        // Setup reset filters button
+        if (resetFiltersButton != null) {
+            resetFiltersButton.setOnAction(e -> resetFilters());
+        }
+
         // Setup event listeners
         primaryChartTypeComboBox.setOnAction(e -> updateCharts());
         secondaryChartTypeComboBox.setOnAction(e -> {
@@ -116,6 +141,10 @@ public class ChartSceneController {
                 updateCharts();
             }
         });
+
+        // Add filter change listeners
+        genderFilterComboBox.setOnAction(e -> applyFilters());
+        contextFilterComboBox.setOnAction(e -> applyFilters());
 
         timeGranularityComboBox.setOnAction(e -> {
             currentGranularity = timeGranularityComboBox.getValue();
@@ -147,6 +176,81 @@ public class ChartSceneController {
         // Initialize status label if present
         if (statusLabel != null) {
             statusLabel.setText("");
+        }
+    }
+
+    /**
+     * Apply selected filters to the metrics
+     */
+    private void applyFilters() {
+        if (timeFilteredMetrics == null) return;
+
+        // Get selected gender filter
+        String gender = genderFilterComboBox.getValue();
+        if (gender.equals("All")) gender = null;
+
+        // Get selected context filter
+        String context = contextFilterComboBox.getValue();
+        if (context.equals("All")) context = null;
+
+        // Apply filters to timeFilteredMetrics
+        timeFilteredMetrics.setGenderFilter(gender);
+        timeFilteredMetrics.setContextFilter(context);
+
+        // Update status label to show active filters
+        updateFilterStatus();
+
+        // Update charts with the new filters
+        updateCharts();
+    }
+
+    /**
+     * Reset all filters to their default values
+     */
+    private void resetFilters() {
+        if (timeFilteredMetrics == null) return;
+
+        // Reset UI components
+        genderFilterComboBox.setValue("All");
+        contextFilterComboBox.setValue("All");
+
+        // Reset filters in the metrics object
+        timeFilteredMetrics.setGenderFilter(null);
+        timeFilteredMetrics.setContextFilter(null);
+
+        // Update status label
+        if (statusLabel != null) {
+            statusLabel.setText("Filters reset to default.");
+        }
+
+        // Update charts
+        updateCharts();
+    }
+
+    /**
+     * Update the status label to show currently active filters
+     */
+    private void updateFilterStatus() {
+        if (statusLabel == null) return;
+
+        StringBuilder status = new StringBuilder();
+
+        // Add gender filter info if active
+        if (!genderFilterComboBox.getValue().equals("All")) {
+            status.append("Gender: ").append(genderFilterComboBox.getValue());
+        }
+
+        // Add context filter info if active
+        if (!contextFilterComboBox.getValue().equals("All")) {
+            if (status.length() > 0) status.append(" | ");
+            status.append("Context: ").append(contextFilterComboBox.getValue());
+        }
+
+        // Update status label
+        if (status.length() > 0) {
+            statusLabel.setText("Active filters: " + status);
+        } else {
+            statusLabel.setText("No filters active");
         }
     }
 
@@ -268,10 +372,8 @@ public class ChartSceneController {
                 }
             }
 
-            // Clear status if everything went well (except for hourly warning)
-            if (statusLabel != null && !currentGranularity.equals("Hourly")) {
-                statusLabel.setText("");
-            }
+            // Update filter status message
+            updateFilterStatus();
         } catch (Exception e) {
             // Show error to user
             showAlert("Error creating chart: " + e.getMessage());

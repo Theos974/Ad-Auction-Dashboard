@@ -2,10 +2,12 @@ package com.example.ad_auction_dashboard.logic;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,12 +15,18 @@ import java.util.Set;
  * TimeFilteredMetrics computes campaign metrics (impressions, clicks, uniques, etc.)
  * for a given time frame based on the static log arrays.
  * This class is intended for use in the time-chart scene,
- * where the user can filter by a start and end date.
+ * where the user can filter by a start and end date, audience segments, and context.
  */
 public class TimeFilteredMetrics {
     private final Map<String, ComputedMetrics> cache = new HashMap<>();
     private final Map<String, Map<String, ComputedMetrics>> granularCache = new HashMap<>();
     private ComputedMetrics currentMetrics = new ComputedMetrics(); // Initialize to avoid NPE
+
+    // Filter parameters
+    private String genderFilter = null; // null means no filter applied
+    private String ageFilter = null;
+    private String incomeFilter = null;
+    private String contextFilter = null;
 
     // Inner class for cached metric values
     public static class ComputedMetrics {
@@ -54,8 +62,12 @@ public class TimeFilteredMetrics {
     private final Map<String, Integer> hourlyConversionCache = new HashMap<>();
     private final Map<String, Double> hourlyCostCache = new HashMap<>();
 
+    // User-impressions mapping for efficient filtering
+    private final Map<String, Set<ImpressionLog>> userImpressionsMap = new HashMap<>();
+
     // Flag to track if cache is initialized
     private boolean hourlyDataCached = false;
+    private boolean userImpressionsMapBuilt = false;
 
     public TimeFilteredMetrics(ImpressionLog[] imps, ServerLog[] srv, ClickLog[] cls,
                                int bouncePagesThreshold, int bounceSecondsThreshold) {
@@ -67,12 +79,114 @@ public class TimeFilteredMetrics {
 
         // Pre-cache hourly data for faster lookups
         initializeHourlyCaches();
+        buildUserImpressionsMap();
+    }
+
+    /**
+     * Build a mapping of user IDs to their impression logs for efficient filtering
+     */
+    private void buildUserImpressionsMap() {
+        if (userImpressionsMapBuilt) return;
+
+        userImpressionsMap.clear();
+        if (imps != null) {
+            for (ImpressionLog imp : imps) {
+                if (imp == null || imp.getId() == null) continue;
+
+                String userId = imp.getId();
+                if (!userImpressionsMap.containsKey(userId)) {
+                    userImpressionsMap.put(userId, new HashSet<>());
+                }
+                userImpressionsMap.get(userId).add(imp);
+            }
+        }
+
+        userImpressionsMapBuilt = true;
+    }
+
+    /**
+     * Set a filter for gender
+     * @param gender The gender to filter by, or null to clear the filter
+     */
+    public void setGenderFilter(String gender) {
+        this.genderFilter = gender;
+        clearCaches();
+    }
+
+    /**
+     * Set a filter for age
+     * @param age The age range to filter by, or null to clear the filter
+     */
+    public void setAgeFilter(String age) {
+        this.ageFilter = age;
+        clearCaches();
+    }
+
+    /**
+     * Set a filter for income
+     * @param income The income level to filter by, or null to clear the filter
+     */
+    public void setIncomeFilter(String income) {
+        this.incomeFilter = income;
+        clearCaches();
+    }
+
+    /**
+     * Set a filter for context
+     * @param context The context to filter by, or null to clear the filter
+     */
+    public void setContextFilter(String context) {
+        this.contextFilter = context;
+        clearCaches();
+    }
+
+
+    /**
+     * Check if an impression log passes all current filters
+     */
+    public boolean passesFilters(ImpressionLog imp) {
+        if (imp == null) return false;
+
+        if (genderFilter != null && !genderFilter.equals(imp.getGender())) {
+            return false;
+        }
+        if (ageFilter != null && !ageFilter.equals(imp.getAge())) {
+            return false;
+        }
+        if (incomeFilter != null && !incomeFilter.equals(imp.getIncome())) {
+            return false;
+        }
+        if (contextFilter != null && !contextFilter.equals(imp.getContext())) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if a user ID passes the current filters by checking their impressions
+     */
+    public boolean userPassesFilters(String userId) {
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
+            return true; // No filters active
+        }
+
+        Set<ImpressionLog> userImps = userImpressionsMap.get(userId);
+        if (userImps == null || userImps.isEmpty()) {
+            return false; // No impressions found for this user
+        }
+
+        // Check if any impression for this user passes the filters
+        for (ImpressionLog imp : userImps) {
+            if (passesFilters(imp)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * Initializes hourly caches for all metrics
-     * Note: This doesn't need to change since we're adapting getCountFromHourlyCache
-     * to work with the existing cache format, rather than changing the cache format itself
      */
     private void initializeHourlyCaches() {
         if (hourlyDataCached) return;
@@ -146,6 +260,7 @@ public class TimeFilteredMetrics {
 
         hourlyDataCached = true;
     }
+
     /**
      * Adds empty data points for any missing hours in the time range
      * to ensure complete and consistent chart display
@@ -179,6 +294,7 @@ public class TimeFilteredMetrics {
 
         return completeData;
     }
+
     /**
      * Computes metrics for a time frame and updates currentMetrics.
      * Uses caching to avoid recomputing previously requested data.
@@ -213,7 +329,6 @@ public class TimeFilteredMetrics {
 
         cache.put(cacheKey, computed);
         currentMetrics = computed;
-
     }
 
     /**
@@ -234,7 +349,6 @@ public class TimeFilteredMetrics {
                 return dateTime.toLocalDate().toString();
         }
     }
-
 
     /**
      * Computes metrics for time buckets based on the specified granularity.
@@ -344,19 +458,18 @@ public class TimeFilteredMetrics {
         return results;
     }
 
-
-
-    // Cache key generation based on time range and granularity
+    // Cache key generation based on time range, granularity, and filters
     private String generateCacheKey(LocalDateTime start, LocalDateTime end, String granularity) {
-        return start.toString() + "_" + end.toString() + "_" + granularity;
+        return start.toString() + "_" + end.toString() + "_" + granularity + "_" +
+            genderFilter + "_" + ageFilter + "_" + incomeFilter + "_" + contextFilter;
     }
 
-
-
-    // ---------- Optimized Filtering Methods with Cached Data ----------
+    // FILTERING METHODS - UPDATED TO INCLUDE AUDIENCE AND CONTEXT FILTERS
 
     public int filterImpressions(LocalDateTime start, LocalDateTime end) {
-        if (hourlyDataCached) {
+        // If no audience or context filters, use cached hourly data for speed
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
             return getCountFromHourlyCache(start, end, hourlyImpressionCache);
         }
 
@@ -366,7 +479,7 @@ public class TimeFilteredMetrics {
                 LogDate ld = i.getDate();
                 if (ld != null && ld.getExists()) {
                     LocalDateTime time = toLocalDateTime(ld);
-                    if (!time.isBefore(start) && !time.isAfter(end)) {
+                    if (!time.isBefore(start) && !time.isAfter(end) && passesFilters(i)) {
                         count++;
                     }
                 }
@@ -376,22 +489,21 @@ public class TimeFilteredMetrics {
     }
 
     public int filterClicks(LocalDateTime start, LocalDateTime end) {
-        if (hourlyDataCached) {
+        // If no audience or context filters, use cached hourly data for speed
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
             return getCountFromHourlyCache(start, end, hourlyClickCache);
         }
-        return processClickLogs(start, end, cls);
-    }
-
-    private int processClickLogs(LocalDateTime start, LocalDateTime end, ClickLog[] cls) {
-        if (cls == null) return 0;
 
         int count = 0;
-        for (ClickLog c : cls) {
-            LogDate ld = c.getDate();
-            if (ld != null && ld.getExists()) {
-                LocalDateTime time = toLocalDateTime(ld);
-                if (!time.isBefore(start) && !time.isAfter(end)) {
-                    count++;
+        if (cls != null) {
+            for (ClickLog c : cls) {
+                LogDate ld = c.getDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime time = toLocalDateTime(ld);
+                    if (!time.isBefore(start) && !time.isAfter(end) && userPassesFilters(c.getId())) {
+                        count++;
+                    }
                 }
             }
         }
@@ -399,7 +511,9 @@ public class TimeFilteredMetrics {
     }
 
     public int filterUniques(LocalDateTime start, LocalDateTime end) {
-        if (hourlyDataCached) {
+        // If no audience or context filters, use hourly caches
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
             Set<String> uniqueIds = new HashSet<>();
 
             // Gather all unique IDs from relevant hours
@@ -418,76 +532,80 @@ public class TimeFilteredMetrics {
             return uniqueIds.size();
         }
 
-        return calculateUniquesDirectly(start, end);
-    }
-
-    private int calculateUniquesDirectly(LocalDateTime start, LocalDateTime end) {
-        if (cls == null) return 0;
+        // With filters, we need to check each click
         Set<String> uniqueIds = new HashSet<>();
-        for (ClickLog c : cls) {
-            LogDate ld = c.getDate();
-            if (ld != null && ld.getExists()) {
-                LocalDateTime time = toLocalDateTime(ld);
-                if (!time.isBefore(start) && !time.isAfter(end)) {
-                    uniqueIds.add(c.getId());
+        if (cls != null) {
+            for (ClickLog c : cls) {
+                LogDate ld = c.getDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime time = toLocalDateTime(ld);
+                    if (!time.isBefore(start) && !time.isAfter(end) && userPassesFilters(c.getId())) {
+                        uniqueIds.add(c.getId());
+                    }
                 }
             }
         }
+
         return uniqueIds.size();
     }
 
     public int filterBounces(LocalDateTime start, LocalDateTime end) {
-        if (hourlyDataCached) {
+        // If no audience or context filters, use cached hourly data for speed
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
             return getCountFromHourlyCache(start, end, hourlyBounceCache);
         }
-        return processBounces(start, end, srv, bouncePagesThreshold, bounceSecondsThreshold);
-    }
-
-    private int processBounces(LocalDateTime start, LocalDateTime end, ServerLog[] srvLogs, int pageThreshold, int timeThreshold) {
-        if (srvLogs == null) return 0;
 
         int bounces = 0;
-        for (ServerLog s : srvLogs) {
-            if (!isValidLog(s)) continue;
+        if (srv != null) {
+            for (ServerLog s : srv) {
+                if (!isValidLog(s)) continue;
 
-            LocalDateTime entry = toLocalDateTime(s.getEntryDate());
-            if (entry.isBefore(start) || entry.isAfter(end)) continue;
+                LocalDateTime entry = toLocalDateTime(s.getEntryDate());
+                if (entry.isBefore(start) || entry.isAfter(end)) continue;
 
-            LocalDateTime exit = toLocalDateTime(s.getExitDate());
-            long diffSeconds = Duration.between(entry, exit).getSeconds();
+                if (!userPassesFilters(s.getId())) continue;
 
-            if (s.getPagesViewed() <= pageThreshold || diffSeconds <= timeThreshold) {
-                bounces++;
+                LocalDateTime exit = toLocalDateTime(s.getExitDate());
+                long diffSeconds = Duration.between(entry, exit).getSeconds();
+
+                if (s.getPagesViewed() <= bouncePagesThreshold || diffSeconds <= bounceSecondsThreshold) {
+                    bounces++;
+                }
             }
         }
+
         return bounces;
     }
 
     public int filterConversions(LocalDateTime start, LocalDateTime end) {
-        if (hourlyDataCached) {
+        // If no audience or context filters, use cached hourly data for speed
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
             return getCountFromHourlyCache(start, end, hourlyConversionCache);
         }
-        return processConversions(start, end, srv);
-    }
-
-    private int processConversions(LocalDateTime start, LocalDateTime end, ServerLog[] srvLogs) {
-        if (srvLogs == null) return 0;
 
         int conversions = 0;
-        for (ServerLog s : srvLogs) {
-            LogDate ld = s.getEntryDate();
-            if (ld != null && ld.getExists()) {
-                LocalDateTime entry = toLocalDateTime(ld);
-                if (!entry.isBefore(start) && !entry.isAfter(end) && s.getConversion()) {
-                    conversions++;
+        if (srv != null) {
+            for (ServerLog s : srv) {
+                LogDate ld = s.getEntryDate();
+                if (ld != null && ld.getExists()) {
+                    LocalDateTime entry = toLocalDateTime(ld);
+                    if (!entry.isBefore(start) && !entry.isAfter(end) &&
+                        s.getConversion() && userPassesFilters(s.getId())) {
+                        conversions++;
+                    }
                 }
             }
         }
+
         return conversions;
     }
 
     public double filterTotalCost(LocalDateTime start, LocalDateTime end) {
-        if (hourlyDataCached) {
+        // If no audience or context filters, use cached hourly data for speed
+        if (genderFilter == null && ageFilter == null &&
+            incomeFilter == null && contextFilter == null) {
             double totalCost = 0.0;
 
             LocalDateTime current = start.truncatedTo(ChronoUnit.HOURS);
@@ -501,30 +619,30 @@ public class TimeFilteredMetrics {
 
             return totalCost;
         }
-        return processTotalCost(start, end, imps, cls);
-    }
 
-    private double processTotalCost(LocalDateTime start, LocalDateTime end, ImpressionLog[] imps, ClickLog[] cls) {
+        // With filters, we need to compute costs directly
         double totalCost = 0;
 
+        // Impression costs
         if (imps != null) {
             for (ImpressionLog i : imps) {
                 LogDate ld = i.getDate();
                 if (ld != null && ld.getExists()) {
                     LocalDateTime time = toLocalDateTime(ld);
-                    if (!time.isBefore(start) && !time.isAfter(end)) {
+                    if (!time.isBefore(start) && !time.isAfter(end) && passesFilters(i)) {
                         totalCost += i.getImpressionCost();
                     }
                 }
             }
         }
 
+        // Click costs
         if (cls != null) {
             for (ClickLog c : cls) {
                 LogDate ld = c.getDate();
                 if (ld != null && ld.getExists()) {
                     LocalDateTime time = toLocalDateTime(ld);
-                    if (!time.isBefore(start) && !time.isAfter(end)) {
+                    if (!time.isBefore(start) && !time.isAfter(end) && userPassesFilters(c.getId())) {
                         totalCost += c.getClickCost();
                     }
                 }
@@ -536,7 +654,6 @@ public class TimeFilteredMetrics {
 
     /**
      * Helper method to get count from hourly cache between specified dates
-     * Modified to use consistent hour formatting
      */
     private int getCountFromHourlyCache(LocalDateTime start, LocalDateTime end, Map<String, Integer> cache) {
         int count = 0;

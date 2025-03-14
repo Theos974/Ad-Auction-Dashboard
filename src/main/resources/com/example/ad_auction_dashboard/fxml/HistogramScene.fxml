@@ -40,6 +40,35 @@
 
                         <!-- Flexible space between buttons -->
                         <Region HBox.hgrow="ALWAYS" />
+                        <!-- Add this after the bin size controls in the top VBox -->
+                        <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-radius: 10;">
+                            <children>
+                                <!-- Gender Filter -->
+                                <Label minWidth="80.0" text="Gender Filter:" textFill="WHITE">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <ComboBox fx:id="genderFilterComboBox" prefWidth="120.0" style="-fx-background-color: #363642; -fx-text-fill: white;" />
+
+                                <!-- Context Filter -->
+                                <Label minWidth="80.0" text="Context Filter:" textFill="WHITE">
+                                    <font>
+                                        <Font size="14.0" />
+                                    </font>
+                                </Label>
+                                <ComboBox fx:id="contextFilterComboBox" prefWidth="150.0" style="-fx-background-color: #363642; -fx-text-fill: white;" />
+
+                                <!-- Reset Button -->
+                                <Button fx:id="resetFiltersButton" mnemonicParsing="false" onAction="#handleResetFilters" style="-fx-background-color: #363642; -fx-text-fill: white;" text="Reset Filters" />
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                            </padding>
+                     <HBox.margin>
+                        <Insets right="70.0" />
+                     </HBox.margin>
+                        </HBox>
 
                         <!-- Log off button at right corner -->
                         <Button fx:id="logoutBtn" mnemonicParsing="false" onAction="#handleLogout" prefHeight="25.0" prefWidth="43.0" style="-fx-background-color: #363642; -fx-background-radius: 50%;">

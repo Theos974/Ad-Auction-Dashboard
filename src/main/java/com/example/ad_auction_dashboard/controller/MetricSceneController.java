@@ -2,9 +2,11 @@ package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
+import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,6 +15,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.text.Text;
@@ -53,6 +56,17 @@ public class MetricSceneController {
     private Button logoutBtn;
 
     private CampaignMetrics metrics; // the campaign data model
+    @FXML
+    private ComboBox<String> genderFilterComboBox;
+
+    @FXML
+    private ComboBox<String> contextFilterComboBox;
+
+    @FXML
+    private Button resetFiltersButton;
+
+    // Add a field for TimeFilteredMetrics
+    private TimeFilteredMetrics timeFilteredMetrics;
 
     @FXML
     public void initialize() {
@@ -60,11 +74,132 @@ public class MetricSceneController {
         if (userWelcomeLabel != null && UserSession.getInstance().getUser() != null) {
             userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername());
         }
+        if (genderFilterComboBox != null) {
+            genderFilterComboBox.getItems().addAll("All", "Male", "Female");
+            genderFilterComboBox.setValue("All");
+            genderFilterComboBox.setOnAction(e -> applyFilters());
+        }
+
+        if (contextFilterComboBox != null) {
+            contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
+                "Blog", "Hobbies", "Travel");
+            contextFilterComboBox.setValue("All");
+            contextFilterComboBox.setOnAction(e -> applyFilters());
+        }
     }
 
     public void setMetrics(CampaignMetrics metrics) {
         this.metrics = metrics;
+
+        // Create TimeFilteredMetrics for filtering
+        this.timeFilteredMetrics = new TimeFilteredMetrics(
+            metrics.getImpressionLogs(),
+            metrics.getServerLogs(),
+            metrics.getClickLogs(),
+            metrics.getBouncePagesThreshold(),
+            metrics.getBounceSecondsThreshold()
+        );
+
+        // Save metrics in UserSession
+        UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+
+        // Get filter values from UserSession if available
+        applyFilterSettingsFromSession();
+
         updateUI();
+    }
+    private void applyFilters() {
+        if (timeFilteredMetrics == null) return;
+
+        // Get filter values
+        String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
+        String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+
+        // Apply filters
+        timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
+        timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
+
+        // Save filter settings to UserSession
+        saveFilterSettingsToSession();
+
+        // Get time boundaries - use full campaign range
+        LocalDateTime start = metrics.getCampaignStartDate();
+        LocalDateTime end = metrics.getCampaignEndDate();
+
+        // Apply time frame
+        timeFilteredMetrics.computeForTimeFrame(start, end, "Daily"); // Use "Daily" as it doesn't matter for full range
+
+        // Update metrics display with filtered data
+        updateUIWithFilteredData();
+    }
+
+    @FXML
+    private void handleResetFilters() {
+        if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
+        if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
+
+        if (timeFilteredMetrics != null) {
+            timeFilteredMetrics.setGenderFilter(null);
+            timeFilteredMetrics.setContextFilter(null);
+
+            // Clear filters in session
+            UserSession.getInstance().clearFilterSettings();
+
+            // Recompute for full range
+            LocalDateTime start = metrics.getCampaignStartDate();
+            LocalDateTime end = metrics.getCampaignEndDate();
+            timeFilteredMetrics.computeForTimeFrame(start, end, "Daily");
+
+            updateUI(); // Use original unfiltered metrics
+        }
+    }
+    private void updateUIWithFilteredData() {
+        // Update all metric text fields with filtered values
+        impressionsText.setText(String.valueOf(timeFilteredMetrics.getNumberOfImpressions()));
+        clicksText.setText(String.valueOf(timeFilteredMetrics.getNumberOfClicks()));
+        uniquesText.setText(String.valueOf(timeFilteredMetrics.getNumberOfUniques()));
+        bouncesText.setText(String.valueOf(timeFilteredMetrics.getNumberOfBounces()));
+        conversionsText.setText(String.valueOf(timeFilteredMetrics.getNumberOfConversions()));
+        totalCostText.setText(String.format("%.6f", timeFilteredMetrics.getTotalCost()));
+        ctrText.setText(String.format("%.6f", timeFilteredMetrics.getCTR()));
+        cpcText.setText(String.format("%.6f", timeFilteredMetrics.getCPC()));
+        cpaText.setText(String.format("%.6f", timeFilteredMetrics.getCPA()));
+        cpmText.setText(String.format("%.6f", timeFilteredMetrics.getCPM()));
+        bounceRateText.setText(String.format("%.6f", timeFilteredMetrics.getBounceRate()));
+    }
+    private void saveFilterSettingsToSession() {
+        UserSession session = UserSession.getInstance();
+
+        if (genderFilterComboBox != null) {
+            session.setFilterSetting("gender", genderFilterComboBox.getValue());
+        }
+
+        if (contextFilterComboBox != null) {
+            session.setFilterSetting("context", contextFilterComboBox.getValue());
+        }
+    }
+
+    // Method to apply filter settings from UserSession
+    private void applyFilterSettingsFromSession() {
+        UserSession session = UserSession.getInstance();
+
+        // Apply gender filter if saved
+        String gender = session.getFilterSetting("gender");
+        if (gender != null && genderFilterComboBox != null) {
+            genderFilterComboBox.setValue(gender);
+        }
+
+        // Apply context filter if saved
+        String context = session.getFilterSetting("context");
+        if (context != null && contextFilterComboBox != null) {
+            contextFilterComboBox.setValue(context);
+        }
+
+        // If any filters were applied, update metrics
+        if ((gender != null && !gender.equals("All")) ||
+            (context != null && !context.equals("All"))) {
+            applyFilters();
+        }
     }
 
     private void updateUI() {

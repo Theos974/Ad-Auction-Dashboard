@@ -212,8 +212,6 @@ public class MetricsTests {
     @Test
     @DisplayName("Test with Null Arrays")
     public void testNullArrays() {
-        // If your Campaign constructor or setters don't handle nulls,
-        // you might wrap this in assertDoesNotThrow, or modify Campaign to convert nulls to empty arrays.
         Campaign campaign = new Campaign(null, null, null);
         CampaignMetrics metrics = assertDoesNotThrow(() -> new CampaignMetrics(campaign));
 
@@ -242,9 +240,7 @@ public class MetricsTests {
         Campaign campaign = new Campaign(imps, cls, srvs);
         CampaignMetrics metrics = new CampaignMetrics(campaign);
 
-        // Depending on your specification (<= 4 counts as bounce),
-        // this test checks the boundary condition.
-        // If <= 4 is a bounce, expected bounce rate = 1.0.
+
         assertEquals(1, metrics.getNumberOfBounces());
         assertEquals(1.0, metrics.getBounceRate(), 1e-6);
     }

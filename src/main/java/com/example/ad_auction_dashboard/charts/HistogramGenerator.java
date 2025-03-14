@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.charts;
 
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
+import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -17,6 +18,16 @@ public interface HistogramGenerator {
      * @param binCount The number of bins to divide the data into
      * @return A map of bin labels to frequencies/counts
      */
+    default Map<String, Integer> generateFilteredHistogramData(
+        CampaignMetrics metrics,
+        TimeFilteredMetrics timeFilteredMetrics,
+        LocalDateTime start,
+        LocalDateTime end,
+        int binCount) {
+
+        // Default implementation falls back to the original method
+        return generateHistogramData(metrics, start, end, binCount);
+    }
     Map<String, Integer> generateHistogramData(
         CampaignMetrics metrics,
         LocalDateTime start,

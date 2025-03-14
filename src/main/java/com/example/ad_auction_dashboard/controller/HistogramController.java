@@ -4,6 +4,8 @@ import com.example.ad_auction_dashboard.charts.ClickCostHistogramGenerator;
 import com.example.ad_auction_dashboard.charts.HistogramGenerator;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
+import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
+import com.example.ad_auction_dashboard.logic.UserSession;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,6 +72,17 @@ public class HistogramController {
 
     @FXML
     private Button logoutBtn;
+    @FXML
+    private ComboBox<String> genderFilterComboBox;
+
+    @FXML
+    private ComboBox<String> contextFilterComboBox;
+
+    @FXML
+    private Button resetFiltersButton;
+
+    // Add a field for TimeFilteredMetrics
+    private TimeFilteredMetrics timeFilteredMetrics;
 
     @FXML
     public void initialize() {
@@ -119,6 +132,18 @@ public class HistogramController {
         // Ensure the text area is initialized with empty text instead of placeholder
         if (descriptionTextArea != null) {
             descriptionTextArea.setText("");
+        }
+        if (genderFilterComboBox != null) {
+            genderFilterComboBox.getItems().addAll("All", "Male", "Female");
+            genderFilterComboBox.setValue("All");
+            genderFilterComboBox.setOnAction(e -> updateHistogram());
+        }
+
+        if (contextFilterComboBox != null) {
+            contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
+                "Blog", "Hobbies", "Travel");
+            contextFilterComboBox.setValue("All");
+            contextFilterComboBox.setOnAction(e -> updateHistogram());
         }
     }
 
@@ -176,6 +201,18 @@ public class HistogramController {
     public void setCampaignMetrics(CampaignMetrics metrics) {
         this.campaignMetrics = metrics;
 
+        // Create TimeFilteredMetrics for filtering
+        this.timeFilteredMetrics = new TimeFilteredMetrics(
+            metrics.getImpressionLogs(),
+            metrics.getServerLogs(),
+            metrics.getClickLogs(),
+            metrics.getBouncePagesThreshold(),
+            metrics.getBounceSecondsThreshold()
+        );
+
+        // Apply filter settings from UserSession
+        applyFilterSettingsFromSession();
+
         // Get campaign date boundaries
         LocalDateTime campaignStart = metrics.getCampaignStartDate();
         LocalDateTime campaignEnd = metrics.getCampaignEndDate();
@@ -211,6 +248,23 @@ public class HistogramController {
         updateHistogram();
     }
 
+    @FXML
+    private void handleResetFilters() {
+        if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
+        if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
+
+        if (timeFilteredMetrics != null) {
+            timeFilteredMetrics.setGenderFilter(null);
+            timeFilteredMetrics.setContextFilter(null);
+
+            // Clear filters in session
+            UserSession.getInstance().clearFilterSettings();
+
+            // Update histogram with reset filters
+            updateHistogram();
+        }
+    }
+
     public void setHistogramType(String histogramType) {
         if (histogramGenerators.containsKey(histogramType)) {
             histogramTypeComboBox.setValue(histogramType);
@@ -221,6 +275,21 @@ public class HistogramController {
     private void updateHistogram() {
         if (campaignMetrics == null) return;
 
+        if (timeFilteredMetrics != null) {
+            // Get filter values
+            String gender =
+                (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
+            String context =
+                (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+
+            // Apply filters
+            timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
+            timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
+
+            // Save filter settings to UserSession
+            saveFilterSettingsToSession();
+        }
+
         // Get date range
         LocalDate startDate = startDatePicker.getValue();
         LocalDate endDate = endDatePicker.getValue();
@@ -230,12 +299,14 @@ public class HistogramController {
         if (startDate.isAfter(endDate)) {
             endDatePicker.setValue(startDate);
             endDate = startDate;
-            showAlert("Start date cannot be after end date. Both dates have been set to the same day.");
+            showAlert(
+                "Start date cannot be after end date. Both dates have been set to the same day.");
             return; // Skip processing to let the user see the message
         }
 
         // Validate date range against campaign boundaries
-        if (campaignMetrics.getCampaignStartDate() != null && campaignMetrics.getCampaignEndDate() != null) {
+        if (campaignMetrics.getCampaignStartDate() != null &&
+            campaignMetrics.getCampaignEndDate() != null) {
             LocalDate campaignStartDate = campaignMetrics.getCampaignStartDate().toLocalDate();
             LocalDate campaignEndDate = campaignMetrics.getCampaignEndDate().toLocalDate();
 
@@ -284,12 +355,26 @@ public class HistogramController {
             }
 
             // Get bin count from slider with proper rounding
-            int binCount = (int)Math.round(binSizeSlider.getValue());
+            int binCount = (int) Math.round(binSizeSlider.getValue());
 
             try {
-                // Calculate histogram data
-                Map<String, Integer> histogramData = generator.generateHistogramData(
-                    campaignMetrics, start, end, binCount);
+                // Calculate histogram data using the FILTERED method
+                Map<String, Integer> histogramData;
+
+                // Check if filters are applied
+                if (timeFilteredMetrics != null &&
+                    (!genderFilterComboBox.getValue().equals("All") ||
+                        !contextFilterComboBox.getValue().equals("All"))) {
+
+                    // Use the filtered method when filters are active
+                    histogramData =
+                        ((ClickCostHistogramGenerator) generator).generateFilteredHistogramData(
+                            campaignMetrics, timeFilteredMetrics, start, end, binCount);
+                } else {
+                    // Use standard method when no filters are active
+                    histogramData = generator.generateHistogramData(
+                        campaignMetrics, start, end, binCount);
+                }
 
                 // Update the chart
                 histogramChart.getData().clear();
@@ -298,7 +383,11 @@ public class HistogramController {
 
                 // Check if there's actual data
                 if (histogramData.isEmpty() ||
-                    (histogramData.size() == 1 && histogramData.containsKey("No data available"))) {
+                    (histogramData.size() == 1 &&
+                        (histogramData.containsKey("No data available") ||
+                            histogramData.containsKey("No data in selected range") ||
+                            histogramData.containsKey(
+                                "No data in selected range or with selected filters")))) {
                     // Add placeholder for no data
                     series.getData().add(new XYChart.Data<>("No data available", 0));
                 } else {
@@ -335,6 +424,34 @@ public class HistogramController {
                         "\nPlease try different date ranges or bin sizes.");
                 }
             }
+        }
+    }
+    private void saveFilterSettingsToSession() {
+        UserSession session = UserSession.getInstance();
+
+        if (genderFilterComboBox != null) {
+            session.setFilterSetting("gender", genderFilterComboBox.getValue());
+        }
+
+        if (contextFilterComboBox != null) {
+            session.setFilterSetting("context", contextFilterComboBox.getValue());
+        }
+    }
+
+    // Method to apply filter settings from UserSession
+    private void applyFilterSettingsFromSession() {
+        UserSession session = UserSession.getInstance();
+
+        // Apply gender filter if saved
+        String gender = session.getFilterSetting("gender");
+        if (gender != null && genderFilterComboBox != null) {
+            genderFilterComboBox.setValue(gender);
+        }
+
+        // Apply context filter if saved
+        String context = session.getFilterSetting("context");
+        if (context != null && contextFilterComboBox != null) {
+            contextFilterComboBox.setValue(context);
         }
     }
 
