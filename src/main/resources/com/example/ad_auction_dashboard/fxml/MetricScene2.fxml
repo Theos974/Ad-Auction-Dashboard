@@ -16,7 +16,6 @@
 <?import javafx.scene.text.Text?>
 
 <BorderPane styleClass="metrics-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
-
     <center>
         <AnchorPane styleClass="metrics-container" BorderPane.alignment="CENTER">
             <children>
@@ -31,7 +30,7 @@
                                 <Label styleClass="sidebar-icon" text="🏠" />
                             </graphic>
                         </Button>
-                        <Button styleClass="sidebar-button">
+                        <Button fx:id="saveToDatabaseBtn" onAction="#handleToSaveToDatabase" styleClass="sidebar-button">
                             <graphic>
                                 <Label styleClass="sidebar-icon" text="💼" />
                             </graphic>
@@ -41,60 +40,79 @@
                                 <Label styleClass="sidebar-icon" text="👥" />
                             </graphic>
                         </Button>
-                  <Button fx:id="logoutBtn" onAction="#handleLogout" styleClass="sidebar-button">
-                     <graphic>
-                        <ImageView fitHeight="27.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../../../../images/white log off.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
+                        <Button fx:id="logoutBtn" onAction="#handleLogout" styleClass="sidebar-button">
+                            <graphic>
+                                <ImageView fitHeight="27.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                        <Image url="@../../../../images/white log off.png" />
+                                    </image>
+                                </ImageView>
+                            </graphic>
+                        </Button>
                     </children>
                 </VBox>
 
                 <!-- Main content area -->
-                <AnchorPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <AnchorPane AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <children>
-                        <!-- Header with user info and title -->
-                        <HBox alignment="CENTER_LEFT" prefHeight="70.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+                        <!-- Header with user info -->
+                        <HBox alignment="CENTER_LEFT" prefHeight="70.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0">
                             <children>
                                 <!-- User profile -->
                                 <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="300.0" spacing="15.0">
                                     <Circle fill="LIGHTGRAY" radius="25.0" styleClass="user-avatar" />
-                                    <Label fx:id="userWelcomeLabel" prefHeight="25.0" prefWidth="183.0" styleClass="header-text" text="Hello User" />
-   
-                                      <!-- Context Filter -->
-                                   <VBox alignment="CENTER">
-                                       <Label prefHeight="25.0" prefWidth="128.0" styleClass="text-field" text="Context" textFill="white" />
-                                       <ComboBox fx:id="contextFilterComboBox" prefHeight="5.0" prefWidth="32.0" styleClass="filter-combo" />
-                                   </VBox>
-                                   <!-- Gender Filter -->
-                                   <VBox alignment="CENTER">
-                                       <Label styleClass="filter-label" text="Gender" textFill="white" />
-                                       <ComboBox fx:id="genderFilterComboBox" prefHeight="4.0" prefWidth="46.0" styleClass="filter-combo" />
-                                   </VBox>
-                                </HBox>
-
-                                      <!-- Reset Filters Button -->
-                                <Button fx:id="resetFiltersButton" minWidth="146.0" mnemonicParsing="false" onAction="#handleResetFilters" prefHeight="40.0" prefWidth="146.0" styleClass="compare-button" text="Reset Filters">
+                                    <Label fx:id="userWelcomeLabel" prefHeight="25.0" prefWidth="220.0" styleClass="header-text" text="Hello User" />
                            <HBox.margin>
-                              <Insets left="30.0" top="20.0" />
+                              <Insets top="10.0" />
                            </HBox.margin>
-                        </Button>
+                                </HBox>
+                                <HBox HBox.hgrow="ALWAYS" />
+      
+                              <!-- Filtering bar - NEW DEDICATED SECTION -->
+                              <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="20.0" styleClass="filter-bar">
+                                  <children>
+                                      <Label styleClass="filter-header-label" text="Filters:" textFill="white">
+                                          <HBox.margin>
+                                              <Insets right="10.0" top="20.0" />
+                                          </HBox.margin>
+                                      </Label>
+      
+                                      <!-- Context Filter -->
+                                      <VBox alignment="CENTER" spacing="5">
+                                          <Label styleClass="filter-label" text="Context" textFill="white" />
+                                          <ComboBox fx:id="contextFilterComboBox" prefHeight="27.0" prefWidth="126.0" styleClass="filter-combo" />
+                                      </VBox>
+      
+                                      <!-- Gender Filter -->
+                                      <VBox alignment="CENTER" spacing="5">
+                                          <Label styleClass="filter-label" text="Gender" textFill="white" />
+                                          <ComboBox fx:id="genderFilterComboBox" prefWidth="120.0" styleClass="filter-combo" />
+                                      </VBox>
+      
+                                      <HBox HBox.hgrow="ALWAYS">
+                                 <children>
+            
+                                            <!-- Reset Filters Button -->
+                                            <Button fx:id="resetFiltersButton" mnemonicParsing="false" onAction="#handleResetFilters" prefHeight="40.0" prefWidth="150.0" styleClass="compare-button" text="Reset Filters">
+                                       <HBox.margin>
+                                          <Insets top="10.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                 </children>
+                              </HBox>
+                                  </children>
+                                  <padding>
+                                      <Insets bottom="10.0" top="10.0" />
+                                  </padding>
+                              </HBox>
                             </children>
-                        </HBox>
-                        <HBox alignment="CENTER_RIGHT" prefHeight="70.0" spacing="15.0" HBox.hgrow="ALWAYS">
-                            <padding>
-                                <Insets right="20.0" />
-                            </padding>
                         </HBox>
 
                         <!-- Main title -->
-                        <Label layoutX="20.0" layoutY="90.0" styleClass="titleMetricScene-text" text="Performance Overview" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="90.0" />
+                        <Label layoutX="20.0" layoutY="150.0" styleClass="titleMetricScene-text" text="Performance Overview" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="150.0" />
 
                         <!-- Main content container - wraps metrics in scrollable area if needed -->
-                        <AnchorPane styleClass="content-container" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="130.0">
+                        <AnchorPane styleClass="content-container" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="190.0">
                             <children>
                                 <!-- Performance Metrics Section (Impressions, Clicks, Uniques) -->
                                 <HBox alignment="CENTER" prefHeight="150.0" spacing="20.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="0.0">

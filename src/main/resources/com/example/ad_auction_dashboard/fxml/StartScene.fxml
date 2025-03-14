@@ -41,7 +41,7 @@
                 <Button fx:id="loadZipBtn" onAction="#handleLoadZip" prefHeight="50.0" prefWidth="200.0" styleClass="modern-button" text="Load ZIP File" />
 
                 <!-- Button to load from database, visible only for viewers -->
-                <Button fx:id="loadFromDbBtn" onAction="#handleLoadFromDatabase" prefHeight="50.0" prefWidth="200.0" styleClass="modern-button" text="Load Saved Campaign" visible="false" />
+                <Button fx:id="loadFromDbBtn" onAction="#handleLoadFromDatabase" prefHeight="51.0" prefWidth="211.0" styleClass="modern-button" text="Load Saved Campaign" visible="true" />
 
                 <Button fx:id="createCampaignBtn" contentDisplay="CENTER" graphicTextGap="0.0" onAction="#handleCreateCampaign" prefHeight="60.0" prefWidth="300.0" styleClass="primary-button" text="Create Campaign" />
             </children>

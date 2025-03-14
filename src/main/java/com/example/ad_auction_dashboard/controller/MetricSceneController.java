@@ -2,6 +2,7 @@ package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
+import com.example.ad_auction_dashboard.logic.SaveCampaignDialog;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
@@ -67,6 +68,9 @@ public class MetricSceneController {
 
     // Add a field for TimeFilteredMetrics
     private TimeFilteredMetrics timeFilteredMetrics;
+
+    @FXML
+    private Button saveToDatabaseBtn;
 
     @FXML
     public void initialize() {
@@ -354,6 +358,33 @@ public class MetricSceneController {
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error accessing Admin panel");
+        }
+    }
+    @FXML
+    private void handleToSaveToDatabase(ActionEvent event) {
+        if (metrics == null) {
+            showAlert("No campaign data to save");
+            return;
+        }
+
+        // Only editors and admins can save campaigns
+        if (!UserSession.getInstance().isEditor()) {
+            showAlert("You need Editor permissions to save campaigns");
+            return;
+        }
+
+        // Get the current stage
+        Stage stage = (Stage) saveToDatabaseBtn.getScene().getWindow();
+
+        // Show save dialog
+        boolean saved = SaveCampaignDialog.showDialog(stage, metrics);
+
+        if (saved) {
+            // Optional: Update UI to reflect successful save
+            if (UserSession.getInstance().getUser() != null) {
+                userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername() +
+                    " (Campaign saved)");
+            }
         }
     }
     @FXML

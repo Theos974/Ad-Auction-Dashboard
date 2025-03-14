@@ -3,6 +3,7 @@ package com.example.ad_auction_dashboard.controller;
 import com.example.ad_auction_dashboard.logic.Campaign;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.FileHandler;
+import com.example.ad_auction_dashboard.logic.LoadCampaignDialog;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
@@ -61,6 +62,9 @@ public class StartSceneController {
 
             // Show alternative button for loading from database
             loadFromDbBtn.setVisible(true);
+        } else {
+            // Editors can see both options
+            loadFromDbBtn.setVisible(true);
         }
 
         if (session.isAdmin()) {
@@ -70,7 +74,6 @@ public class StartSceneController {
             adminPanelBtn.setVisible(false);
         }
     }
-
     // Event handler for loading a ZIP file and creating the campaign
     @FXML
     private void handleLoadZip(ActionEvent event) {
@@ -117,9 +120,38 @@ public class StartSceneController {
     // Event handler for loading from database (for viewers)
     @FXML
     private void handleLoadFromDatabase(ActionEvent event) {
-        // TODO: Implement database loading functionality
-        statusText.setText("Loading from database is not yet implemented.");
+        // Get the current stage
+        Stage stage = (Stage) loadFromDbBtn.getScene().getWindow();
+
+        // Show campaign selection dialog
+        Campaign loadedCampaign = LoadCampaignDialog.showDialog(stage);
+
+        if (loadedCampaign != null) {
+            createCampaignFromData(loadedCampaign);
+        } else {
+            statusText.setText("No campaign was loaded.");
+        }
     }
+    private void createCampaignFromData(Campaign campaign) {
+        statusText.setText("Campaign loaded. Switching to metrics view...");
+        CampaignMetrics metrics = new CampaignMetrics(campaign);
+
+        try {
+            UserSession.getInstance().setPreviousScene("StartScene");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
+            Parent root = loader.load();
+            MetricSceneController controller = loader.getController();
+            controller.setMetrics(metrics);
+
+            Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
+            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+            statusText.setText("Error switching to metrics view.");
+        }
+    }
+
 
     // Event handler for opening the admin panel
     @FXML
