@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -53,7 +54,7 @@
                 </VBox>
 
                 <!-- Main content area -->
-                <AnchorPane AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <AnchorPane layoutX="70.0" layoutY="-13.0" AnchorPane.bottomAnchor="23.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-13.0">
                     <children>
                         <!-- Header with user info -->
                         <HBox alignment="CENTER_LEFT" prefHeight="70.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="30.0">
@@ -67,7 +68,7 @@
                            </HBox.margin>
                                 </HBox>
                                 <HBox HBox.hgrow="ALWAYS" />
-      
+
                               <!-- Filtering bar - NEW DEDICATED SECTION -->
                               <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="20.0" styleClass="filter-bar">
                                   <children>
@@ -76,26 +77,26 @@
                                               <Insets right="10.0" top="20.0" />
                                           </HBox.margin>
                                       </Label>
-      
+
                                       <!-- Context Filter -->
                                       <VBox alignment="CENTER" spacing="5">
                                           <Label styleClass="filter-label" text="Context" textFill="white" />
-                                          <ComboBox fx:id="contextFilterComboBox" prefHeight="27.0" prefWidth="126.0" styleClass="filter-combo" />
+                                          <ComboBox fx:id="contextFilterComboBox" prefHeight="27.0" prefWidth="132.0" styleClass="filter-combo" />
                                       </VBox>
-      
+
                                       <!-- Gender Filter -->
                                       <VBox alignment="CENTER" spacing="5">
                                           <Label styleClass="filter-label" text="Gender" textFill="white" />
-                                          <ComboBox fx:id="genderFilterComboBox" prefWidth="120.0" styleClass="filter-combo" />
+                                          <ComboBox fx:id="genderFilterComboBox" prefHeight="27.0" prefWidth="128.0" styleClass="filter-combo" />
                                       </VBox>
-      
+
                                       <HBox HBox.hgrow="ALWAYS">
                                  <children>
-            
+
                                             <!-- Reset Filters Button -->
                                             <Button fx:id="resetFiltersButton" mnemonicParsing="false" onAction="#handleResetFilters" prefHeight="40.0" prefWidth="150.0" styleClass="compare-button" text="Reset Filters">
                                        <HBox.margin>
-                                          <Insets top="10.0" />
+                                          <Insets top="40.0" />
                                        </HBox.margin>
                                     </Button>
                                  </children>
@@ -380,6 +381,15 @@
                                 </VBox>
                             </children>
                         </AnchorPane>
+                          <!-- Date Range Filter -->
+                          <VBox alignment="CENTER" layoutX="613.0" layoutY="82.0" spacing="5" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="120.0">
+                              <HBox spacing="5">
+                                 <Label prefHeight="17.0" prefWidth="86.0" styleClass="filter-label" text="Date Range" textFill="white" />
+                                  <DatePicker fx:id="startDatePicker" prefHeight="27.0" prefWidth="126.0" promptText="Start Date" />
+                                  <Label prefHeight="17.0" prefWidth="14.0" text="to" textFill="white" />
+                                  <DatePicker fx:id="endDatePicker" prefHeight="27.0" prefWidth="129.0" promptText="End Date" />
+                              </HBox>
+                          </VBox>
                     </children>
                 </AnchorPane>
             </children>

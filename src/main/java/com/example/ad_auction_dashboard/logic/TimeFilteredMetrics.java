@@ -63,7 +63,7 @@ public class TimeFilteredMetrics {
     private final Map<String, Double> hourlyCostCache = new HashMap<>();
 
     // User-impressions mapping for efficient filtering
-    private final Map<String, Set<ImpressionLog>> userImpressionsMap = new HashMap<>();
+    private Map<String, List<FilterAttributes>> userImpressionsMap = new HashMap<>();
 
     // Flag to track if cache is initialized
     private boolean hourlyDataCached = false;
@@ -81,29 +81,63 @@ public class TimeFilteredMetrics {
         initializeHourlyCaches();
         buildUserImpressionsMap();
     }
-
-    /**
-     * Build a mapping of user IDs to their impression logs for efficient filtering
-     */
+/*
+     * Build a memory-efficient index of user IDs to their impression attributes
+ * instead of storing entire impression objects
+ */
     private void buildUserImpressionsMap() {
         if (userImpressionsMapBuilt) return;
 
-        userImpressionsMap.clear();
+        // Create a more memory-efficient map structure
+        // Instead of storing full ImpressionLog objects, we'll just store the filter attributes
+        Map<String, List<FilterAttributes>> efficientMap = new HashMap<>();
+
         if (imps != null) {
             for (ImpressionLog imp : imps) {
                 if (imp == null || imp.getId() == null) continue;
 
                 String userId = imp.getId();
-                if (!userImpressionsMap.containsKey(userId)) {
-                    userImpressionsMap.put(userId, new HashSet<>());
+
+                // Create a lightweight object with just the fields needed for filtering
+                FilterAttributes attrs = new FilterAttributes(
+                    imp.getGender(),
+                    imp.getAge(),
+                    imp.getIncome(),
+                    imp.getContext()
+                );
+
+                // Add to our efficient map
+                if (!efficientMap.containsKey(userId)) {
+                    efficientMap.put(userId, new ArrayList<>());
                 }
-                userImpressionsMap.get(userId).add(imp);
+                efficientMap.get(userId).add(attrs);
             }
         }
 
+        // Replace the heavy map with our efficient one
+        this.userImpressionsMap = efficientMap;
         userImpressionsMapBuilt = true;
     }
 
+
+
+    /**
+     * A lightweight class to store only the attributes needed for filtering
+     * Uses much less memory than storing entire ImpressionLog objects
+     */
+    private static class FilterAttributes {
+        final String gender;
+        final String age;
+        final String income;
+        final String context;
+
+        FilterAttributes(String gender, String age, String income, String context) {
+            this.gender = gender;
+            this.age = age;
+            this.income = income;
+            this.context = context;
+        }
+    }
     /**
      * Set a filter for gender
      * @param gender The gender to filter by, or null to clear the filter
@@ -163,7 +197,7 @@ public class TimeFilteredMetrics {
     }
 
     /**
-     * Check if a user ID passes the current filters by checking their impressions
+     * Check if a user passes filters using our memory-efficient index
      */
     public boolean userPassesFilters(String userId) {
         if (genderFilter == null && ageFilter == null &&
@@ -171,17 +205,27 @@ public class TimeFilteredMetrics {
             return true; // No filters active
         }
 
-        Set<ImpressionLog> userImps = userImpressionsMap.get(userId);
-        if (userImps == null || userImps.isEmpty()) {
-            return false; // No impressions found for this user
+        // Make sure the index is built
+        if (!userImpressionsMapBuilt) {
+            buildUserImpressionsMap();
         }
 
-        // Check if any impression for this user passes the filters
-        for (ImpressionLog imp : userImps) {
-            if (passesFilters(imp)) {
+        // Get the user's impression attributes
+        List<FilterAttributes> userAttrs = userImpressionsMap.get(userId);
+        if (userAttrs == null || userAttrs.isEmpty()) {
+            return false;
+        }
+
+        // Check if any of the user's impressions pass all active filters
+        for (FilterAttributes attrs : userAttrs) {
+            if ((genderFilter == null || genderFilter.equals(attrs.gender)) &&
+                (ageFilter == null || ageFilter.equals(attrs.age)) &&
+                (incomeFilter == null || incomeFilter.equals(attrs.income)) &&
+                (contextFilter == null || contextFilter.equals(attrs.context))) {
                 return true;
             }
         }
+
         return false;
     }
 

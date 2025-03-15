@@ -7,6 +7,8 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
@@ -15,16 +17,16 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" styleClass="combo-box" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.AdminPanelController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" styleClass="combo-box" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.AdminPanelController">
     <top>
         <HBox alignment="CENTER" prefHeight="80.0" prefWidth="200.0" spacing="20.0" BorderPane.alignment="CENTER">
-            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="User Management" textAlignment="CENTER">
+            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Admin Panel" textAlignment="CENTER">
                 <font>
                     <Font name="System Bold" size="36.0" />
                 </font>
-            <HBox.margin>
-               <Insets left="20.0" />
-            </HBox.margin>
+                <HBox.margin>
+                    <Insets left="20.0" />
+                </HBox.margin>
             </Text>
             <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                 <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBack" styleClass="transparent-button" textFill="#fffefe">
@@ -52,73 +54,127 @@
         </HBox>
     </top>
     <center>
-        <VBox spacing="10.0" BorderPane.alignment="CENTER">
-            <padding>
-                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-            </padding>
-            <TableView fx:id="userTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
-                    <TableColumn fx:id="usernameColumn" prefWidth="150.0" text="Username" />
-                    <TableColumn fx:id="emailColumn" prefWidth="250.0" text="Email" />
-                    <TableColumn fx:id="phoneColumn" prefWidth="150.0" text="Phone" />
-                    <TableColumn fx:id="roleColumn" prefWidth="100.0" text="Role" />
-                    <TableColumn fx:id="rolePassword" prefWidth="100.0" text="Password" />
-                </columns>
-            </TableView>
+        <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="admin-tabpane" BorderPane.alignment="CENTER">
+            <tabs>
+                <!-- User Management Tab -->
+                <Tab text="User Management">
+                    <content>
+                        <VBox spacing="10.0">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <TableView fx:id="userTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="idColumn" prefWidth="50.0" text="ID" />
+                                    <TableColumn fx:id="usernameColumn" prefWidth="150.0" text="Username" />
+                                    <TableColumn fx:id="emailColumn" prefWidth="250.0" text="Email" />
+                                    <TableColumn fx:id="phoneColumn" prefWidth="150.0" text="Phone" />
+                                    <TableColumn fx:id="roleColumn" prefWidth="100.0" text="Role" />
+                                    <TableColumn fx:id="rolePassword" prefWidth="100.0" text="Password" />
+                                </columns>
+                            </TableView>
 
-            <HBox alignment="CENTER" spacing="10.0">
-                <!-- First VBox with darker blue background -->
-                <VBox prefHeight="150.0" prefWidth="400.0" spacing="10.0" style="-fx-background-color: #42424f; -fx-background-radius: 8; -fx-padding: 15;">
-                    <Label text="Change Role" textAlignment="CENTER" textFill="#f2f0f0">
-                        <font>
-                            <Font name="System Bold" size="14.0" />
-                        </font>
-                    </Label>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label text="Selected User:" textFill="#f2f2f2" />
-                        <Label fx:id="selectedUserLabel" text="None" textFill="#f2eded" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label text="New Role:" textFill="#ebe7e7" />
-                        <ComboBox fx:id="roleComboBox" prefWidth="150.0" />
-                    </HBox>
-                    <Button mnemonicParsing="false" onAction="#handleChangeRole" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Apply Role Change" />
-                </VBox>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <!-- First VBox with darker blue background -->
+                                <VBox prefHeight="150.0" prefWidth="400.0" spacing="10.0" style="-fx-background-color: #42424f; -fx-background-radius: 8; -fx-padding: 15;">
+                                    <Label text="Change Role" textAlignment="CENTER" textFill="#f2f0f0">
+                                        <font>
+                                            <Font name="System Bold" size="14.0" />
+                                        </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label text="Selected User:" textFill="#f2f2f2" />
+                                        <Label fx:id="selectedUserLabel" text="None" textFill="#f2eded" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label text="New Role:" textFill="#ebe7e7" />
+                                        <ComboBox fx:id="roleComboBox" prefWidth="150.0" />
+                                    </HBox>
+                                    <Button mnemonicParsing="false" onAction="#handleChangeRole" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Apply Role Change" />
+                                </VBox>
 
-                <!-- Second VBox with different color -->
-                <VBox prefHeight="150.0" prefWidth="400.0" spacing="10.0" style="-fx-background-color: #42424f; -fx-background-radius: 8; -fx-padding: 15;">
-                    <Label text="Create New User" textAlignment="CENTER" textFill="#ebebeb">
-                        <font>
-                            <Font name="System Bold" size="14.0" />
-                        </font>
-                    </Label>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label prefWidth="80.0" text="Username:" textFill="#f5f2f2" />
-                        <TextField fx:id="newUsernameField" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label prefWidth="80.0" text="Email:" textFill="#f2eeee" />
-                        <TextField fx:id="newEmailField" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label prefWidth="80.0" text="Phone:" textFill="#ebebeb" />
-                        <TextField fx:id="newPhoneField" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label prefWidth="80.0" text="Password:" textFill="#eee7e7" />
-                        <TextField fx:id="newPasswordField" />
-                    </HBox>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0">
-                        <Label prefWidth="80.0" text="Role:" textFill="#f2f2f2" />
-                        <ComboBox fx:id="newRoleComboBox" prefWidth="150.0" />
-                    </HBox>
-                    <Button mnemonicParsing="false" onAction="#handleAddUser" prefHeight="39.0" prefWidth="118.0" styleClass="flat-button" text="Add User" />
-                </VBox>
-            <Button mnemonicParsing="false" onAction="#handleDelete" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Delete User" />
-            </HBox>
+                                <!-- Second VBox with different color -->
+                                <VBox prefHeight="150.0" prefWidth="400.0" spacing="10.0" style="-fx-background-color: #42424f; -fx-background-radius: 8; -fx-padding: 15;">
+                                    <Label text="Create New User" textAlignment="CENTER" textFill="#ebebeb">
+                                        <font>
+                                            <Font name="System Bold" size="14.0" />
+                                        </font>
+                                    </Label>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label prefWidth="80.0" text="Username:" textFill="#f5f2f2" />
+                                        <TextField fx:id="newUsernameField" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label prefWidth="80.0" text="Email:" textFill="#f2eeee" />
+                                        <TextField fx:id="newEmailField" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label prefWidth="80.0" text="Phone:" textFill="#ebebeb" />
+                                        <TextField fx:id="newPhoneField" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label prefWidth="80.0" text="Password:" textFill="#eee7e7" />
+                                        <TextField fx:id="newPasswordField" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                        <Label prefWidth="80.0" text="Role:" textFill="#f2f2f2" />
+                                        <ComboBox fx:id="newRoleComboBox" prefWidth="150.0" />
+                                    </HBox>
+                                    <Button mnemonicParsing="false" onAction="#handleAddUser" prefHeight="39.0" prefWidth="118.0" styleClass="flat-button" text="Add User" />
+                                </VBox>
+                                <Button mnemonicParsing="false" onAction="#handleDelete" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Delete User" />
+                            </HBox>
 
-            <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />
-        </VBox>
+                            <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <!-- Campaign Assignments Tab -->
+                <Tab text="Campaign Assignments">
+                    <content>
+                        <VBox spacing="10.0">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <HBox spacing="10.0" VBox.vgrow="ALWAYS">
+                                <!-- Left side: Campaigns list -->
+                                <VBox spacing="10.0" prefWidth="450.0" HBox.hgrow="ALWAYS">
+                                    <Label text="Available Campaigns" style="-fx-font-size: 16; -fx-text-fill: white;" />
+                                    <TableView fx:id="campaignTable" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="campaignIdColumn" prefWidth="50.0" text="ID" />
+                                            <TableColumn fx:id="campaignNameColumn" prefWidth="200.0" text="Campaign Name" />
+                                            <TableColumn fx:id="campaignDateColumn" prefWidth="150.0" text="Date Range" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+
+                                <!-- Right side: Users and assignments -->
+                                <VBox spacing="10.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+                                    <Label text="User Access" style="-fx-font-size: 16; -fx-text-fill: white;" />
+                                    <TableView fx:id="assignmentTable" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="assignmentUserColumn" prefWidth="200.0" text="Username" />
+                                            <TableColumn fx:id="assignmentRoleColumn" prefWidth="100.0" text="Role" />
+                                            <TableColumn fx:id="assignmentAccessColumn" prefWidth="100.0" text="Has Access" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </HBox>
+
+                            <!-- Action buttons -->
+                            <HBox alignment="CENTER" spacing="20.0">
+                                <Button fx:id="refreshCampaignsBtn" onAction="#handleRefreshCampaigns" styleClass="flat-button" text="Refresh Campaigns" />
+                                <Button fx:id="grantAccessBtn" onAction="#handleGrantAccess" styleClass="flat-button" text="Grant Access" />
+                                <Button fx:id="revokeAccessBtn" onAction="#handleRevokeAccess" styleClass="flat-button" text="Revoke Access" />
+                            </HBox>
+
+                            <Text fx:id="campaignStatusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
     </center>
 </BorderPane>

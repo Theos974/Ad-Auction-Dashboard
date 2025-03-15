@@ -1,8 +1,5 @@
 package com.example.ad_auction_dashboard.logic;
 
-import com.example.ad_auction_dashboard.logic.Campaign;
-import com.example.ad_auction_dashboard.logic.CampaignDatabase;
-import com.example.ad_auction_dashboard.logic.UserSession;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -43,19 +40,23 @@ public class LoadCampaignDialog {
         VBox vbox = new VBox(10);
         vbox.setPadding(new Insets(20, 20, 10, 20));
 
-        // Get current user ID
-        int userId = UserSession.getInstance().getUser() != null ?
-            UserSession.getInstance().getUser().getId() : 0;
+        // Get current user ID and role
+        UserSession session = UserSession.getInstance();
+        int userId = session.getUser() != null ? session.getUser().getId() : 0;
+        boolean isAdmin = session.isAdmin();
+        boolean isEditor = session.isEditor();
 
-        // Determine if we should show all campaigns or just user's campaigns
-        boolean isAdmin = UserSession.getInstance().isAdmin();
-
-        // Load campaigns from database
+        // Load campaigns based on user role
         List<CampaignDatabase.CampaignInfo> campaignList;
         if (isAdmin) {
+            // Admins can see all campaigns
             campaignList = CampaignDatabase.getAllCampaigns();
+        } else if (isEditor) {
+            // Editors can see campaigns they created plus those assigned to them
+            campaignList = CampaignDatabase.getAccessibleCampaigns(userId);
         } else {
-            campaignList = CampaignDatabase.getUserCampaigns(userId);
+            // Viewers can only see campaigns assigned to them
+            campaignList = CampaignDatabase.getAccessibleCampaigns(userId);
         }
 
         // Create ListView for campaigns
@@ -106,29 +107,48 @@ public class LoadCampaignDialog {
                         .append(" to ").append(newVal.getEndDate().format(formatter)).append("\n");
                 }
 
+                List<UserDatabase.User> allUsers = UserDatabase.getAllUsers();
+                for (UserDatabase.User user : allUsers) {
+                    if (user.getId() == newVal.getUserId()) {
+                        details.append("Created by: ").append(user.getUsername()).append(" (").append(user.getRole()).append(")");
+                        break;
+                    }
+                }
+
+
                 detailsArea.setText(details.toString());
             } else {
                 detailsArea.setText("");
             }
         });
 
-        // Declare combo box at a higher scope
+        // Create filter combo box for admins and editors
         ComboBox<String> filterComboBox = null;
-
-        // Add a filter control for admins to switch between all campaigns and user campaigns
-        if (isAdmin) {
+        if (isAdmin || isEditor) {
             filterComboBox = new ComboBox<>();
-            filterComboBox.getItems().addAll("All Campaigns", "My Campaigns");
-            filterComboBox.setValue("All Campaigns");
+            filterComboBox.getItems().add("All Accessible Campaigns");
+
+            if (isAdmin) {
+                filterComboBox.getItems().add("All Campaigns");
+            }
+
+            if (isEditor || isAdmin) {
+                filterComboBox.getItems().add("My Campaigns");
+            }
+
+            filterComboBox.setValue("All Accessible Campaigns");
 
             ComboBox<String> finalFilterComboBox = filterComboBox; // Final copy for use in lambda
             filterComboBox.setOnAction(e -> {
-                if (finalFilterComboBox.getValue().equals("All Campaigns")) {
+                if (finalFilterComboBox.getValue().equals("All Campaigns") && isAdmin) {
                     campaignListView.setItems(FXCollections.observableArrayList(
                         CampaignDatabase.getAllCampaigns()));
-                } else {
+                } else if (finalFilterComboBox.getValue().equals("My Campaigns")) {
                     campaignListView.setItems(FXCollections.observableArrayList(
                         CampaignDatabase.getUserCampaigns(userId)));
+                } else { // "All Accessible Campaigns"
+                    campaignListView.setItems(FXCollections.observableArrayList(
+                        CampaignDatabase.getAccessibleCampaigns(userId)));
                 }
             });
 
@@ -155,11 +175,25 @@ public class LoadCampaignDialog {
 
         // Handle delete button action
         Button deleteButton = (Button) dialog.getDialogPane().lookupButton(deleteButtonType);
+
+        // Only allow admins and owners to delete campaigns
+        if (!isAdmin) {
+            deleteButton.setDisable(true);
+        }
+
         deleteButton.setOnAction(event -> {
             CampaignDatabase.CampaignInfo selectedCampaign =
                 campaignListView.getSelectionModel().getSelectedItem();
 
             if (selectedCampaign != null) {
+                // Only admins or campaign creators can delete campaigns
+                if (!isAdmin && selectedCampaign.getUserId() != userId) {
+                    showInfoDialog("Permission Denied",
+                        "You don't have permission to delete this campaign. Only admins or the campaign creator can delete campaigns.");
+                    event.consume();
+                    return;
+                }
+
                 boolean confirmed = showConfirmationDialog(
                     "Delete Campaign",
                     "Are you sure you want to delete campaign \"" +
@@ -176,9 +210,13 @@ public class LoadCampaignDialog {
                             finalFilterComboBox.getValue().equals("All Campaigns")) {
                             campaignListView.setItems(FXCollections.observableArrayList(
                                 CampaignDatabase.getAllCampaigns()));
-                        } else {
+                        } else if (finalFilterComboBox != null &&
+                            finalFilterComboBox.getValue().equals("My Campaigns")) {
                             campaignListView.setItems(FXCollections.observableArrayList(
                                 CampaignDatabase.getUserCampaigns(userId)));
+                        } else {
+                            campaignListView.setItems(FXCollections.observableArrayList(
+                                CampaignDatabase.getAccessibleCampaigns(userId)));
                         }
 
                         showInfoDialog("Campaign Deleted",
@@ -198,7 +236,7 @@ public class LoadCampaignDialog {
         // Enable/disable load and delete buttons based on selection
         Button loadButton = (Button) dialog.getDialogPane().lookupButton(loadButtonType);
         loadButton.setDisable(campaignList.isEmpty());
-        deleteButton.setDisable(campaignList.isEmpty());
+        deleteButton.setDisable(campaignList.isEmpty() || !isAdmin);
 
         // Set result converter
         dialog.setResultConverter(dialogButton -> {
@@ -215,13 +253,21 @@ public class LoadCampaignDialog {
             CampaignDatabase.CampaignInfo selectedCampaign = result.get();
 
             try {
-                // Load campaign from database
-                Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
+                // Check access permissions
+                if (isAdmin ||
+                    selectedCampaign.getUserId() == userId ||
+                    CampaignDatabase.canUserAccessCampaign(userId, selectedCampaign.getCampaignId())) {
 
-                if (campaign != null) {
-                    return campaign;
+                    // Load campaign from database
+                    Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
+
+                    if (campaign != null) {
+                        return campaign;
+                    } else {
+                        showErrorDialog("Failed to load campaign data. Please try again.");
+                    }
                 } else {
-                    showErrorDialog("Failed to load campaign data. Please try again.");
+                    showErrorDialog("You don't have permission to access this campaign.");
                 }
             } catch (Exception e) {
                 showErrorDialog("Error loading campaign: " + e.getMessage());

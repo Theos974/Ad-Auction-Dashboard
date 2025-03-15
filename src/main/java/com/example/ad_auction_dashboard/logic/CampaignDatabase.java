@@ -7,7 +7,10 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class manages campaign database operations.
@@ -344,6 +347,18 @@ public class CampaignDatabase {
                 "FOREIGN KEY (campaign_id) REFERENCES Campaigns(campaign_id) ON DELETE CASCADE" +
                 ")"
         );
+        // Create CampaignAssignments table - for assigning campaigns to users
+        stmt.execute(
+            "CREATE TABLE IF NOT EXISTS CampaignAssignments (" +
+                "assignment_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "campaign_id INT NOT NULL, " +
+                "user_id INT NOT NULL, " +
+                "assigned_by INT NOT NULL, " +
+                "assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY (campaign_id) REFERENCES Campaigns(campaign_id) ON DELETE CASCADE, " +
+                "UNIQUE (campaign_id, user_id)" +
+                ")"
+        );
     }
 
     private static int insertCampaignRecord(Connection conn, CampaignMetrics campaignMetrics,
@@ -641,5 +656,499 @@ public class CampaignDatabase {
             return campaignName + " (ID: " + campaignId + ", Created: " +
                 (creationDate != null ? creationDate.toLocalDate() : "Unknown") + ")";
         }
+    }
+
+    /**
+     * Get metrics for a specific time period and filters directly from the database
+     * rather than loading all data
+     */
+    public static Map<String, Object> getFilteredMetrics(
+        int campaignId,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        String genderFilter,
+        String contextFilter) {
+
+        Map<String, Object> metrics = new HashMap<>();
+
+        try (Connection conn = getConnection()) {
+            // Query for impressions with filters
+            StringBuilder impressionsQuery = new StringBuilder(
+                "SELECT COUNT(*) as impression_count, SUM(impression_cost) as impression_cost " +
+                    "FROM ImpressionLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?"
+            );
+
+            // Add filters if provided
+            if (genderFilter != null && !genderFilter.isEmpty() && !genderFilter.equals("All")) {
+                impressionsQuery.append(" AND gender = ?");
+            }
+            if (contextFilter != null && !contextFilter.isEmpty() && !contextFilter.equals("All")) {
+                impressionsQuery.append(" AND context = ?");
+            }
+
+            PreparedStatement stmt = conn.prepareStatement(impressionsQuery.toString());
+            int paramIndex = 1;
+            stmt.setInt(paramIndex++, campaignId);
+            stmt.setTimestamp(paramIndex++, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(paramIndex++, Timestamp.valueOf(endDate));
+
+            if (genderFilter != null && !genderFilter.isEmpty() && !genderFilter.equals("All")) {
+                stmt.setString(paramIndex++, genderFilter);
+            }
+            if (contextFilter != null && !contextFilter.isEmpty() && !contextFilter.equals("All")) {
+                stmt.setString(paramIndex++, contextFilter);
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                metrics.put("impressions", rs.getInt("impression_count"));
+                metrics.put("impression_cost", rs.getDouble("impression_cost"));
+            }
+
+            // Similar approach for clicks, conversions, etc.
+            // ...
+
+            // Get the number of unique users
+            String uniquesQuery =
+                "SELECT COUNT(DISTINCT user_id) as unique_count " +
+                    "FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
+
+            stmt = conn.prepareStatement(uniquesQuery);
+            stmt.setInt(1, campaignId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
+
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                metrics.put("uniques", rs.getInt("unique_count"));
+            }
+
+            // Calculate bounce rate directly in SQL
+            String bounceQuery =
+                "SELECT COUNT(*) as bounce_count FROM ServerLogs " +
+                    "WHERE campaign_id = ? AND entry_date BETWEEN ? AND ? " +
+                    "AND (pages_viewed <= ? OR (TIMESTAMPDIFF(SECOND, entry_date, exit_date) <= ?))";
+
+            stmt = conn.prepareStatement(bounceQuery);
+            stmt.setInt(1, campaignId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
+            stmt.setInt(4, getBouncePageThreshold(conn, campaignId));
+            stmt.setInt(5, getBounceTimeThreshold(conn, campaignId));
+
+            rs = stmt.executeQuery();
+            if (rs.next()) {
+                metrics.put("bounces", rs.getInt("bounce_count"));
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error getting filtered metrics: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return metrics;
+    }
+
+    /**
+     * Get time-based metrics for charts directly from the database
+     */
+    public static Map<String, Map<String, Object>> getTimeSeriesMetrics(
+        int campaignId,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        String granularity) {
+
+        Map<String, Map<String, Object>> timeSeriesData = new HashMap<>();
+
+        try (Connection conn = getConnection()) {
+            String timeFormat;
+            String groupBy;
+
+            // Set SQL time format based on granularity
+            switch (granularity) {
+                case "Hourly":
+                    timeFormat = "FORMAT(log_date, 'yyyy-MM-dd HH:00:00')";
+                    groupBy = "HOUR";
+                    break;
+                case "Daily":
+                    timeFormat = "FORMAT(log_date, 'yyyy-MM-dd')";
+                    groupBy = "DAY";
+                    break;
+                case "Weekly":
+                    // H2 specific format for week grouping
+                    timeFormat = "FORMATDATETIME(log_date, 'yyyy-ww')";
+                    groupBy = "WEEK";
+                    break;
+                default:
+                    timeFormat = "FORMAT(log_date, 'yyyy-MM-dd')";
+                    groupBy = "DAY";
+            }
+
+            // Query impressions grouped by time
+            String query =
+                "SELECT " + timeFormat + " as time_bucket, " +
+                    "COUNT(*) as count, SUM(impression_cost) as cost " +
+                    "FROM ImpressionLogs " +
+                    "WHERE campaign_id = ? AND log_date BETWEEN ? AND ? " +
+                    "GROUP BY " + groupBy + "(log_date) " +
+                    "ORDER BY time_bucket";
+
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, campaignId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String timeBucket = rs.getString("time_bucket");
+                Map<String, Object> bucketData = new HashMap<>();
+                bucketData.put("impressions", rs.getInt("count"));
+                bucketData.put("impression_cost", rs.getDouble("cost"));
+
+                timeSeriesData.put(timeBucket, bucketData);
+            }
+
+            // Similar queries for clicks, conversions, etc.
+            // ...
+        } catch (SQLException e) {
+            System.err.println("Error getting time series metrics: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return timeSeriesData;
+    }
+
+    /**
+     * Get histogram data directly from the database
+     */
+    public static Map<String, Integer> getClickCostHistogram(
+        int campaignId,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        int numBins) {
+
+        Map<String, Integer> histogramData = new LinkedHashMap<>();
+
+        try (Connection conn = getConnection()) {
+            // First get min and max click costs
+            String minMaxQuery =
+                "SELECT MIN(click_cost) as min_cost, MAX(click_cost) as max_cost " +
+                    "FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
+
+            PreparedStatement stmt = conn.prepareStatement(minMaxQuery);
+            stmt.setInt(1, campaignId);
+            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                double minCost = rs.getDouble("min_cost");
+                double maxCost = rs.getDouble("max_cost");
+
+                // Add buffer to max
+                maxCost += 0.001;
+
+                // Calculate bin width
+                double binWidth = (maxCost - minCost) / numBins;
+
+                // Now get the histogram data using SQL CASE statements
+                StringBuilder histQuery = new StringBuilder(
+                    "SELECT ");
+
+                for (int i = 0; i < numBins; i++) {
+                    double lowerBound = minCost + (i * binWidth);
+                    double upperBound = lowerBound + binWidth;
+
+                    histQuery.append("SUM(CASE WHEN click_cost >= ")
+                        .append(lowerBound)
+                        .append(" AND click_cost < ")
+                        .append(upperBound)
+                        .append(" THEN 1 ELSE 0 END) as bin")
+                        .append(i);
+
+                    if (i < numBins - 1) {
+                        histQuery.append(", ");
+                    }
+
+                    // Format bin label
+                    String binLabel;
+                    if (lowerBound < 0.01 && upperBound < 0.01) {
+                        binLabel = String.format("$%.4f-$%.4f", lowerBound, upperBound);
+                    } else {
+                        binLabel = String.format("$%.2f-$%.2f", lowerBound, upperBound);
+                    }
+
+                    // Initialize the bin in the result map
+                    histogramData.put(binLabel, 0);
+                }
+
+                histQuery.append(" FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?");
+
+                stmt = conn.prepareStatement(histQuery.toString());
+                stmt.setInt(1, campaignId);
+                stmt.setTimestamp(2, Timestamp.valueOf(startDate));
+                stmt.setTimestamp(3, Timestamp.valueOf(endDate));
+
+                rs = stmt.executeQuery();
+                if (rs.next()) {
+                    int binIndex = 0;
+                    for (String binLabel : histogramData.keySet()) {
+                        histogramData.put(binLabel, rs.getInt("bin" + binIndex));
+                        binIndex++;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error generating histogram: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return histogramData;
+    }
+
+    // Helper method to get bounce page threshold
+    private static int getBouncePageThreshold(Connection conn, int campaignId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement(
+            "SELECT bounce_pages_threshold FROM Campaigns WHERE campaign_id = ?"
+        );
+        stmt.setInt(1, campaignId);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("bounce_pages_threshold");
+        }
+        return 1; // Default
+    }
+
+    // Helper method to get bounce time threshold
+    private static int getBounceTimeThreshold(Connection conn, int campaignId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement(
+            "SELECT bounce_seconds_threshold FROM Campaigns WHERE campaign_id = ?"
+        );
+        stmt.setInt(1, campaignId);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            return rs.getInt("bounce_seconds_threshold");
+        }
+        return 4; // Default
+    }
+    /**
+     * Check if a user has access to a campaign
+     *
+     * @param userId The user ID to check
+     * @param campaignId The campaign ID to check
+     * @return true if the user has access, false otherwise
+     */
+    public static boolean hasUserAccess(int userId, int campaignId) {
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT 1 FROM CampaignAssignments WHERE user_id = ? AND campaign_id = ?"
+            );
+            stmt.setInt(1, userId);
+            stmt.setInt(2, campaignId);
+
+            ResultSet rs = stmt.executeQuery();
+            return rs.next(); // If any row exists, user has access
+        } catch (SQLException e) {
+            System.err.println("Error checking user access: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Assign a campaign to a user
+     *
+     * @param campaignId The campaign ID
+     * @param userId The user ID to assign access to
+     * @param assignedById The user ID of the admin making the assignment
+     * @return true if successful, false otherwise
+     */
+    public static boolean assignCampaignToUser(int campaignId, int userId, int assignedById) {
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            // Check if assignment already exists
+            if (hasUserAccess(userId, campaignId)) {
+                return true; // Assignment already exists
+            }
+
+            // Create new assignment
+            PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO CampaignAssignments (campaign_id, user_id, assigned_by) VALUES (?, ?, ?)"
+            );
+            stmt.setInt(1, campaignId);
+            stmt.setInt(2, userId);
+            stmt.setInt(3, assignedById);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error assigning campaign: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Remove a campaign assignment from a user
+     *
+     * @param campaignId The campaign ID
+     * @param userId The user ID to remove access from
+     * @return true if successful, false otherwise
+     */
+    public static boolean removeCampaignFromUser(int campaignId, int userId) {
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM CampaignAssignments WHERE campaign_id = ? AND user_id = ?"
+            );
+            stmt.setInt(1, campaignId);
+            stmt.setInt(2, userId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error removing campaign assignment: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Get all users who have access to a specific campaign
+     *
+     * @param campaignId The campaign ID
+     * @return List of user IDs with access to the campaign
+     */
+    public static List<Integer> getUsersWithAccess(int campaignId) {
+        initDatabaseFolder();
+        List<Integer> userIds = new ArrayList<>();
+
+        try (Connection conn = getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT user_id FROM CampaignAssignments WHERE campaign_id = ?"
+            );
+            stmt.setInt(1, campaignId);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                userIds.add(rs.getInt("user_id"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting users with access: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return userIds;
+    }
+
+    /**
+     * Get all campaigns that a user has access to
+     *
+     * @param userId The user ID
+     * @return List of campaign IDs the user has access to
+     */
+    public static List<Integer> getCampaignsForUser(int userId) {
+        initDatabaseFolder();
+        List<Integer> campaignIds = new ArrayList<>();
+
+        try (Connection conn = getConnection()) {
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT campaign_id FROM CampaignAssignments WHERE user_id = ?"
+            );
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                campaignIds.add(rs.getInt("campaign_id"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting campaigns for user: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return campaignIds;
+    }
+
+    /**
+     * Check if a user can access a specific campaign
+     * This considers both direct creation (user_id in Campaigns table)
+     * and assignments (CampaignAssignments table)
+     *
+     * @param userId The user ID
+     * @param campaignId The campaign ID
+     * @return true if the user can access the campaign, false otherwise
+     */
+    public static boolean canUserAccessCampaign(int userId, int campaignId) {
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            // First check if user is the creator of the campaign
+            PreparedStatement creatorStmt = conn.prepareStatement(
+                "SELECT 1 FROM Campaigns WHERE campaign_id = ? AND user_id = ?"
+            );
+            creatorStmt.setInt(1, campaignId);
+            creatorStmt.setInt(2, userId);
+
+            ResultSet creatorRs = creatorStmt.executeQuery();
+            if (creatorRs.next()) {
+                return true; // User is the creator
+            }
+
+            // Check if user has been assigned access
+            return hasUserAccess(userId, campaignId);
+        } catch (SQLException e) {
+            System.err.println("Error checking campaign access: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Load accessible campaigns for a user
+     * Includes campaigns created by the user and campaigns assigned to the user
+     *
+     * @param userId The user ID
+     * @return List of CampaignInfo objects the user can access
+     */
+    public static List<CampaignInfo> getAccessibleCampaigns(int userId) {
+        initDatabaseFolder();
+        List<CampaignInfo> campaigns = new ArrayList<>();
+
+        try (Connection conn = getConnection()) {
+            // Query for campaigns created by the user or assigned to the user
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT DISTINCT c.campaign_id, c.campaign_name, c.creation_date, c.start_date, c.end_date, c.user_id " +
+                    "FROM Campaigns c " +
+                    "LEFT JOIN CampaignAssignments a ON c.campaign_id = a.campaign_id " +
+                    "WHERE c.user_id = ? OR a.user_id = ?"
+            );
+            stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                CampaignInfo campaign = new CampaignInfo(
+                    rs.getInt("campaign_id"),
+                    rs.getString("campaign_name"),
+                    rs.getTimestamp("creation_date") != null ?
+                        rs.getTimestamp("creation_date").toLocalDateTime() : null,
+                    rs.getTimestamp("start_date") != null ?
+                        rs.getTimestamp("start_date").toLocalDateTime() : null,
+                    rs.getTimestamp("end_date") != null ?
+                        rs.getTimestamp("end_date").toLocalDateTime() : null,
+                    rs.getInt("user_id")
+                );
+                campaigns.add(campaign);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting accessible campaigns: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return campaigns;
     }
 }

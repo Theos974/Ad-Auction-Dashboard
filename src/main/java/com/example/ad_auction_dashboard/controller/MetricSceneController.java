@@ -7,6 +7,7 @@ import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import javafx.event.ActionEvent;
@@ -17,6 +18,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DateCell;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.text.Text;
@@ -66,6 +69,13 @@ public class MetricSceneController {
     @FXML
     private Button resetFiltersButton;
 
+    @FXML
+    private DatePicker startDatePicker;
+
+    @FXML
+    private DatePicker endDatePicker;
+
+
     // Add a field for TimeFilteredMetrics
     private TimeFilteredMetrics timeFilteredMetrics;
 
@@ -90,6 +100,30 @@ public class MetricSceneController {
             contextFilterComboBox.setValue("All");
             contextFilterComboBox.setOnAction(e -> applyFilters());
         }
+        // Date picker event listeners
+        startDatePicker.setOnAction(e -> {
+            validateDateRange();
+            applyFilters();
+
+        });
+
+        endDatePicker.setOnAction(e -> {
+            validateDateRange();
+            applyFilters();
+        });
+    }
+
+    /**
+     * Validates and corrects the date range if needed
+     */
+    private void validateDateRange() {
+        if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+            if (endDatePicker.getValue().isBefore(startDatePicker.getValue())) {
+                // End date is before start date, correct it
+                endDatePicker.setValue(startDatePicker.getValue());
+                showAlert("Invalid date range detected. End date has been adjusted to match start date.");
+            }
+        }
     }
 
     public void setMetrics(CampaignMetrics metrics) {
@@ -106,6 +140,37 @@ public class MetricSceneController {
 
         // Save metrics in UserSession
         UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+
+        // Initialize date pickers with campaign start and end dates
+        if (startDatePicker != null && endDatePicker != null) {
+            LocalDateTime campaignStart = metrics.getCampaignStartDate();
+            LocalDateTime campaignEnd = metrics.getCampaignEndDate();
+
+            if (campaignStart != null && campaignEnd != null) {
+                startDatePicker.setValue(campaignStart.toLocalDate());
+                endDatePicker.setValue(campaignEnd.toLocalDate());
+                LocalDate startDate = campaignStart.toLocalDate();
+                LocalDate endDate = campaignEnd.toLocalDate();
+                // Set date range constraints for both pickers
+                startDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(empty || date.isBefore(startDate) || date.isAfter(endDate));
+                    }
+                });
+
+                endDatePicker.setDayCellFactory(picker -> new DateCell() {
+                    @Override
+                    public void updateItem(LocalDate date, boolean empty) {
+                        super.updateItem(date, empty);
+                        setDisable(empty || date.isBefore(startDate) || date.isAfter(endDate));
+                    }
+                });
+            }
+
+        }
+
 
         // Get filter values from UserSession if available
         applyFilterSettingsFromSession();
@@ -126,12 +191,25 @@ public class MetricSceneController {
         // Save filter settings to UserSession
         saveFilterSettingsToSession();
 
-        // Get time boundaries - use full campaign range
-        LocalDateTime start = metrics.getCampaignStartDate();
-        LocalDateTime end = metrics.getCampaignEndDate();
+        // Get time boundaries from date pickers if available, otherwise use full range
+        LocalDateTime start, end;
+
+        if (startDatePicker != null && startDatePicker.getValue() != null) {
+            // Start at beginning of selected day
+            start = startDatePicker.getValue().atStartOfDay();
+        } else {
+            start = metrics.getCampaignStartDate();
+        }
+
+        if (endDatePicker != null && endDatePicker.getValue() != null) {
+            // End at end of selected day (23:59:59)
+            end = endDatePicker.getValue().atTime(23, 59, 59);
+        } else {
+            end = metrics.getCampaignEndDate();
+        }
 
         // Apply time frame
-        timeFilteredMetrics.computeForTimeFrame(start, end, "Daily"); // Use "Daily" as it doesn't matter for full range
+        timeFilteredMetrics.computeForTimeFrame(start, end, "Daily");
 
         // Update metrics display with filtered data
         updateUIWithFilteredData();
@@ -141,6 +219,17 @@ public class MetricSceneController {
     private void handleResetFilters() {
         if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
         if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
+
+        // Reset date pickers to campaign start/end dates if available
+        if (startDatePicker != null && endDatePicker != null && metrics != null) {
+            LocalDateTime campaignStart = metrics.getCampaignStartDate();
+            LocalDateTime campaignEnd = metrics.getCampaignEndDate();
+
+            if (campaignStart != null && campaignEnd != null) {
+                startDatePicker.setValue(campaignStart.toLocalDate());
+                endDatePicker.setValue(campaignEnd.toLocalDate());
+            }
+        }
 
         if (timeFilteredMetrics != null) {
             timeFilteredMetrics.setGenderFilter(null);
