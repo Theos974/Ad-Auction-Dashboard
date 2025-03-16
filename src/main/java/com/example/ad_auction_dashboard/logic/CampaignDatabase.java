@@ -19,11 +19,11 @@ import java.util.Map;
 public class CampaignDatabase {
 
     // Database folder path
-    private static final String DB_FOLDER = System.getProperty("user.home") + File.separator + "user_databases";
-
-    // Database URL template for H2
-    private static final String DB_URL_PREFIX = "jdbc:h2:file:";
-    private static final String DB_NAME = "campaigns";
+    private static final String DB_FOLDER = System.getProperty("user.home") + File.separator + ".ad_auction_dashboard";
+    private static final String DB_NAME = "userdb";
+    private static final String URL = "jdbc:h2:file:" + DB_FOLDER + File.separator + DB_NAME;
+    private static final String USER = "sa";
+    private static final String PASSWORD = "";
 
     /**
      * Initialize database folder and ensure it exists
@@ -41,22 +41,18 @@ public class CampaignDatabase {
      * Get H2 database connection
      */
     private static Connection getConnection() throws SQLException {
-        String dbPath = DB_FOLDER + File.separator + DB_NAME;
-        String dbUrl = DB_URL_PREFIX + dbPath;
-
         try {
-            // Load H2 driver - H2 is included with JavaFX so should be available
+            // Load H2 driver
             Class.forName("org.h2.Driver");
         } catch (ClassNotFoundException e) {
             System.err.println("H2 JDBC driver not found: " + e.getMessage());
             throw new SQLException("H2 JDBC driver not found", e);
         }
-
-        return DriverManager.getConnection(dbUrl, "sa", "");
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
     /**
-     * Save a campaign to the database
+     * Save a campaign to the database and assign access to the creator
      *
      * @param campaignMetrics The campaign to save
      * @param campaignName The name of the campaign
@@ -82,6 +78,12 @@ public class CampaignDatabase {
                 insertClickLogs(conn, campaignMetrics.getClickLogs(), campaignId);
                 insertServerLogs(conn, campaignMetrics.getServerLogs(), campaignId);
 
+                // Grant access to the user who created the campaign
+                assignCampaignToUserInternal(conn, campaignId, userId, userId);
+
+                // Grant access to all admins
+                grantAccessToAllAdmins(conn, campaignId, userId);
+
                 // Commit transaction
                 conn.commit();
 
@@ -98,6 +100,62 @@ public class CampaignDatabase {
             System.err.println("Error saving campaign: " + e.getMessage());
             e.printStackTrace();
             return -1;
+        }
+    }
+
+    /**
+     * Grant access to a campaign to all admin users
+     *
+     * @param conn Database connection
+     * @param campaignId The campaign ID
+     * @param assignedBy The user ID of the user granting access
+     * @throws SQLException If a database error occurs
+     */
+    private static void grantAccessToAllAdmins(Connection conn, int campaignId, int assignedBy) throws SQLException {
+        // First, get all admin users - FIX: Using correct case "USERS" instead of "users"
+        PreparedStatement stmt = conn.prepareStatement(
+            "SELECT id FROM USERS WHERE role = 'admin' AND id != ?"
+        );
+        stmt.setInt(1, assignedBy); // Exclude the user who created the campaign (they already have access)
+
+        ResultSet rs = stmt.executeQuery();
+
+        // Grant access to each admin
+        while (rs.next()) {
+            int adminId = rs.getInt("id");
+            assignCampaignToUserInternal(conn, campaignId, adminId, assignedBy);
+        }
+    }
+
+    /**
+     * Grant a new admin access to all existing campaigns
+     *
+     * @param adminId The ID of the new admin user
+     * @param grantedBy The ID of the user granting access (usually another admin)
+     * @return True if successful, false otherwise
+     */
+    public static boolean grantNewAdminAccessToAllCampaigns(int adminId, int grantedBy) {
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            // Get all campaigns
+            PreparedStatement stmt = conn.prepareStatement(
+                "SELECT campaign_id FROM Campaigns"
+            );
+
+            ResultSet rs = stmt.executeQuery();
+
+            // Grant access to each campaign
+            while (rs.next()) {
+                int campaignId = rs.getInt("campaign_id");
+                assignCampaignToUserInternal(conn, campaignId, adminId, grantedBy);
+            }
+
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error granting admin access to campaigns: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -232,6 +290,7 @@ public class CampaignDatabase {
         return campaigns;
     }
 
+
     /**
      * Delete a campaign from the database
      *
@@ -264,6 +323,13 @@ public class CampaignDatabase {
                 );
                 deleteImpressionLogs.setInt(1, campaignId);
                 deleteImpressionLogs.executeUpdate();
+
+                // Delete assignments
+                PreparedStatement deleteAssignments = conn.prepareStatement(
+                    "DELETE FROM CampaignAssignments WHERE campaign_id = ?"
+                );
+                deleteAssignments.setInt(1, campaignId);
+                deleteAssignments.executeUpdate();
 
                 PreparedStatement deleteCampaign = conn.prepareStatement(
                     "DELETE FROM Campaigns WHERE campaign_id = ?"
@@ -931,6 +997,7 @@ public class CampaignDatabase {
         }
         return 4; // Default
     }
+
     /**
      * Check if a user has access to a campaign
      *
@@ -958,6 +1025,37 @@ public class CampaignDatabase {
     }
 
     /**
+     * Internal method to assign a campaign to a user within a transaction
+     * without checking if the assignment already exists
+     */
+    private static boolean assignCampaignToUserInternal(Connection conn, int campaignId, int userId, int assignedById)
+        throws SQLException {
+        // Check if assignment already exists
+        PreparedStatement checkStmt = conn.prepareStatement(
+            "SELECT 1 FROM CampaignAssignments WHERE campaign_id = ? AND user_id = ?"
+        );
+        checkStmt.setInt(1, campaignId);
+        checkStmt.setInt(2, userId);
+        ResultSet rs = checkStmt.executeQuery();
+
+        // If assignment already exists, return true
+        if (rs.next()) {
+            return true;
+        }
+
+        // Create new assignment
+        PreparedStatement insertStmt = conn.prepareStatement(
+            "INSERT INTO CampaignAssignments (campaign_id, user_id, assigned_by) VALUES (?, ?, ?)"
+        );
+        insertStmt.setInt(1, campaignId);
+        insertStmt.setInt(2, userId);
+        insertStmt.setInt(3, assignedById);
+
+        int rowsAffected = insertStmt.executeUpdate();
+        return rowsAffected > 0;
+    }
+
+    /**
      * Assign a campaign to a user
      *
      * @param campaignId The campaign ID
@@ -969,21 +1067,7 @@ public class CampaignDatabase {
         initDatabaseFolder();
 
         try (Connection conn = getConnection()) {
-            // Check if assignment already exists
-            if (hasUserAccess(userId, campaignId)) {
-                return true; // Assignment already exists
-            }
-
-            // Create new assignment
-            PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO CampaignAssignments (campaign_id, user_id, assigned_by) VALUES (?, ?, ?)"
-            );
-            stmt.setInt(1, campaignId);
-            stmt.setInt(2, userId);
-            stmt.setInt(3, assignedById);
-
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
+            return assignCampaignToUserInternal(conn, campaignId, userId, assignedById);
         } catch (SQLException e) {
             System.err.println("Error assigning campaign: " + e.getMessage());
             e.printStackTrace();
@@ -1119,15 +1203,36 @@ public class CampaignDatabase {
         List<CampaignInfo> campaigns = new ArrayList<>();
 
         try (Connection conn = getConnection()) {
-            // Query for campaigns created by the user or assigned to the user
-            PreparedStatement stmt = conn.prepareStatement(
-                "SELECT DISTINCT c.campaign_id, c.campaign_name, c.creation_date, c.start_date, c.end_date, c.user_id " +
-                    "FROM Campaigns c " +
-                    "LEFT JOIN CampaignAssignments a ON c.campaign_id = a.campaign_id " +
-                    "WHERE c.user_id = ? OR a.user_id = ?"
+            // Check if the user is an admin
+            boolean isAdmin = false;
+            PreparedStatement adminCheckStmt = conn.prepareStatement(
+                "SELECT role FROM USERS WHERE id = ?"
             );
-            stmt.setInt(1, userId);
-            stmt.setInt(2, userId);
+            adminCheckStmt.setInt(1, userId);
+            ResultSet adminRs = adminCheckStmt.executeQuery();
+            if (adminRs.next() && "admin".equals(adminRs.getString("role"))) {
+                isAdmin = true;
+            }
+
+            PreparedStatement stmt;
+
+            if (isAdmin) {
+                // Admins can see all campaigns
+                stmt = conn.prepareStatement(
+                    "SELECT DISTINCT c.campaign_id, c.campaign_name, c.creation_date, " +
+                        "c.start_date, c.end_date, c.user_id FROM Campaigns c"
+                );
+            } else {
+                // Regular users can only see campaigns they created or have been assigned to
+                stmt = conn.prepareStatement(
+                    "SELECT DISTINCT c.campaign_id, c.campaign_name, c.creation_date, " +
+                        "c.start_date, c.end_date, c.user_id FROM Campaigns c " +
+                        "LEFT JOIN CampaignAssignments a ON c.campaign_id = a.campaign_id " +
+                        "WHERE c.user_id = ? OR a.user_id = ?"
+                );
+                stmt.setInt(1, userId);
+                stmt.setInt(2, userId);
+            }
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {

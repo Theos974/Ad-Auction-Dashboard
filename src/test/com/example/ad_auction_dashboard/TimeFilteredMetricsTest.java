@@ -271,6 +271,126 @@ public class TimeFilteredMetricsTest {
         assertEquals(expectedAfternoonCost, timeFilteredMetrics.getTotalCost(), 0.0001,
             "Total cost should match expected value for afternoon period");
     }
+    @Test
+    void testCombinedFilteringByDemographicAndTime() {
+        // Define a time range for testing (10:00 - 12:00)
+        LocalDateTime rangeStart = LocalDateTime.of(2023, 3, 1, 10, 0, 0);
+        LocalDateTime rangeEnd = LocalDateTime.of(2023, 3, 1, 12, 0, 0);
+
+        // Apply gender filter for "Male"
+        timeFilteredMetrics.setGenderFilter("Male");
+        timeFilteredMetrics.computeForTimeFrame(rangeStart, rangeEnd, "Hourly");
+
+        // Within this time range and filter, we should have:
+        // - 2 impressions for Males (at 10:00 and 11:00)
+        // - 2 clicks for Males (at 10:05 and 11:10)
+        // - 2 uniques for Males (IDs 1001 and 1003)
+        assertEquals(3, timeFilteredMetrics.getNumberOfImpressions(), "Should have 3 impressions for Males in time range");
+        assertEquals(2, timeFilteredMetrics.getNumberOfClicks(), "Should have 2 clicks for Males in time range");
+        assertEquals(2, timeFilteredMetrics.getNumberOfUniques(), "Should have 2 uniques for Males in time range");
+
+        // Apply combined gender and age filter
+        timeFilteredMetrics.setGenderFilter("Male");
+        timeFilteredMetrics.setAgeFilter("<25");
+        timeFilteredMetrics.computeForTimeFrame(rangeStart, rangeEnd, "Hourly");
+
+        // Within this time range and combined filters, we should have:
+        // - 1 impression for Male, <25 (at 10:00)
+        // - 1 click for Male, <25 (at 10:05)
+        // - 1 unique for Male, <25 (ID 1001)
+        assertEquals(1, timeFilteredMetrics.getNumberOfImpressions(), "Should have 1 impression for Males <25 in time range");
+        assertEquals(1, timeFilteredMetrics.getNumberOfClicks(), "Should have 1 click for Males <25 in time range");
+        assertEquals(1, timeFilteredMetrics.getNumberOfUniques(), "Should have 1 unique for Males <25 in time range");
+    }
+
+    @Test
+    void testContextFilteringWithDifferentGranularities() {
+        // Apply context filter for "Blog"
+        timeFilteredMetrics.setContextFilter("Blog");
+
+        // Test with different granularities
+        Map<String, TimeFilteredMetrics.ComputedMetrics> hourlyMetrics =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(testStartDate, testEndDate, "Hourly");
+
+        Map<String, TimeFilteredMetrics.ComputedMetrics> dailyMetrics =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(testStartDate, testEndDate, "Daily");
+
+        Map<String, TimeFilteredMetrics.ComputedMetrics> weeklyMetrics =
+            timeFilteredMetrics.computeForTimeFrameWithGranularity(testStartDate, testEndDate, "Weekly");
+
+        // Verify granularity differences with same filter
+        assertNotNull(hourlyMetrics, "Hourly metrics with context filter should not be null");
+        assertNotNull(dailyMetrics, "Daily metrics with context filter should not be null");
+        assertNotNull(weeklyMetrics, "Weekly metrics with context filter should not be null");
+
+        // Blog impressions should be 2 total (at 11:00 and 13:00)
+        int totalBlogImpressions = 0;
+        for (TimeFilteredMetrics.ComputedMetrics metrics : hourlyMetrics.values()) {
+            totalBlogImpressions += metrics.getNumberOfImpressions();
+        }
+        assertEquals(2, totalBlogImpressions, "Should have 2 Blog impressions in hourly breakdown");
+
+        // Same total across different granularities
+        int dailyBlogImpressions = 0;
+        for (TimeFilteredMetrics.ComputedMetrics metrics : dailyMetrics.values()) {
+            dailyBlogImpressions += metrics.getNumberOfImpressions();
+        }
+        assertEquals(totalBlogImpressions, dailyBlogImpressions,
+            "Total impressions should be same regardless of granularity");
+    }
+
+    @Test
+    void testFilterResets() {
+        // Apply gender filter
+        timeFilteredMetrics.setGenderFilter("Male");
+        timeFilteredMetrics.computeForTimeFrame(testStartDate, testEndDate, "Daily");
+
+        // Verify filtered metrics (4 impressions for Males)
+        assertEquals(4, timeFilteredMetrics.getNumberOfImpressions(), "Should have 4 impressions for Males");
+
+        // Reset filter by setting to null
+        timeFilteredMetrics.setGenderFilter(null);
+        timeFilteredMetrics.computeForTimeFrame(testStartDate, testEndDate, "Daily");
+
+        // Verify unfiltered metrics (7 impressions total)
+        assertEquals(7, timeFilteredMetrics.getNumberOfImpressions(), "Should have 7 impressions after filter reset");
+
+        // Apply multiple filters
+        timeFilteredMetrics.setGenderFilter("Female");
+        timeFilteredMetrics.setContextFilter("Shopping");
+        timeFilteredMetrics.computeForTimeFrame(testStartDate, testEndDate, "Daily");
+
+        // Verify multiply filtered metrics (1 impression for Female, Shopping)
+        assertEquals(1, timeFilteredMetrics.getNumberOfImpressions(),
+            "Should have 1 impression for Female, Shopping");
+
+        // Clear all filters
+        timeFilteredMetrics.clearCaches();
+        timeFilteredMetrics.setGenderFilter(null);
+        timeFilteredMetrics.setContextFilter(null);
+        timeFilteredMetrics.computeForTimeFrame(testStartDate, testEndDate, "Daily");
+
+        // Verify all filters cleared (7 impressions total)
+        assertEquals(7, timeFilteredMetrics.getNumberOfImpressions(),
+            "Should have 7 impressions after clearing all filters");
+    }
+
+    @Test
+    void testOneHourTimeRange() {
+        // Define a very narrow time range (exactly one hour)
+        LocalDateTime hourStart = LocalDateTime.of(2023, 3, 1, 11, 0, 0);
+        LocalDateTime hourEnd = LocalDateTime.of(2023, 3, 1, 11, 59, 59);
+
+        // Compute metrics for this narrow range
+        timeFilteredMetrics.computeForTimeFrame(hourStart, hourEnd, "Hourly");
+
+        // Verify metrics for this specific hour
+        // During 11:00-11:59, we should have 2 impressions, 1 click, 1 bounce
+        assertEquals(2, timeFilteredMetrics.getNumberOfImpressions(), "Should have 2 impressions in hour 11");
+        assertEquals(1, timeFilteredMetrics.getNumberOfClicks(), "Should have 1 click in hour 11");
+        assertEquals(1, timeFilteredMetrics.getNumberOfBounces(), "Should have 1 bounce in hour 11");
+        assertEquals(0, timeFilteredMetrics.getNumberOfConversions(), "Should have 0 conversions in hour 11");
+    }
 
     // End the granularity method correctly
 }

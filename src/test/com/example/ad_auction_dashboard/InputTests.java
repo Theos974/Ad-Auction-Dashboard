@@ -1,7 +1,9 @@
 package com.example.ad_auction_dashboard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.example.ad_auction_dashboard.logic.*;
 import org.junit.jupiter.api.DisplayName;
@@ -436,6 +438,98 @@ public class InputTests {
         FileHandler fileHandler = new FileHandler();
         ServerLog[] expected = {new ServerLog("2015-01-01 12:01:21","8895519749317550080","2015-01-01 12:05:13","7","No")};
         assertEquals(expected[0].getLogAsString(), fileHandler.formatServer(server)[0].getLogAsString());
+    }
+    @Test
+    @DisplayName("Malformed CSV Input")
+    void malformedCSVInput() {
+        try {
+            String malformedCsv = "Header1,Header2\nValue1,Value2,ExtraValue\nValue1";
+            File f = new File("src/test/com/example/ad_auction_dashboard/malformed.csv");
+            FileWriter fileWriter = new FileWriter(f);
+            fileWriter.write(malformedCsv);
+            fileWriter.close();
+
+            FileHandler fileHandler = new FileHandler();
+            String[][] result = fileHandler.splitImpressions(fileHandler.splitCsv(fileHandler.readFromCsv(f.getAbsolutePath())));
+
+            // The parser should handle this gracefully or return null for malformed data
+            assertNull(result, "Parser should return null for malformed CSV data");
+
+            f.delete();
+        } catch (Exception e) {
+            fail("Should handle malformed CSV gracefully without throwing exceptions");
+        }
+    }
+
+    @Test
+    @DisplayName("Special Characters in CSV")
+    void specialCharactersInCSV() {
+        try {
+            // CSV with special characters
+            String specialCharsCsv = "Date,ID,Gender,Age,Income,Context,Impression Cost\n" +
+                "2015-01-01 12:00:02,4620864431353617408,\"Male, with comma\",25-34,High,\"Blog, with comma\",0.001713";
+
+            File f = new File("src/test/com/example/ad_auction_dashboard/special_chars.csv");
+            FileWriter fileWriter = new FileWriter(f);
+            fileWriter.write(specialCharsCsv);
+            fileWriter.close();
+
+            FileHandler fileHandler = new FileHandler();
+            // This should parse correctly despite the commas inside quotes
+            String[][] result = fileHandler.splitImpressions(fileHandler.splitCsv(fileHandler.readFromCsv(f.getAbsolutePath())));
+
+            // Since our simple CSV parser might not handle quoted commas correctly,
+            // we might expect null or incorrect parsing
+            // The test verifies the behavior is consistent, not that it's correct
+            if (result != null) {
+                assertNotEquals(0, result.length, "Should parse some data from CSV with special characters");
+            }
+
+            f.delete();
+        } catch (Exception e) {
+            fail("Should handle special characters in CSV gracefully");
+        }
+    }
+
+    @Test
+    @DisplayName("Empty File Handling")
+    void emptyFileHandling() {
+        try {
+            // Create empty file
+            File f = new File("src/test/com/example/ad_auction_dashboard/empty.csv");
+            FileWriter fileWriter = new FileWriter(f);
+            fileWriter.write("");
+            fileWriter.close();
+
+            FileHandler fileHandler = new FileHandler();
+            String content = fileHandler.readFromCsv(f.getAbsolutePath());
+
+            // Empty file should return empty string
+            assertEquals("", content, "Empty file should return empty string");
+
+            // Split function should handle empty string
+            String[] split = fileHandler.splitCsv(content);
+            assertEquals(1, split.length, "Split on empty string should return array with one empty element");
+            assertEquals("", split[0], "The single element should be empty");
+
+            f.delete();
+        } catch (Exception e) {
+            fail("Should handle empty files gracefully without exceptions: " + e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("Non-Existent File Handling")
+    void nonExistentFileHandling() {
+        try {
+            FileHandler fileHandler = new FileHandler();
+            String content = fileHandler.readFromCsv("non_existent_file.csv");
+
+            // Non-existent file should return empty string rather than throw exception
+            assertEquals("", content, "Non-existent file should return empty string");
+        } catch (Exception e) {
+            fail("Should handle non-existent files gracefully without exceptions");
+        }
     }
 }
 

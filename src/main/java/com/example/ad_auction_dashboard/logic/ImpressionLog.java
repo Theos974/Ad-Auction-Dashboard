@@ -170,8 +170,17 @@ public class ImpressionLog implements LogFile {
     }
 
     public void setImpressionCost(String impressionCost) {
-        if (impressionCost.matches("[0-9]\\.[0-9]{6}")){
-            this.impressionCost = Float.parseFloat(impressionCost);
+        if (impressionCost.matches("[0-9]+\\.[0-9]+")){
+            try {
+                float cost = Float.parseFloat(impressionCost);
+                if (cost >= 0) {
+                    this.impressionCost = cost;
+                } else {
+                    this.impressionCost = (float) -1; // Negative costs are invalid
+                }
+            } catch (NumberFormatException e) {
+                this.impressionCost = (float) -1; // Not a valid number
+            }
         } else {
             this.impressionCost = (float) -1;
         }

@@ -10,6 +10,8 @@ import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.ClickLog;
 import com.example.ad_auction_dashboard.logic.ImpressionLog;
 import com.example.ad_auction_dashboard.logic.ServerLog;
+import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -172,8 +174,8 @@ public class MetricsTests {
         // CPA = totalCost / conversions = expectedTotalCost / 1 (since s2 is conversion)
         assertEquals(expectedTotalCost, metrics.getCPA(), 1e-6);
 
-        // CPM = (totalCost/impressions)*100, in this case = (expectedTotalCost / 2)*100
-        assertEquals((expectedTotalCost / 2) * 100, metrics.getCPM(), 1e-6);
+        // CPM = (totalCost/impressions)*1000, in this case = (expectedTotalCost / 2)*100
+        assertEquals((expectedTotalCost / 2) * 1000, metrics.getCPM(), 1e-6);
     }
 
     @Test
@@ -283,5 +285,118 @@ public class MetricsTests {
         assertThrows(IllegalArgumentException.class, () -> {
             metrics.setBounceCriteria(1, -4);
         }, "Setting negative seconds threshold should throw IllegalArgumentException.");
+    }
+    @Test
+    @DisplayName("Test filtered metrics computation")
+    public void testFilteredMetricsComputation() {
+        // Create test data with different demographics
+        ImpressionLog imp1 = new ImpressionLog("2025-03-16 05:28:06", "1", "Male", "25-34", "High", "Blog", "0.001632");
+        ImpressionLog imp2 = new ImpressionLog("2025-03-16 05:30:06", "2", "Female", "35-44", "Medium", "News", "0.002000");
+        ImpressionLog[] imps = {imp1, imp2};
+
+        ClickLog c1 = new ClickLog("2025-03-16 05:28:30", "1", "0.50");
+        ClickLog c2 = new ClickLog("2025-03-16 05:30:30", "2", "0.75");
+        ClickLog[] cls = {c1, c2};
+
+        ServerLog s1 = new ServerLog("2025-03-16 05:28:40", "1", "2025-03-16 05:30:00", "2", "No");
+        ServerLog s2 = new ServerLog("2025-03-16 05:30:40", "2", "2025-03-16 05:32:00", "5", "Yes");
+        ServerLog[] srvs = {s1, s2};
+
+        Campaign campaign = new Campaign(imps, cls, srvs);
+        CampaignMetrics metrics = new CampaignMetrics(campaign);
+
+        // Create filtered metrics for males only
+        TimeFilteredMetrics filteredMetrics = new TimeFilteredMetrics(
+            imps, srvs, cls,
+            metrics.getBouncePagesThreshold(),
+            metrics.getBounceSecondsThreshold()
+        );
+
+        // Apply gender filter
+        filteredMetrics.setGenderFilter("Male");
+
+        // Apply time filter (full range of data)
+        LocalDateTime start = LocalDateTime.of(2025, 3, 16, 0, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 3, 16, 23, 59, 59);
+        filteredMetrics.computeForTimeFrame(start, end, "Daily");
+
+        // Verify filtered metrics
+        assertEquals(1, filteredMetrics.getNumberOfImpressions(), "Should have 1 impression for Male");
+        assertEquals(1, filteredMetrics.getNumberOfClicks(), "Should have 1 click for Male");
+        assertEquals(1, filteredMetrics.getNumberOfUniques(), "Should have 1 unique for Male");
+        assertEquals(0, filteredMetrics.getNumberOfConversions(), "Should have 0 conversions for Male");
+
+        // Apply different filter (context)
+        filteredMetrics.setGenderFilter(null);
+        filteredMetrics.setContextFilter("News");
+        filteredMetrics.computeForTimeFrame(start, end, "Daily");
+
+        // Verify differently filtered metrics
+        assertEquals(1, filteredMetrics.getNumberOfImpressions(), "Should have 1 impression for News context");
+        assertEquals(1, filteredMetrics.getNumberOfClicks(), "Should have 1 click for News context");
+        assertEquals(1, filteredMetrics.getNumberOfUniques(), "Should have 1 unique for News context");
+        assertEquals(1, filteredMetrics.getNumberOfConversions(), "Should have 1 conversion for News context");
+    }
+
+    @Test
+    @DisplayName("Test extremely large values")
+    public void testExtremelyLargeValues() {
+        // Create test data with very large values
+        ImpressionLog imp = new ImpressionLog("2025-03-16 05:28:06", "1", "Male", "25-34", "High", "Blog", "1000000.000000");
+        ImpressionLog[] imps = {imp};
+
+        ClickLog c = new ClickLog("2025-03-16 05:28:30", "1", "2000000.000000");
+        ClickLog[] cls = {c};
+
+        ServerLog s = new ServerLog("2025-03-16 05:28:40", "1", "2025-03-16 05:30:00", "999999", "Yes");
+        ServerLog[] srvs = {s};
+
+        Campaign campaign = new Campaign(imps, cls, srvs);
+        CampaignMetrics metrics = new CampaignMetrics(campaign);
+
+        // Verify metrics with large values
+        assertEquals(1, metrics.getNumberOfImpressions(), "Should count 1 impression");
+        assertEquals(1, metrics.getNumberOfClicks(), "Should count 1 click");
+        assertEquals(1, metrics.getNumberOfUniques(), "Should count 1 unique");
+        assertEquals(1, metrics.getNumberOfConversions(), "Should count 1 conversion");
+
+        // Expect large cost value (sum of impression and click costs)
+        double expectedCost = 1000000.000000 + 2000000.000000;
+        assertEquals(expectedCost, metrics.getTotalCost(), 1e-6, "Total cost should be sum of large values");
+
+        // Derived metrics should handle large values
+        assertEquals(1.0, metrics.getCTR(), 1e-6, "CTR calculation should handle large values");
+        assertEquals(expectedCost, metrics.getCPA(), 1e-6, "CPA calculation should handle large values");
+        assertEquals(expectedCost, metrics.getCPC(), 1e-6, "CPC calculation should handle large values");
+        assertEquals(expectedCost * 1000, metrics.getCPM(), 1e-6, "CPM calculation should handle large values");
+    }
+
+    @Test
+    @DisplayName("Test campaign date range detection")
+    public void testCampaignDateRangeDetection() {
+        // Create logs with different dates
+        ImpressionLog imp1 = new ImpressionLog("2025-03-15 05:28:06", "1", "Male", "25-34", "High", "Blog", "0.001632");
+        ImpressionLog imp2 = new ImpressionLog("2025-03-20 05:30:06", "2", "Female", "35-44", "Medium", "News", "0.002000");
+        ImpressionLog[] imps = {imp1, imp2};
+
+        ClickLog c1 = new ClickLog("2025-03-10 05:28:30", "1", "0.50"); // Earlier than impressions
+        ClickLog c2 = new ClickLog("2025-03-25 05:30:30", "2", "0.75"); // Later than impressions
+        ClickLog[] cls = {c1, c2};
+
+        ServerLog s = new ServerLog("2025-03-18 05:28:40", "1", "2025-03-18 05:30:00", "3", "Yes");
+        ServerLog[] srvs = {s};
+
+        Campaign campaign = new Campaign(imps, cls, srvs);
+        CampaignMetrics metrics = new CampaignMetrics(campaign);
+
+        // Verify start date is earliest date across all logs
+        LocalDateTime expectedStart = LocalDateTime.of(2025, 3, 10, 5, 28, 30);
+        assertEquals(expectedStart, metrics.getCampaignStartDate(),
+            "Campaign start date should be from earliest log (click log c1)");
+
+        // Verify end date is latest date across all logs
+        LocalDateTime expectedEnd = LocalDateTime.of(2025, 3, 25, 5, 30, 30);
+        assertEquals(expectedEnd, metrics.getCampaignEndDate(),
+            "Campaign end date should be from latest log (click log c2)");
     }
 }

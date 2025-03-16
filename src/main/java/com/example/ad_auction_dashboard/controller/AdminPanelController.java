@@ -375,6 +375,19 @@ public class AdminPanelController {
         int userId = selectedUserAccess.getUser().getId();
         int campaignId = selectedCampaign.getCampaignId();
 
+        // Check if the user being removed is an admin
+        UserDatabase.User userToRemove = selectedUserAccess.getUser();
+        if (userToRemove.isAdmin()) {
+            // Show an alert that admin access cannot be revoked
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Cannot Revoke Access");
+            alert.setHeaderText("Admin Access Cannot Be Revoked");
+            alert.setContentText("You cannot revoke access for an admin user. Admins always have access to all campaigns.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Proceed with removing access for non-admin users
         if (CampaignDatabase.removeCampaignFromUser(campaignId, userId)) {
             showCampaignStatus("Access revoked successfully from " + selectedUserAccess.getUsername());
             selectedUserAccess.setHasAccess(false);

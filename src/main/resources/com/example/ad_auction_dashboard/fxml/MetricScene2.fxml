@@ -16,7 +16,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane styleClass="metrics-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
+<BorderPane styleClass="metrics-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
     <center>
         <AnchorPane styleClass="metrics-container" BorderPane.alignment="CENTER">
             <children>

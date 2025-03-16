@@ -177,5 +177,94 @@ public class HistogramGeneratorTest {
                 "Bin width should match expected width");
         }
     }
+    @Test
+    void testFilteredHistogramDataGeneration() {
+        // Create filtered metrics
+        TimeFilteredMetrics filteredMetrics = new TimeFilteredMetrics(
+            campaignMetrics.getImpressionLogs(),
+            campaignMetrics.getServerLogs(),
+            campaignMetrics.getClickLogs(),
+            campaignMetrics.getBouncePagesThreshold(),
+            campaignMetrics.getBounceSecondsThreshold()
+        );
+
+        // Apply gender filter
+        filteredMetrics.setGenderFilter("Male");
+
+        // Generate filtered histogram data
+        Map<String, Integer> filteredData = histogramGenerator.generateFilteredHistogramData(
+            campaignMetrics, filteredMetrics, startDate, endDate, 10);
+
+        // Verify filtered data is not null
+        assertNotNull(filteredData, "Filtered histogram data should not be null");
+
+        // Verify filtered data has fewer counts than unfiltered data
+        Map<String, Integer> unfilteredData = histogramGenerator.generateHistogramData(
+            campaignMetrics, startDate, endDate, 10);
+
+        int filteredTotal = filteredData.values().stream().mapToInt(Integer::intValue).sum();
+        int unfilteredTotal = unfilteredData.values().stream().mapToInt(Integer::intValue).sum();
+
+        // Since we filtered, we expect fewer data points
+        assertTrue(filteredTotal <= unfilteredTotal,
+            "Filtered data should have fewer or equal points than unfiltered data");
+    }
+
+    @Test
+    void testExtremelySmallBinCount() {
+        // Test with minimum bin count
+        Map<String, Integer> histogramData = histogramGenerator.generateHistogramData(
+            campaignMetrics, startDate, endDate, 2);
+
+        // Verify histogram data is generated correctly
+        assertNotNull(histogramData, "Histogram data should not be null with small bin count");
+        assertTrue(histogramData.size() >= 2, "Should have at least 2 bins");
+
+        int totalCount = histogramData.values().stream().mapToInt(Integer::intValue).sum();
+        assertEquals(10, totalCount, "Total count should match click count");
+    }
+
+    @Test
+    void testExtremelyLargeBinCount() {
+        // Test with large bin count (more bins than data points)
+        Map<String, Integer> histogramData = histogramGenerator.generateHistogramData(
+            campaignMetrics, startDate, endDate, 50);
+
+        // Verify histogram data handles large bin count gracefully
+        assertNotNull(histogramData, "Histogram data should not be null with large bin count");
+
+        int totalCount = histogramData.values().stream().mapToInt(Integer::intValue).sum();
+        assertEquals(10, totalCount, "Total count should match click count");
+    }
+
+    @Test
+    void testUniformValueData() {
+        // Create campaign with uniform click costs
+        ClickLog[] uniformClicks = new ClickLog[]{
+            new ClickLog("2023-03-01 10:00:00", "1001", "0.500000"),
+            new ClickLog("2023-03-01 10:30:00", "1002", "0.500000"),
+            new ClickLog("2023-03-01 11:00:00", "1003", "0.500000"),
+            new ClickLog("2023-03-01 11:30:00", "1004", "0.500000"),
+            new ClickLog("2023-03-01 12:00:00", "1005", "0.500000")
+        };
+
+        Campaign uniformCampaign = new Campaign(new ImpressionLog[0], uniformClicks, new ServerLog[0]);
+        CampaignMetrics uniformMetrics = new CampaignMetrics(uniformCampaign);
+
+        // Generate histogram with uniform data
+        Map<String, Integer> histogramData = histogramGenerator.generateHistogramData(
+            uniformMetrics, startDate, endDate, 10);
+
+        // Verify histogram handles uniform data gracefully
+        assertNotNull(histogramData, "Histogram data should not be null for uniform data");
+
+        // Either we should have a single bin with all values, or the algorithm should
+        // adjust bin width to create multiple bins
+        int nonZeroBins = (int) histogramData.values().stream().filter(count -> count > 0).count();
+        assertTrue(nonZeroBins >= 1, "Should have at least one bin with data");
+
+        int totalCount = histogramData.values().stream().mapToInt(Integer::intValue).sum();
+        assertEquals(5, totalCount, "Total count should match uniform click count");
+    }
 
 }

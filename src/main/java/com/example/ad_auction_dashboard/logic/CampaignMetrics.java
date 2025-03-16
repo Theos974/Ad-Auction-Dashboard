@@ -204,7 +204,7 @@ public class CampaignMetrics {
     private double calculateCPM(double tCost,int imps){
 
         if (imps == 0) return 0;
-        return  (tCost/imps)*100;
+        return  (tCost/imps)*1000;
 
     }
 

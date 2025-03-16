@@ -458,7 +458,7 @@ public class MetricSceneController {
 
         // Only editors and admins can save campaigns
         if (!UserSession.getInstance().isEditor()) {
-            showAlert("You need Editor permissions to save campaigns");
+            showAlert("You need at least Editor permissions to save campaigns");
             return;
         }
 

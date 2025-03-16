@@ -12,7 +12,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="start-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="start-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
     <children>
         <!-- User info and logout section at the top -->
         <HBox alignment="CENTER_RIGHT" layoutX="925.0" layoutY="14.0" spacing="10" styleClass="trabs" AnchorPane.rightAnchor="21.0" AnchorPane.topAnchor="14.0" />

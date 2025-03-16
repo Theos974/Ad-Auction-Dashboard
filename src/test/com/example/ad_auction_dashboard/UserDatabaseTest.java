@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,23 +18,43 @@ public class UserDatabaseTest {
 
     // Test user credentials
     private String testUsername;
-    private final String testEmail = "test@example.com";
-    private final String testPhone = "1234567890";
+    private String testEmail;
+    private String testPhone;
     private final String testPassword = "testPassword";
     private final String testRole = "viewer";
 
+    // Track user IDs to clean up
+    private List<Integer> userIdsToCleanup = new ArrayList<>();
+
     @BeforeEach
     void setUp() {
-        // Create a unique username for each test to avoid conflicts
-        testUsername = "testuser_" + UUID.randomUUID().toString().substring(0, 8);
+        // Generate a unique ID for this test run
+        String uniqueId = UUID.randomUUID().toString().substring(0, 8);
+
+        // Create unique credentials for each test to avoid conflicts
+        testUsername = "testuser_" + uniqueId;
+        testEmail = "test_" + uniqueId + "@example.com";
+        testPhone = "1" + System.currentTimeMillis() % 10000000000L; // Generate a unique 10-digit phone number
     }
 
     @AfterEach
     void tearDown() {
-        // Clean up by deleting the test user if it exists
-        UserDatabase.User user = UserDatabase.getUser(testUsername);
+        // Clean up all tracked user IDs
+        for (Integer id : userIdsToCleanup) {
+            try {
+                UserDatabase.deleteUser(id);
+            } catch (Exception e) {
+                System.err.println("Error cleaning up user: " + e.getMessage());
+            }
+        }
+        userIdsToCleanup.clear();
+    }
+
+    // Helper to track created users for cleanup
+    private void trackUser(String username) {
+        UserDatabase.User user = UserDatabase.getUser(username);
         if (user != null) {
-            UserDatabase.deleteUser(user.getId());
+            userIdsToCleanup.add(user.getId());
         }
     }
 
@@ -41,6 +62,7 @@ public class UserDatabaseTest {
     void testAddAndGetUser() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
+        trackUser(testUsername);
 
         // Retrieve the user
         UserDatabase.User user = UserDatabase.getUser(testUsername);
@@ -57,6 +79,7 @@ public class UserDatabaseTest {
     void testAuthenticateUser() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
+        trackUser(testUsername);
 
         // Test valid authentication
         boolean validAuth = UserDatabase.authenticateUser(testUsername, testPassword);
@@ -75,6 +98,7 @@ public class UserDatabaseTest {
     void testChangeUserRole() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
+        trackUser(testUsername);
 
         // Verify initial role
         UserDatabase.User user = UserDatabase.getUser(testUsername);
@@ -93,6 +117,7 @@ public class UserDatabaseTest {
     void testGetUserRole() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
+        trackUser(testUsername);
 
         // Get user role
         String role = UserDatabase.getUserRole(testUsername);
@@ -109,6 +134,7 @@ public class UserDatabaseTest {
     void testGetAllUsers() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
+        trackUser(testUsername);
 
         // Get all users
         List<UserDatabase.User> users = UserDatabase.getAllUsers();
@@ -125,18 +151,33 @@ public class UserDatabaseTest {
     @Test
     void testRoleBasedPermissions() {
         // Add a viewer user
-        UserDatabase.addUser(testUsername + "_viewer", testEmail, testPhone, testPassword, "viewer");
-        UserDatabase.User viewerUser = UserDatabase.getUser(testUsername + "_viewer");
+        String viewerUsername = testUsername + "_viewer";
+        String viewerEmail = "viewer_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
+        String viewerPhone = "1" + (System.currentTimeMillis() % 10000000000L + 1);
+        UserDatabase.addUser(viewerUsername, viewerEmail, viewerPhone, testPassword, "viewer");
+        trackUser(viewerUsername);
+        UserDatabase.User viewerUser = UserDatabase.getUser(viewerUsername);
 
         // Add an editor user
-        UserDatabase.addUser(testUsername + "_editor", testEmail + "2", testPhone + "2", testPassword, "editor");
-        UserDatabase.User editorUser = UserDatabase.getUser(testUsername + "_editor");
+        String editorUsername = testUsername + "_editor";
+        String editorEmail = "editor_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
+        String editorPhone = "1" + (System.currentTimeMillis() % 10000000000L + 2);
+        UserDatabase.addUser(editorUsername, editorEmail, editorPhone, testPassword, "editor");
+        trackUser(editorUsername);
+        UserDatabase.User editorUser = UserDatabase.getUser(editorUsername);
 
         // Add an admin user
-        UserDatabase.addUser(testUsername + "_admin", testEmail + "3", testPhone + "3", testPassword, "admin");
-        UserDatabase.User adminUser = UserDatabase.getUser(testUsername + "_admin");
+        String adminUsername = testUsername + "_admin";
+        String adminEmail = "admin_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
+        String adminPhone = "1" + (System.currentTimeMillis() % 10000000000L + 3);
+        UserDatabase.addUser(adminUsername, adminEmail, adminPhone, testPassword, "admin");
+        trackUser(adminUsername);
+        UserDatabase.User adminUser = UserDatabase.getUser(adminUsername);
 
         // Verify permissions
+        assertNotNull(viewerUser, "Viewer user should be created successfully");
+        assertNotNull(editorUser, "Editor user should be created successfully");
+        assertNotNull(adminUser, "Admin user should be created successfully");
 
         // Viewer permissions
         assertTrue(viewerUser.isViewer(), "Viewer should have viewer permissions");
@@ -152,19 +193,12 @@ public class UserDatabaseTest {
         assertTrue(adminUser.isViewer(), "Admin should have viewer permissions");
         assertTrue(adminUser.isEditor(), "Admin should have editor permissions");
         assertTrue(adminUser.isAdmin(), "Admin should have admin permissions");
-
-        // Clean up these additional test users
-        if (viewerUser != null) UserDatabase.deleteUser(viewerUser.getId());
-        if (editorUser != null) UserDatabase.deleteUser(editorUser.getId());
-        if (adminUser != null) UserDatabase.deleteUser(adminUser.getId());
     }
 
     @Test
     void testDeleteUser() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
-
-        // Get user to get ID
         UserDatabase.User user = UserDatabase.getUser(testUsername);
         assertNotNull(user, "User should exist after adding");
 
@@ -180,9 +214,9 @@ public class UserDatabaseTest {
     void testUpdateUser() {
         // Add a new user
         UserDatabase.addUser(testUsername, testEmail, testPhone, testPassword, testRole);
-
-        // Get user to get ID
+        trackUser(testUsername);
         UserDatabase.User user = UserDatabase.getUser(testUsername);
+        assertNotNull(user, "User should not be null after adding");
 
         // Updated information
         String updatedEmail = "updated@example.com";
@@ -195,6 +229,7 @@ public class UserDatabaseTest {
 
         // Get updated user
         UserDatabase.User updatedUser = UserDatabase.getUser(testUsername);
+        assertNotNull(updatedUser, "User should still exist after update");
 
         // Verify updated information
         assertEquals(updatedEmail, updatedUser.getEmail(), "Email should be updated");
