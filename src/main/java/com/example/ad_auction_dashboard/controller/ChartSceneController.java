@@ -14,6 +14,15 @@ import com.example.ad_auction_dashboard.charts.UniquesChart;
 import com.example.ad_auction_dashboard.charts.BounceChart;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
+
+import com.opencsv.CSVWriter;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.chart.XYChart;
+import javafx.scene.image.WritableImage;
+import org.apache.commons.io.FilenameUtils;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +35,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -36,7 +46,10 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import javax.imageio.ImageIO;
 
 public class ChartSceneController {
 
@@ -65,6 +78,9 @@ public class ChartSceneController {
     private ComboBox<String> contextFilterComboBox; // New: context filter dropdown
 
     @FXML
+    private ComboBox<String> exportComboBox;
+
+    @FXML
     private Button resetFiltersButton; // New: reset filters button
 
     @FXML
@@ -75,6 +91,12 @@ public class ChartSceneController {
 
     @FXML
     private VBox secondaryChartContainer;
+
+    @FXML
+    private LineChart primaryChart;
+
+    @FXML
+    private LineChart secondaryChart;
 
     @FXML
     private HBox chartsContainer;
@@ -107,6 +129,9 @@ public class ChartSceneController {
 
         secondaryChartTypeComboBox.getItems().addAll(chartRegistry.keySet());
         secondaryChartTypeComboBox.setValue("CPC"); // Default selection
+
+        exportComboBox.getItems().addAll("Chart 1 PNG", "Chart 2 PNG", "Chart 1 CSV", "Chart 2 CSV");
+        exportComboBox.setValue("Chart 1 PNG");
 
         // Setup time granularity options
         timeGranularityComboBox.getItems().addAll("Hourly", "Daily", "Weekly");
@@ -358,6 +383,7 @@ public class ChartSceneController {
                     timeFilteredMetrics, start, end, currentGranularity);
                 primaryChartContainer.getChildren().clear();
                 primaryChartContainer.getChildren().add(primaryChartNode);
+                primaryChart = (LineChart) primaryChartNode.getChildren().get(0);
             }
 
             // Create and display secondary chart if comparison is enabled
@@ -369,6 +395,7 @@ public class ChartSceneController {
                         timeFilteredMetrics, start, end, currentGranularity);
                     secondaryChartContainer.getChildren().clear();
                     secondaryChartContainer.getChildren().add(secondaryChartNode);
+                    secondaryChart = (LineChart) secondaryChartNode.getChildren().get(0);
                 }
             }
 
@@ -401,6 +428,86 @@ public class ChartSceneController {
         } catch (IOException e) {
             e.printStackTrace();
             showAlert("Error returning to metrics view: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void exportData(ActionEvent actionEvent){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select File");
+        if (exportComboBox.getValue().equals("Chart 1 PNG")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file", "*.png"));
+            File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("png")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".png");
+            }
+            WritableImage image = primaryChart.snapshot(new SnapshotParameters(), null);
+            try{
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
+            } catch (IOException e){
+                System.err.println(e);
+            }
+        }
+        if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PNG")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file", "*.png"));
+            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("png")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".png");
+            }
+            WritableImage image = secondaryChart.snapshot(new SnapshotParameters(), null);
+            try{
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
+            } catch (IOException e){
+                System.err.println(e);
+            }
+        }
+        if (exportComboBox.getValue().equals("Chart 1 CSV")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
+            File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("csv")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".csv");
+            }
+            try {
+                FileWriter fileWriter = new FileWriter(selectedFile);
+                CSVWriter writer = new CSVWriter(fileWriter);
+                writer.writeNext(new String[]{"X","Y"});
+                XYChart.Series<String, Number> series;
+                for (int i = 0; i < primaryChart.getData().size(); i++) {
+                    series = (XYChart.Series<String, Number>) primaryChart.getData().get(i);
+                    for (XYChart.Data<String, Number> dataPoint : series.getData()) {
+                        String xValue = dataPoint.getXValue();
+                        Number yValue = dataPoint.getYValue();
+                        writer.writeNext(new String[]{xValue, yValue.toString()});
+                    }
+                }
+                writer.close();
+            } catch (Exception e){
+                System.err.println(e);
+            }
+        }
+        if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 CSV")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
+            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("csv")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".csv");
+            }
+            try {
+                FileWriter fileWriter = new FileWriter(selectedFile);
+                CSVWriter writer = new CSVWriter(fileWriter);
+                writer.writeNext(new String[]{"X","Y"});
+                XYChart.Series<String, Number> series;
+                for (int i = 0; i < secondaryChart.getData().size(); i++) {
+                    series = (XYChart.Series<String, Number>) secondaryChart.getData().get(i);
+                    for (XYChart.Data<String, Number> dataPoint : series.getData()) {
+                        String xValue = dataPoint.getXValue();
+                        Number yValue = dataPoint.getYValue();
+                        writer.writeNext(new String[]{xValue, yValue.toString()});
+                    }
+                }
+                writer.close();
+            } catch (Exception e){
+                System.err.println(e);
+            }
         }
     }
 }
