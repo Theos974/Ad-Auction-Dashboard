@@ -15,15 +15,18 @@ import com.example.ad_auction_dashboard.charts.BounceChart;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
 import com.opencsv.CSVWriter;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import org.apache.commons.io.FilenameUtils;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -130,7 +133,7 @@ public class ChartSceneController {
         secondaryChartTypeComboBox.getItems().addAll(chartRegistry.keySet());
         secondaryChartTypeComboBox.setValue("CPC"); // Default selection
 
-        exportComboBox.getItems().addAll("Chart 1 PNG", "Chart 2 PNG", "Chart 1 CSV", "Chart 2 CSV");
+        exportComboBox.getItems().addAll("Chart 1 PNG", "Chart 2 PNG", "Chart 1 CSV", "Chart 2 CSV", "Chart 1 PDF", "Chart 2 PDF", "Combined PDF");
         exportComboBox.setValue("Chart 1 PNG");
 
         // Setup time granularity options
@@ -442,6 +445,7 @@ public class ChartSceneController {
                 selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".png");
             }
             WritableImage image = primaryChart.snapshot(new SnapshotParameters(), null);
+
             try{
                 ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
             } catch (IOException e){
@@ -509,5 +513,75 @@ public class ChartSceneController {
                 System.err.println(e);
             }
         }
+        if (exportComboBox.getValue().equals("Chart 1 PDF")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
+            File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".pdf");
+            }
+            try {
+                WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                Image graph = Image.getInstance(byteOutput.toByteArray());
+                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                document.open();
+                document.add(graph);
+                document.close();
+            } catch (Exception e){
+                System.err.println(e);
+            }
+        }
+        if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PDF")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
+            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".pdf");
+            }
+            try {
+                WritableImage writableImage = secondaryChart.snapshot(new SnapshotParameters(), null);
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                Image graph = Image.getInstance(byteOutput.toByteArray());
+                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                document.open();
+                document.add(graph);
+                document.close();
+            } catch (Exception e){
+                System.err.println(e);
+            }
+        }
+        if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
+            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
+            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
+                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".pdf");
+            }
+            try {
+                WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                Image graph = Image.getInstance(byteOutput.toByteArray());
+                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                document.open();
+                document.add(graph);
+                writableImage = secondaryChart.snapshot(new SnapshotParameters(), null);
+                byteOutput.reset();
+                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                graph = Image.getInstance(byteOutput.toByteArray());
+                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                document.add(graph);
+                document.close();
+            } catch (Exception e){
+                System.err.println(e);
+            }
+        }
+
     }
 }
