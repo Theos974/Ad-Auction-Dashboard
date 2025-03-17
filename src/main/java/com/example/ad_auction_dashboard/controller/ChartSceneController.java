@@ -26,6 +26,13 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import org.apache.commons.io.FilenameUtils;
 
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,6 +60,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 
 public class ChartSceneController {
 
@@ -67,6 +75,9 @@ public class ChartSceneController {
 
     @FXML
     private Label statusLabel; // Add this to your FXML if not already present
+
+    @FXML
+    private Label printLabel;
 
     @FXML
     private ComboBox<String> primaryChartTypeComboBox;
@@ -449,10 +460,11 @@ public class ChartSceneController {
             try{
                 ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
             } catch (IOException e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
         }
-        if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PNG")){
+        else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PNG")){
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file", "*.png"));
             File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
             if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("png")){
@@ -462,10 +474,11 @@ public class ChartSceneController {
             try{
                 ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
             } catch (IOException e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
         }
-        if (exportComboBox.getValue().equals("Chart 1 CSV")){
+        else if (exportComboBox.getValue().equals("Chart 1 CSV")){
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
             File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
             if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("csv")){
@@ -486,10 +499,11 @@ public class ChartSceneController {
                 }
                 writer.close();
             } catch (Exception e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
         }
-        if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 CSV")){
+        else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 CSV")){
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
             File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
             if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("csv")){
@@ -510,10 +524,11 @@ public class ChartSceneController {
                 }
                 writer.close();
             } catch (Exception e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
         }
-        if (exportComboBox.getValue().equals("Chart 1 PDF")){
+        else if (exportComboBox.getValue().equals("Chart 1 PDF")){
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
             File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
             if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
@@ -531,10 +546,11 @@ public class ChartSceneController {
                 document.add(graph);
                 document.close();
             } catch (Exception e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
         }
-        if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PDF")){
+        else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PDF")){
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
             File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
             if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
@@ -552,10 +568,11 @@ public class ChartSceneController {
                 document.add(graph);
                 document.close();
             } catch (Exception e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
         }
-        if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
+        else if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
             File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
             if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
@@ -579,8 +596,131 @@ public class ChartSceneController {
                 document.add(graph);
                 document.close();
             } catch (Exception e){
+                printLabel.setText("Writing Error!");
                 System.err.println(e);
             }
+        } else if (secondaryChart == null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF") || exportComboBox.getValue().equals("Combined PDF"))){
+                printLabel.setText("Secondary Chart doesn't Exist!");
+        } else {
+            printLabel.setText("Unknown Error!");
+        }
+    }
+
+    @FXML
+    private void printData(ActionEvent actionEvent){
+        if (exportComboBox.getValue().equals("Chart 1 PNG") || exportComboBox.getValue().equals("Chart 1 PDF")){
+            try {
+                java.awt.Image graph = getPrintableImage(primaryChart.snapshot(new SnapshotParameters(), null));
+                PrinterJob printJob = PrinterJob.getPrinterJob();
+                printJob.setPrintable(new Printable() {
+                    @Override
+                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                        if (pageIndex != 0){return NO_SUCH_PAGE;}
+                        graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
+                        return PAGE_EXISTS;}});
+                boolean doPrint = printJob.printDialog();
+                if (doPrint){try {printJob.print();
+                    } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
+                }
+            } catch (Exception e){
+                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+        }
+        else if (secondaryChart != null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF"))){
+            try {
+                java.awt.Image graph = getPrintableImage(secondaryChart.snapshot(new SnapshotParameters(), null));
+                PrinterJob printJob = PrinterJob.getPrinterJob();
+                printJob.setPrintable(new Printable() {
+                    @Override
+                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                        if (pageIndex != 0){return NO_SUCH_PAGE;}
+                        graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
+                        return PAGE_EXISTS;}});
+                boolean doPrint = printJob.printDialog();
+                if (doPrint){try {printJob.print();
+                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
+                }
+            } catch (Exception e){
+                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+        }
+        else if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
+            try {
+                java.awt.Image graph1 = getPrintableImage(primaryChart.snapshot(new SnapshotParameters(), null));
+                java.awt.Image graph2 = getPrintableImage(secondaryChart.snapshot(new SnapshotParameters(), null));
+                java.awt.Image[] graphs = {graph1, graph2};
+                PrinterJob printJob = PrinterJob.getPrinterJob();
+                printJob.setPrintable(new Printable() {
+                    @Override
+                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                        if (pageIndex >= graphs.length){return NO_SUCH_PAGE;}
+                        graphics.drawImage(graphs[pageIndex], 0, 0, (int) graphs[pageIndex].getWidth(null), (int) ((int) graphs[pageIndex].getHeight(null) * 0.9), null);
+                        return PAGE_EXISTS;}});
+                boolean doPrint = printJob.printDialog();
+                if (doPrint){try {printJob.print();
+                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
+                }
+            } catch (Exception e){
+                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+        } else if (secondaryChart == null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF"))){
+            printLabel.setText("Secondary Chart doesn't Exist!");
+        }else {
+            printLabel.setText("CSV cannot be printed!");
+        }
+    }
+
+    public BufferedImage rotateImage(java.awt.Image originalImage, double degrees) {
+        // Convert to BufferedImage if it's not already one
+        BufferedImage bufferedImage;
+        if (originalImage instanceof BufferedImage) {
+            bufferedImage = (BufferedImage) originalImage;
+        } else {
+            // Create a BufferedImage with transparency
+            bufferedImage = new BufferedImage(
+                    originalImage.getWidth(null),
+                    originalImage.getHeight(null),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            // Draw the image on the BufferedImage
+            Graphics2D bGr = bufferedImage.createGraphics();
+            bGr.drawImage(originalImage, 0, 0, null);
+            bGr.dispose();
+        }
+
+        // Calculate the new image size
+        double radians = Math.toRadians(degrees);
+        double sin = Math.abs(Math.sin(radians));
+        double cos = Math.abs(Math.cos(radians));
+        int width = bufferedImage.getWidth();
+        int height = bufferedImage.getHeight();
+        int newWidth = (int) Math.floor(width * cos + height * sin);
+        int newHeight = (int) Math.floor(height * cos + width * sin);
+
+        // Create a new BufferedImage for the rotated image
+        BufferedImage rotatedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = rotatedImage.createGraphics();
+
+        // Transform to rotate around the center of the image
+        AffineTransform at = new AffineTransform();
+        at.translate((newWidth - width) / 2, (newHeight - height) / 2);
+        at.rotate(radians, width / 2, height / 2);
+        g2d.setTransform(at);
+
+        // Draw the original image
+        g2d.drawImage(bufferedImage, 0, 0, null);
+        g2d.dispose();
+
+        return rotatedImage;
+    }
+
+    private java.awt.Image getPrintableImage(WritableImage writableImage){
+        try {
+            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+            InputStream inputStream = new ByteArrayInputStream(byteOutput.toByteArray());
+            return rotateImage(ImageIO.read(inputStream).getScaledInstance(-1, -1, java.awt.Image.SCALE_SMOOTH),90);
+        } catch (Exception e){
+            printLabel.setText("Error Converting Image!");
+            return null;
         }
 
     }
