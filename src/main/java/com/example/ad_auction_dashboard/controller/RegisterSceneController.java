@@ -96,6 +96,11 @@ public class RegisterSceneController {
 
         try {
             // Attempt to add the user to the database
+            System.out.println(UserDatabase.isUserUnique(username,email,phone));
+            if (!UserDatabase.isUserUnique(username,email,phone)){
+                statusText.setText("User is not unique/already in database");
+                return;
+            }
             UserDatabase.addUser(username, email, phone, password, role);
 
             // Show success message and navigate to login

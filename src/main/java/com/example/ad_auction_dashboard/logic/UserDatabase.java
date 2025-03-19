@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class UserDatabase {
     // Database configuration
@@ -110,6 +112,19 @@ public class UserDatabase {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean isUserUnique(String username, String email, String phone){
+        try (Connection conn = getConnection();
+        Statement stmt = conn.createStatement())   {
+            ResultSet all = stmt.executeQuery("SELECT username, email, phone FROM USERS");
+            while (all.next()){
+                if (Objects.equals(all.getString(1), username) || Objects.equals(all.getString(2), email) || Objects.equals(all.getString(3), phone)){
+                    return false;
+                }
+            }
+        } catch (Exception e){System.err.println(e);}
+        return true;
     }
 
     public static void deleteUser(int id) {

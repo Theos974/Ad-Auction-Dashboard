@@ -315,8 +315,24 @@ public class AdminPanelController {
             return;
         }
 
+        //Same Validation As Register Scene
+        if (!username.matches("^[a-zA-Z0-9_]{3,20}$")) {
+            showErrorMessage("Username must be 3-20 characters, alphanumeric with underscores only");
+            return;
+        } else if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            showErrorMessage("Please enter a valid email address");
+            return;
+        } else if (!phone.matches("^[0-9]{10,15}$")) {
+            showErrorMessage("Please enter a valid phone number (10-15 digits)");
+            return;
+        }
+
         try {
             // Add user to database
+            if (!UserDatabase.isUserUnique(username, email, phone)){
+                showErrorMessage("User is not unique/already in database");
+                return;
+            }
             UserDatabase.addUser(username, email, phone, password, role);
             showSuccessMessage("User added successfully.");
 
