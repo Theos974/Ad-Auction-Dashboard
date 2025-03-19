@@ -447,14 +447,8 @@ public class ChartSceneController {
 
     @FXML
     private void exportData(ActionEvent actionEvent){
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select File");
         if (exportComboBox.getValue().equals("Chart 1 PNG")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file", "*.png"));
-            File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("png")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".png");
-            }
+            File selectedFile = getChosenFile("png");
             WritableImage image = primaryChart.snapshot(new SnapshotParameters(), null);
 
             try{
@@ -465,11 +459,7 @@ public class ChartSceneController {
             }
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PNG")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG file", "*.png"));
-            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("png")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".png");
-            }
+            File selectedFile = getChosenFile("png");
             WritableImage image = secondaryChart.snapshot(new SnapshotParameters(), null);
             try{
                 ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
@@ -479,11 +469,7 @@ public class ChartSceneController {
             }
         }
         else if (exportComboBox.getValue().equals("Chart 1 CSV")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
-            File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("csv")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".csv");
-            }
+            File selectedFile = getChosenFile("csv");
             try {
                 FileWriter fileWriter = new FileWriter(selectedFile);
                 CSVWriter writer = new CSVWriter(fileWriter);
@@ -504,11 +490,7 @@ public class ChartSceneController {
             }
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 CSV")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV file", "*.csv"));
-            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("csv")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".csv");
-            }
+            File selectedFile = getChosenFile("csv");
             try {
                 FileWriter fileWriter = new FileWriter(selectedFile);
                 CSVWriter writer = new CSVWriter(fileWriter);
@@ -529,11 +511,7 @@ public class ChartSceneController {
             }
         }
         else if (exportComboBox.getValue().equals("Chart 1 PDF")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
-            File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".pdf");
-            }
+            File selectedFile = getChosenFile("pdf");
             try {
                 WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
                 ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
@@ -551,11 +529,7 @@ public class ChartSceneController {
             }
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PDF")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
-            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".pdf");
-            }
+            File selectedFile = getChosenFile("pdf");
             try {
                 WritableImage writableImage = secondaryChart.snapshot(new SnapshotParameters(), null);
                 ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
@@ -573,11 +547,7 @@ public class ChartSceneController {
             }
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF file", "*.pdf"));
-            File selectedFile = fileChooser.showSaveDialog(secondaryChart.getScene().getWindow());
-            if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase("pdf")){
-                selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+".pdf");
-            }
+            File selectedFile = getChosenFile("pdf");
             try {
                 WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
                 ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
@@ -723,5 +693,17 @@ public class ChartSceneController {
             return null;
         }
 
+    }
+
+    private File getChosenFile(String fileType){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileType.toUpperCase() + " file", "*." + fileType));
+        File selectedFile = fileChooser.showSaveDialog(primaryChart.getScene().getWindow());
+        if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase(fileType)){
+            selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+"." + fileType);
+        }
+        if (selectedFile == null){printLabel.setText("No File Selected");}
+        return selectedFile;
     }
 }

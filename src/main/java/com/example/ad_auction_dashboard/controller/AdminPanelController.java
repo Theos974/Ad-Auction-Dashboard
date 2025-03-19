@@ -379,6 +379,7 @@ public class AdminPanelController {
         } else {
             showCampaignStatus("Failed to grant access.");
         }
+        updateAccessButtons();
     }
 
     @FXML
@@ -411,6 +412,7 @@ public class AdminPanelController {
         } else {
             showCampaignStatus("Failed to revoke access.");
         }
+        updateAccessButtons();
     }
 
     /**
