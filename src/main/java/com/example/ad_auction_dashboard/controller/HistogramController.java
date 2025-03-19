@@ -6,18 +6,33 @@ import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
-import java.io.IOException;
+
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.opencsv.CSVWriter;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -30,7 +45,12 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.WritableImage;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.commons.io.FilenameUtils;
+
+import javax.imageio.ImageIO;
 
 public class HistogramController {
 
@@ -51,6 +71,12 @@ public class HistogramController {
 
     @FXML
     private BarChart<String, Number> histogramChart;
+
+    @FXML
+    private ComboBox<String> exportComboBox;
+
+    @FXML
+    private Label printLabel;
 
     @FXML
     private CategoryAxis xAxis;
@@ -144,6 +170,10 @@ public class HistogramController {
                 "Blog", "Hobbies", "Travel");
             contextFilterComboBox.setValue("All");
             contextFilterComboBox.setOnAction(e -> updateHistogram());
+        }
+        if (exportComboBox != null){
+            exportComboBox.getItems().addAll("PNG", "CSV", "PDF");
+            exportComboBox.setValue("PNG");
         }
     }
 
@@ -480,5 +510,149 @@ public class HistogramController {
         if (logoutBtn != null) {
             LogoutHandler.handleLogout(event);
         }
+    }
+
+    @FXML
+    private void exportData(ActionEvent event){
+        if (exportComboBox.getValue().equals("PNG")){
+            File selectedFile = getChosenFile("png");
+            WritableImage image = histogramChart.snapshot(new SnapshotParameters(), null);
+
+            try{
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
+            } catch (IOException e){
+                printLabel.setText("Writing Error!");
+                System.err.println(e);
+            }
+        }else if (exportComboBox.getValue().equals("CSV")){
+            File selectedFile = getChosenFile("csv");
+            try {
+                FileWriter fileWriter = new FileWriter(selectedFile);
+                CSVWriter writer = new CSVWriter(fileWriter);
+                writer.writeNext(new String[]{"X","Y"});
+                XYChart.Series<String, Number> series;
+                for (int i = 0; i < histogramChart.getData().size(); i++) {
+                    series = (XYChart.Series<String, Number>) histogramChart.getData().get(i);
+                    for (XYChart.Data<String, Number> dataPoint : series.getData()) {
+                        String xValue = dataPoint.getXValue();
+                        Number yValue = dataPoint.getYValue();
+                        writer.writeNext(new String[]{xValue, yValue.toString()});
+                    }
+                }
+                writer.close();
+            } catch (Exception e){
+                printLabel.setText("Writing Error!");
+                System.err.println(e);
+            }
+        }else if (exportComboBox.getValue().equals("PDF")){
+            File selectedFile = getChosenFile("pdf");
+            try {
+                WritableImage writableImage = histogramChart.snapshot(new SnapshotParameters(), null);
+                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                com.itextpdf.text.Image graph = com.itextpdf.text.Image.getInstance(byteOutput.toByteArray());
+                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                document.open();
+                document.add(graph);
+                document.close();
+            } catch (Exception e){
+                printLabel.setText("Writing Error!");
+                System.err.println(e);
+            }
+        }
+    }
+
+    @FXML void printData(ActionEvent event){
+        if (exportComboBox.getValue().equals("PNG") || exportComboBox.getValue().equals("PDF")){
+            try {
+                java.awt.Image graph = getPrintableImage(histogramChart.snapshot(new SnapshotParameters(), null));
+                PrinterJob printJob = PrinterJob.getPrinterJob();
+                printJob.setPrintable(new Printable() {
+                    @Override
+                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                        if (pageIndex != 0){return NO_SUCH_PAGE;}
+                        graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
+                        return PAGE_EXISTS;}});
+                boolean doPrint = printJob.printDialog();
+                if (doPrint){try {printJob.print();
+                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
+                }
+            } catch (Exception e){
+                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+        } else if (exportComboBox.getValue().equals("CSV")){
+            printLabel.setText("CSV cannot be printed!");
+        }
+    }
+
+    public BufferedImage rotateImage(java.awt.Image originalImage, double degrees) {
+        // Convert to BufferedImage if it's not already one
+        BufferedImage bufferedImage;
+        if (originalImage instanceof BufferedImage) {
+            bufferedImage = (BufferedImage) originalImage;
+        } else {
+            // Create a BufferedImage with transparency
+            bufferedImage = new BufferedImage(
+                    originalImage.getWidth(null),
+                    originalImage.getHeight(null),
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            // Draw the image on the BufferedImage
+            Graphics2D bGr = bufferedImage.createGraphics();
+            bGr.drawImage(originalImage, 0, 0, null);
+            bGr.dispose();
+        }
+
+        // Calculate the new image size
+        double radians = Math.toRadians(degrees);
+        double sin = Math.abs(Math.sin(radians));
+        double cos = Math.abs(Math.cos(radians));
+        int width = bufferedImage.getWidth();
+        int height = bufferedImage.getHeight();
+        int newWidth = (int) Math.floor(width * cos + height * sin);
+        int newHeight = (int) Math.floor(height * cos + width * sin);
+
+        // Create a new BufferedImage for the rotated image
+        BufferedImage rotatedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = rotatedImage.createGraphics();
+
+        // Transform to rotate around the center of the image
+        AffineTransform at = new AffineTransform();
+        at.translate((newWidth - width) / 2, (newHeight - height) / 2);
+        at.rotate(radians, width / 2, height / 2);
+        g2d.setTransform(at);
+
+        // Draw the original image
+        g2d.drawImage(bufferedImage, 0, 0, null);
+        g2d.dispose();
+
+        return rotatedImage;
+    }
+
+    private java.awt.Image getPrintableImage(WritableImage writableImage){
+        try {
+            ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+            InputStream inputStream = new ByteArrayInputStream(byteOutput.toByteArray());
+            return rotateImage(ImageIO.read(inputStream).getScaledInstance(-1, -1, java.awt.Image.SCALE_SMOOTH),90);
+        } catch (Exception e){
+            printLabel.setText("Error Converting Image!");
+            return null;
+        }
+
+    }
+
+    private File getChosenFile(String fileType){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(fileType.toUpperCase() + " file", "*." + fileType));
+        File selectedFile = fileChooser.showSaveDialog(histogramChart.getScene().getWindow());
+        if (!FilenameUtils.getExtension(selectedFile.getName()).equalsIgnoreCase(fileType)){
+            selectedFile = new File(selectedFile.getParentFile(), FilenameUtils.getBaseName(selectedFile.getName())+"." + fileType);
+        }
+        if (selectedFile == null){printLabel.setText("No File Selected");}
+        return selectedFile;
     }
 }
