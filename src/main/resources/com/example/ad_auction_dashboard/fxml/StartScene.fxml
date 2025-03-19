@@ -43,7 +43,7 @@
                 <!-- Button to load from database, visible only for viewers -->
                 <Button fx:id="loadFromDbBtn" onAction="#handleLoadFromDatabase" prefHeight="51.0" prefWidth="211.0" styleClass="modern-button" text="Load Saved Campaign" visible="true" />
 
-                <Button fx:id="createCampaignBtn" contentDisplay="CENTER" graphicTextGap="0.0" onAction="#handleCreateCampaign" prefHeight="60.0" prefWidth="300.0" styleClass="primary-button" text="Create Campaign" />
+                <Button fx:id="createCampaignBtn" contentDisplay="CENTER" graphicTextGap="0.0" onAction="#handleCreateCampaign" prefHeight="51.0" prefWidth="207.0" styleClass="primary-button" text="Create Campaign" />
             </children>
         </VBox>
       <VBox layoutX="21.0" layoutY="15.0" prefHeight="200.0" prefWidth="88.0">
