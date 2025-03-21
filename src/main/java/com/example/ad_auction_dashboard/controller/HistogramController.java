@@ -98,11 +98,18 @@ public class HistogramController {
 
     @FXML
     private Button logoutBtn;
+
     @FXML
     private ComboBox<String> genderFilterComboBox;
 
     @FXML
     private ComboBox<String> contextFilterComboBox;
+
+    @FXML
+    private ComboBox<String> ageFilterComboBox;
+
+    @FXML
+    private ComboBox<String> incomeFilterComboBox;
 
     @FXML
     private Button resetFiltersButton;
@@ -159,18 +166,37 @@ public class HistogramController {
         if (descriptionTextArea != null) {
             descriptionTextArea.setText("");
         }
+
+        // Initialize gender filter combobox
         if (genderFilterComboBox != null) {
             genderFilterComboBox.getItems().addAll("All", "Male", "Female");
             genderFilterComboBox.setValue("All");
             genderFilterComboBox.setOnAction(e -> updateHistogram());
         }
 
+        // Initialize context filter combobox
         if (contextFilterComboBox != null) {
             contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
                 "Blog", "Hobbies", "Travel");
             contextFilterComboBox.setValue("All");
             contextFilterComboBox.setOnAction(e -> updateHistogram());
         }
+
+        // Initialize age filter combobox
+        if (ageFilterComboBox != null) {
+            ageFilterComboBox.getItems().addAll("All", "<25", "25-34", "35-44", "45-54", ">54");
+            ageFilterComboBox.setValue("All");
+            ageFilterComboBox.setOnAction(e -> updateHistogram());
+        }
+
+        // Initialize income filter combobox
+        if (incomeFilterComboBox != null) {
+            incomeFilterComboBox.getItems().addAll("All", "Low", "Medium", "High");
+            incomeFilterComboBox.setValue("All");
+            incomeFilterComboBox.setOnAction(e -> updateHistogram());
+        }
+
+        // Initialize export combobox
         if (exportComboBox != null){
             exportComboBox.getItems().addAll("PNG", "CSV", "PDF");
             exportComboBox.setValue("PNG");
@@ -282,10 +308,14 @@ public class HistogramController {
     private void handleResetFilters() {
         if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
         if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
+        if (ageFilterComboBox != null) ageFilterComboBox.setValue("All");
+        if (incomeFilterComboBox != null) incomeFilterComboBox.setValue("All");
 
         if (timeFilteredMetrics != null) {
             timeFilteredMetrics.setGenderFilter(null);
             timeFilteredMetrics.setContextFilter(null);
+            timeFilteredMetrics.setAgeFilter(null);
+            timeFilteredMetrics.setIncomeFilter(null);
 
             // Clear filters in session
             UserSession.getInstance().clearFilterSettings();
@@ -307,14 +337,16 @@ public class HistogramController {
 
         if (timeFilteredMetrics != null) {
             // Get filter values
-            String gender =
-                (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
-            String context =
-                (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+            String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
+            String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+            String age = (ageFilterComboBox != null) ? ageFilterComboBox.getValue() : "All";
+            String income = (incomeFilterComboBox != null) ? incomeFilterComboBox.getValue() : "All";
 
             // Apply filters
             timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
             timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
+            timeFilteredMetrics.setAgeFilter(age.equals("All") ? null : age);
+            timeFilteredMetrics.setIncomeFilter(income.equals("All") ? null : income);
 
             // Save filter settings to UserSession
             saveFilterSettingsToSession();
@@ -394,7 +426,9 @@ public class HistogramController {
                 // Check if filters are applied
                 if (timeFilteredMetrics != null &&
                     (!genderFilterComboBox.getValue().equals("All") ||
-                        !contextFilterComboBox.getValue().equals("All"))) {
+                        !contextFilterComboBox.getValue().equals("All") ||
+                        !ageFilterComboBox.getValue().equals("All") ||
+                        !incomeFilterComboBox.getValue().equals("All"))) {
 
                     // Use the filtered method when filters are active
                     histogramData =
@@ -456,6 +490,7 @@ public class HistogramController {
             }
         }
     }
+
     private void saveFilterSettingsToSession() {
         UserSession session = UserSession.getInstance();
 
@@ -465,6 +500,14 @@ public class HistogramController {
 
         if (contextFilterComboBox != null) {
             session.setFilterSetting("context", contextFilterComboBox.getValue());
+        }
+
+        if (ageFilterComboBox != null) {
+            session.setFilterSetting("age", ageFilterComboBox.getValue());
+        }
+
+        if (incomeFilterComboBox != null) {
+            session.setFilterSetting("income", incomeFilterComboBox.getValue());
         }
     }
 
@@ -482,6 +525,18 @@ public class HistogramController {
         String context = session.getFilterSetting("context");
         if (context != null && contextFilterComboBox != null) {
             contextFilterComboBox.setValue(context);
+        }
+
+        // Apply age filter if saved
+        String age = session.getFilterSetting("age");
+        if (age != null && ageFilterComboBox != null) {
+            ageFilterComboBox.setValue(age);
+        }
+
+        // Apply income filter if saved
+        String income = session.getFilterSetting("income");
+        if (income != null && incomeFilterComboBox != null) {
+            incomeFilterComboBox.setValue(income);
         }
     }
 
@@ -594,9 +649,9 @@ public class HistogramController {
         } else {
             // Create a BufferedImage with transparency
             bufferedImage = new BufferedImage(
-                    originalImage.getWidth(null),
-                    originalImage.getHeight(null),
-                    BufferedImage.TYPE_INT_ARGB
+                originalImage.getWidth(null),
+                originalImage.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB
             );
 
             // Draw the image on the BufferedImage

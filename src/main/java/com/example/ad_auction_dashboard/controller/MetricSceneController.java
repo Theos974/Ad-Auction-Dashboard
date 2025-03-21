@@ -1,7 +1,11 @@
 package com.example.ad_auction_dashboard.controller;
 
+import com.example.ad_auction_dashboard.logic.Campaign;
+import com.example.ad_auction_dashboard.logic.CampaignComparisonDialog;
+import com.example.ad_auction_dashboard.logic.CampaignDatabase;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
+import com.example.ad_auction_dashboard.logic.MetricComparisonView;
 import com.example.ad_auction_dashboard.logic.SaveCampaignDialog;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
@@ -67,6 +71,12 @@ public class MetricSceneController {
     private ComboBox<String> contextFilterComboBox;
 
     @FXML
+    private ComboBox<String> ageFilterComboBox;
+
+    @FXML
+    private ComboBox<String> incomeFilterComboBox;
+
+    @FXML
     private Button resetFiltersButton;
 
     @FXML
@@ -88,23 +98,40 @@ public class MetricSceneController {
         if (userWelcomeLabel != null && UserSession.getInstance().getUser() != null) {
             userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername());
         }
+
+        // Initialize gender filter
         if (genderFilterComboBox != null) {
             genderFilterComboBox.getItems().addAll("All", "Male", "Female");
             genderFilterComboBox.setValue("All");
             genderFilterComboBox.setOnAction(e -> applyFilters());
         }
 
+        // Initialize context filter
         if (contextFilterComboBox != null) {
             contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
                 "Blog", "Hobbies", "Travel");
             contextFilterComboBox.setValue("All");
             contextFilterComboBox.setOnAction(e -> applyFilters());
         }
+
+        // Initialize age filter
+        if (ageFilterComboBox != null) {
+            ageFilterComboBox.getItems().addAll("All", "<25", "25-34", "35-44", "45-54", ">54");
+            ageFilterComboBox.setValue("All");
+            ageFilterComboBox.setOnAction(e -> applyFilters());
+        }
+
+        // Initialize income filter
+        if (incomeFilterComboBox != null) {
+            incomeFilterComboBox.getItems().addAll("All", "Low", "Medium", "High");
+            incomeFilterComboBox.setValue("All");
+            incomeFilterComboBox.setOnAction(e -> applyFilters());
+        }
+
         // Date picker event listeners
         startDatePicker.setOnAction(e -> {
             validateDateRange();
             applyFilters();
-
         });
 
         endDatePicker.setOnAction(e -> {
@@ -168,25 +195,30 @@ public class MetricSceneController {
                     }
                 });
             }
-
         }
-
 
         // Get filter values from UserSession if available
         applyFilterSettingsFromSession();
 
         updateUI();
+
+        setupMetricClickHandlers();
     }
+
     private void applyFilters() {
         if (timeFilteredMetrics == null) return;
 
         // Get filter values
         String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
         String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+        String age = (ageFilterComboBox != null) ? ageFilterComboBox.getValue() : "All";
+        String income = (incomeFilterComboBox != null) ? incomeFilterComboBox.getValue() : "All";
 
         // Apply filters
         timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
         timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
+        timeFilteredMetrics.setAgeFilter(age.equals("All") ? null : age);
+        timeFilteredMetrics.setIncomeFilter(income.equals("All") ? null : income);
 
         // Save filter settings to UserSession
         saveFilterSettingsToSession();
@@ -219,6 +251,8 @@ public class MetricSceneController {
     private void handleResetFilters() {
         if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
         if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
+        if (ageFilterComboBox != null) ageFilterComboBox.setValue("All");
+        if (incomeFilterComboBox != null) incomeFilterComboBox.setValue("All");
 
         // Reset date pickers to campaign start/end dates if available
         if (startDatePicker != null && endDatePicker != null && metrics != null) {
@@ -234,6 +268,8 @@ public class MetricSceneController {
         if (timeFilteredMetrics != null) {
             timeFilteredMetrics.setGenderFilter(null);
             timeFilteredMetrics.setContextFilter(null);
+            timeFilteredMetrics.setAgeFilter(null);
+            timeFilteredMetrics.setIncomeFilter(null);
 
             // Clear filters in session
             UserSession.getInstance().clearFilterSettings();
@@ -246,6 +282,7 @@ public class MetricSceneController {
             updateUI(); // Use original unfiltered metrics
         }
     }
+
     private void updateUIWithFilteredData() {
         // Update all metric text fields with filtered values
         impressionsText.setText(String.valueOf(timeFilteredMetrics.getNumberOfImpressions()));
@@ -260,6 +297,7 @@ public class MetricSceneController {
         cpmText.setText(String.format("%.6f", timeFilteredMetrics.getCPM()));
         bounceRateText.setText(String.format("%.6f", timeFilteredMetrics.getBounceRate()));
     }
+
     private void saveFilterSettingsToSession() {
         UserSession session = UserSession.getInstance();
 
@@ -269,6 +307,14 @@ public class MetricSceneController {
 
         if (contextFilterComboBox != null) {
             session.setFilterSetting("context", contextFilterComboBox.getValue());
+        }
+
+        if (ageFilterComboBox != null) {
+            session.setFilterSetting("age", ageFilterComboBox.getValue());
+        }
+
+        if (incomeFilterComboBox != null) {
+            session.setFilterSetting("income", incomeFilterComboBox.getValue());
         }
     }
 
@@ -288,9 +334,23 @@ public class MetricSceneController {
             contextFilterComboBox.setValue(context);
         }
 
+        // Apply age filter if saved
+        String age = session.getFilterSetting("age");
+        if (age != null && ageFilterComboBox != null) {
+            ageFilterComboBox.setValue(age);
+        }
+
+        // Apply income filter if saved
+        String income = session.getFilterSetting("income");
+        if (income != null && incomeFilterComboBox != null) {
+            incomeFilterComboBox.setValue(income);
+        }
+
         // If any filters were applied, update metrics
         if ((gender != null && !gender.equals("All")) ||
-            (context != null && !context.equals("All"))) {
+            (context != null && !context.equals("All")) ||
+            (age != null && !age.equals("All")) ||
+            (income != null && !income.equals("All"))) {
             applyFilters();
         }
     }
@@ -493,4 +553,231 @@ public class MetricSceneController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    // Add these methods to MetricSceneController class
+
+    /**
+     * Set up click handlers for all metrics to enable comparison
+     */
+    private void setupMetricClickHandlers() {
+        // Only add click handlers if user has appropriate permissions
+        if (!UserSession.getInstance().isEditor()) {
+            return;
+        }
+
+        // Add click handler to each metric text with appropriate tooltips
+        setupMetricClickable(impressionsText, "Impressions", "Click to compare impressions with another campaign");
+        setupMetricClickable(clicksText, "Clicks", "Click to compare clicks with another campaign");
+        setupMetricClickable(uniquesText, "Unique Users", "Click to compare unique users with another campaign");
+        setupMetricClickable(bouncesText, "Bounces", "Click to compare bounces with another campaign");
+        setupMetricClickable(conversionsText, "Conversions", "Click to compare conversions with another campaign");
+        setupMetricClickable(totalCostText, "Total Cost", "Click to compare total cost with another campaign");
+        setupMetricClickable(ctrText, "CTR", "Click to compare CTR with another campaign");
+        setupMetricClickable(cpcText, "CPC", "Click to compare CPC with another campaign");
+        setupMetricClickable(cpaText, "CPA", "Click to compare CPA with another campaign");
+        setupMetricClickable(cpmText, "CPM", "Click to compare CPM with another campaign");
+        setupMetricClickable(bounceRateText, "Bounce Rate", "Click to compare bounce rate with another campaign");
+    }
+
+    /**
+     * Helper method to set up a metric text for comparison
+     */
+    private void setupMetricClickable(Text metricText, String metricName, String tooltipText) {
+        // Set style and tooltip
+        metricText.setStyle("-fx-cursor: hand; -fx-underline: false;");
+
+        // Add hover effect
+        metricText.setOnMouseEntered(e -> metricText.setStyle("-fx-cursor: hand; -fx-underline: true;"));
+        metricText.setOnMouseExited(e -> metricText.setStyle("-fx-cursor: hand; -fx-underline: false;"));
+
+        // Add tooltip
+        javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(tooltipText);
+        javafx.scene.control.Tooltip.install(metricText, tooltip);
+
+        // Add click handler
+        metricText.setOnMouseClicked(e -> compareMetric(metricName, metricText.getText()));
+    }
+
+    /**
+     * Compare the selected metric with the same metric from another campaign
+     */
+    private void compareMetric(String metricName, String currentValueText) {
+        // Check permissions again (redundant safety check)
+        if (!UserSession.getInstance().isEditor()) {
+            showAlert("You need Editor or Admin permissions to compare campaigns");
+            return;
+        }
+
+        // Get current campaign name
+        String currentCampaignName = "Current Campaign";
+
+        // Show dialog to select campaign to compare with
+        Stage stage = (Stage) impressionsText.getScene().getWindow();
+        CampaignDatabase.CampaignInfo campaignToCompare =
+            CampaignComparisonDialog.showDialog(stage, currentCampaignName);
+
+        if (campaignToCompare == null) {
+            // User cancelled
+            return;
+        }
+
+        try {
+            // Load the other campaign
+            Campaign otherCampaign = CampaignDatabase.loadCampaign(campaignToCompare.getCampaignId());
+            if (otherCampaign == null) {
+                showAlert("Failed to load comparison campaign");
+                return;
+            }
+
+            // Create metrics for the other campaign
+            CampaignMetrics otherMetrics = new CampaignMetrics(otherCampaign);
+
+            // Apply the same filters as the current campaign
+            TimeFilteredMetrics otherFilteredMetrics = new TimeFilteredMetrics(
+                otherMetrics.getImpressionLogs(),
+                otherMetrics.getServerLogs(),
+                otherMetrics.getClickLogs(),
+                otherMetrics.getBouncePagesThreshold(),
+                otherMetrics.getBounceSecondsThreshold()
+            );
+
+            // Apply audience filters (same as current campaign)
+            if (genderFilterComboBox != null && !genderFilterComboBox.getValue().equals("All")) {
+                otherFilteredMetrics.setGenderFilter(genderFilterComboBox.getValue());
+            }
+
+            if (contextFilterComboBox != null && !contextFilterComboBox.getValue().equals("All")) {
+                otherFilteredMetrics.setContextFilter(contextFilterComboBox.getValue());
+            }
+
+            if (ageFilterComboBox != null && !ageFilterComboBox.getValue().equals("All")) {
+                otherFilteredMetrics.setAgeFilter(ageFilterComboBox.getValue());
+            }
+
+            if (incomeFilterComboBox != null && !incomeFilterComboBox.getValue().equals("All")) {
+                otherFilteredMetrics.setIncomeFilter(incomeFilterComboBox.getValue());
+            }
+
+            // Apply time frame to other metrics (use its own date range)
+            LocalDateTime otherStart = otherMetrics.getCampaignStartDate();
+            LocalDateTime otherEnd = otherMetrics.getCampaignEndDate();
+            otherFilteredMetrics.computeForTimeFrame(otherStart, otherEnd, "Daily");
+
+            // Get the values for comparison based on metric name
+            double currentValue;
+            double otherValue;
+            String formattedOtherValue;
+            String metricUnit = null;
+
+            // Determine which metric to compare and format appropriately
+            switch (metricName) {
+                case "Impressions":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getNumberOfImpressions() : metrics.getNumberOfImpressions();
+                    otherValue = otherFilteredMetrics.getNumberOfImpressions();
+                    formattedOtherValue = String.valueOf((int)otherValue);
+                    break;
+
+                case "Clicks":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getNumberOfClicks() : metrics.getNumberOfClicks();
+                    otherValue = otherFilteredMetrics.getNumberOfClicks();
+                    formattedOtherValue = String.valueOf((int)otherValue);
+                    break;
+
+                case "Unique Users":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getNumberOfUniques() : metrics.getNumberOfUniques();
+                    otherValue = otherFilteredMetrics.getNumberOfUniques();
+                    formattedOtherValue = String.valueOf((int)otherValue);
+                    break;
+
+                case "Bounces":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getNumberOfBounces() : metrics.getNumberOfBounces();
+                    otherValue = otherFilteredMetrics.getNumberOfBounces();
+                    formattedOtherValue = String.valueOf((int)otherValue);
+                    break;
+
+                case "Conversions":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getNumberOfConversions() : metrics.getNumberOfConversions();
+                    otherValue = otherFilteredMetrics.getNumberOfConversions();
+                    formattedOtherValue = String.valueOf((int)otherValue);
+                    break;
+
+                case "Total Cost":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getTotalCost() : metrics.getTotalCost();
+                    otherValue = otherFilteredMetrics.getTotalCost();
+                    formattedOtherValue = String.format("%.6f", otherValue);
+                    metricUnit = "$";
+                    break;
+
+                case "CTR":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getCTR() : metrics.getCTR();
+                    otherValue = otherFilteredMetrics.getCTR();
+                    formattedOtherValue = String.format("%.6f", otherValue);
+                    metricUnit = "%";
+                    break;
+
+                case "CPC":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getCPC() : metrics.getCPC();
+                    otherValue = otherFilteredMetrics.getCPC();
+                    formattedOtherValue = String.format("%.6f", otherValue);
+                    metricUnit = "$";
+                    break;
+
+                case "CPA":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getCPA() : metrics.getCPA();
+                    otherValue = otherFilteredMetrics.getCPA();
+                    formattedOtherValue = String.format("%.6f", otherValue);
+                    metricUnit = "$";
+                    break;
+
+                case "CPM":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getCPM() : metrics.getCPM();
+                    otherValue = otherFilteredMetrics.getCPM();
+                    formattedOtherValue = String.format("%.6f", otherValue);
+                    metricUnit = "$";
+                    break;
+
+                case "Bounce Rate":
+                    currentValue = timeFilteredMetrics != null ?
+                        timeFilteredMetrics.getBounceRate() : metrics.getBounceRate();
+                    otherValue = otherFilteredMetrics.getBounceRate();
+                    formattedOtherValue = String.format("%.6f", otherValue);
+                    metricUnit = "%";
+                    break;
+
+                default:
+                    showAlert("Unknown metric: " + metricName);
+                    return;
+            }
+
+            // Show comparison view with the results
+            MetricComparisonView.show(
+                stage,
+                metricName,
+                currentCampaignName,
+                campaignToCompare.getCampaignName(),
+                currentValue,
+                otherValue,
+                currentValueText,
+                formattedOtherValue,
+                metricUnit
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error comparing campaigns: " + e.getMessage());
+        }
+    }
+
+
+
 }

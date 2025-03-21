@@ -86,16 +86,22 @@ public class ChartSceneController {
     private ComboBox<String> secondaryChartTypeComboBox;
 
     @FXML
-    private ComboBox<String> genderFilterComboBox; // New: gender filter dropdown
+    private ComboBox<String> genderFilterComboBox; // Gender filter dropdown
 
     @FXML
-    private ComboBox<String> contextFilterComboBox; // New: context filter dropdown
+    private ComboBox<String> contextFilterComboBox; // Context filter dropdown
+
+    @FXML
+    private ComboBox<String> ageFilterComboBox; // Age filter dropdown
+
+    @FXML
+    private ComboBox<String> incomeFilterComboBox; // Income filter dropdown
 
     @FXML
     private ComboBox<String> exportComboBox;
 
     @FXML
-    private Button resetFiltersButton; // New: reset filters button
+    private Button resetFiltersButton; // Reset filters button
 
     @FXML
     private ToggleButton compareToggleButton;
@@ -160,6 +166,14 @@ public class ChartSceneController {
             "Blog", "Hobbies", "Travel");
         contextFilterComboBox.setValue("All"); // Default
 
+        // Setup age filter options (new)
+        ageFilterComboBox.getItems().addAll("All", "<25", "25-34", "35-44", "45-54", ">54");
+        ageFilterComboBox.setValue("All"); // Default
+
+        // Setup income filter options (new)
+        incomeFilterComboBox.getItems().addAll("All", "Low", "Medium", "High");
+        incomeFilterComboBox.setValue("All"); // Default
+
         // Setup toggle button for comparison
         compareToggleButton.setOnAction(e -> {
             boolean showComparison = compareToggleButton.isSelected();
@@ -184,6 +198,8 @@ public class ChartSceneController {
         // Add filter change listeners
         genderFilterComboBox.setOnAction(e -> applyFilters());
         contextFilterComboBox.setOnAction(e -> applyFilters());
+        ageFilterComboBox.setOnAction(e -> applyFilters());
+        incomeFilterComboBox.setOnAction(e -> applyFilters());
 
         timeGranularityComboBox.setOnAction(e -> {
             currentGranularity = timeGranularityComboBox.getValue();
@@ -232,9 +248,19 @@ public class ChartSceneController {
         String context = contextFilterComboBox.getValue();
         if (context.equals("All")) context = null;
 
+        // Get selected age filter (new)
+        String age = ageFilterComboBox.getValue();
+        if (age.equals("All")) age = null;
+
+        // Get selected income filter (new)
+        String income = incomeFilterComboBox.getValue();
+        if (income.equals("All")) income = null;
+
         // Apply filters to timeFilteredMetrics
         timeFilteredMetrics.setGenderFilter(gender);
         timeFilteredMetrics.setContextFilter(context);
+        timeFilteredMetrics.setAgeFilter(age);
+        timeFilteredMetrics.setIncomeFilter(income);
 
         // Update status label to show active filters
         updateFilterStatus();
@@ -243,6 +269,7 @@ public class ChartSceneController {
         updateCharts();
     }
 
+    @FXML
     /**
      * Reset all filters to their default values
      */
@@ -252,10 +279,14 @@ public class ChartSceneController {
         // Reset UI components
         genderFilterComboBox.setValue("All");
         contextFilterComboBox.setValue("All");
+        ageFilterComboBox.setValue("All");
+        incomeFilterComboBox.setValue("All");
 
         // Reset filters in the metrics object
         timeFilteredMetrics.setGenderFilter(null);
         timeFilteredMetrics.setContextFilter(null);
+        timeFilteredMetrics.setAgeFilter(null);
+        timeFilteredMetrics.setIncomeFilter(null);
 
         // Update status label
         if (statusLabel != null) {
@@ -283,6 +314,18 @@ public class ChartSceneController {
         if (!contextFilterComboBox.getValue().equals("All")) {
             if (status.length() > 0) status.append(" | ");
             status.append("Context: ").append(contextFilterComboBox.getValue());
+        }
+
+        // Add age filter info if active (new)
+        if (!ageFilterComboBox.getValue().equals("All")) {
+            if (status.length() > 0) status.append(" | ");
+            status.append("Age: ").append(ageFilterComboBox.getValue());
+        }
+
+        // Add income filter info if active (new)
+        if (!incomeFilterComboBox.getValue().equals("All")) {
+            if (status.length() > 0) status.append(" | ");
+            status.append("Income: ").append(incomeFilterComboBox.getValue());
         }
 
         // Update status label
@@ -570,7 +613,7 @@ public class ChartSceneController {
                 System.err.println(e);
             }
         } else if (secondaryChart == null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF") || exportComboBox.getValue().equals("Combined PDF"))){
-                printLabel.setText("Secondary Chart doesn't Exist!");
+            printLabel.setText("Secondary Chart doesn't Exist!");
         } else {
             printLabel.setText("Unknown Error!");
         }
@@ -590,7 +633,7 @@ public class ChartSceneController {
                         return PAGE_EXISTS;}});
                 boolean doPrint = printJob.printDialog();
                 if (doPrint){try {printJob.print();
-                    } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
+                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
                 }
             } catch (Exception e){
                 printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
@@ -645,9 +688,9 @@ public class ChartSceneController {
         } else {
             // Create a BufferedImage with transparency
             bufferedImage = new BufferedImage(
-                    originalImage.getWidth(null),
-                    originalImage.getHeight(null),
-                    BufferedImage.TYPE_INT_ARGB
+                originalImage.getWidth(null),
+                originalImage.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB
             );
 
             // Draw the image on the BufferedImage

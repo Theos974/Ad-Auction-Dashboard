@@ -1256,4 +1256,240 @@ public class CampaignDatabase {
 
         return campaigns;
     }
+    /**
+     * Get a specific metric directly from the database for a campaign with filters applied.
+     * This provides a more efficient way to get a single metric without loading the entire campaign.
+     *
+     * @param campaignId The ID of the campaign
+     * @param metricName The name of the metric (impressions, clicks, etc.)
+     * @param startDate Start date for filtering
+     * @param endDate End date for filtering
+     * @param genderFilter Optional gender filter (null means no filter)
+     * @param ageFilter Optional age filter (null means no filter)
+     * @param incomeFilter Optional income filter (null means no filter)
+     * @param contextFilter Optional context filter (null means no filter)
+     * @return The metric value as a double
+     */
+    public static double getMetricDirectFromDB(
+        int campaignId,
+        String metricName,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        String genderFilter,
+        String ageFilter,
+        String incomeFilter,
+        String contextFilter) {
+
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            // Define base queries for different metrics
+            String sql = "";
+
+            switch (metricName.toLowerCase()) {
+                case "impressions":
+                    sql = "SELECT COUNT(*) as value FROM ImpressionLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
+                    break;
+
+                case "clicks":
+                    sql = "SELECT COUNT(*) as value FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
+                    break;
+
+                case "bounces":
+                    sql = "SELECT COUNT(*) as value FROM ServerLogs " +
+                        "WHERE campaign_id = ? AND entry_date BETWEEN ? AND ? " +
+                        "AND (pages_viewed <= ? OR (TIMESTAMPDIFF(SECOND, entry_date, exit_date) <= ?))";
+                    break;
+
+                case "conversions":
+                    sql = "SELECT COUNT(*) as value FROM ServerLogs " +
+                        "WHERE campaign_id = ? AND entry_date BETWEEN ? AND ? AND conversion = true";
+                    break;
+
+                case "uniques":
+                    sql = "SELECT COUNT(DISTINCT user_id) as value FROM ClickLogs " +
+                        "WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
+                    break;
+
+                case "total_cost":
+                    sql = "SELECT " +
+                        "(SELECT COALESCE(SUM(impression_cost), 0) FROM ImpressionLogs " +
+                        "WHERE campaign_id = ? AND log_date BETWEEN ? AND ?) + " +
+                        "(SELECT COALESCE(SUM(click_cost), 0) FROM ClickLogs " +
+                        "WHERE campaign_id = ? AND log_date BETWEEN ? AND ?) as value";
+                    break;
+
+                default:
+                    // For derived metrics, we'll calculate them after getting the base metrics
+                    return getMetricFromBasicMetrics(
+                        campaignId, metricName, startDate, endDate,
+                        genderFilter, ageFilter, incomeFilter, contextFilter);
+            }
+
+            // Add audience filters if provided
+            if (genderFilter != null || ageFilter != null || incomeFilter != null || contextFilter != null) {
+                // For metrics that need to filter through impression data
+                if (!metricName.equalsIgnoreCase("bounces") && !metricName.equalsIgnoreCase("conversions")) {
+                    // We need to add a join to ImpressionLogs or consider user IDs from impressions
+                    sql = addAudienceFiltersToQuery(sql, metricName);
+                }
+            }
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            // Set parameters based on the query
+            int paramIndex = 1;
+
+            // Basic date and campaign ID parameters for all queries
+            stmt.setInt(paramIndex++, campaignId);
+            stmt.setTimestamp(paramIndex++, Timestamp.valueOf(startDate));
+            stmt.setTimestamp(paramIndex++, Timestamp.valueOf(endDate));
+
+            // For total_cost, we need to set parameters twice
+            if (metricName.equalsIgnoreCase("total_cost")) {
+                stmt.setInt(paramIndex++, campaignId);
+                stmt.setTimestamp(paramIndex++, Timestamp.valueOf(startDate));
+                stmt.setTimestamp(paramIndex++, Timestamp.valueOf(endDate));
+            }
+
+            // For bounces, add threshold parameters
+            if (metricName.equalsIgnoreCase("bounces")) {
+                stmt.setInt(paramIndex++, getBouncePageThreshold(conn, campaignId));
+                stmt.setInt(paramIndex++, getBounceTimeThreshold(conn, campaignId));
+            }
+
+            // Add audience filter parameters if needed
+            if (genderFilter != null || ageFilter != null || incomeFilter != null || contextFilter != null) {
+                if (genderFilter != null) {
+                    stmt.setString(paramIndex++, genderFilter);
+                }
+                if (ageFilter != null) {
+                    stmt.setString(paramIndex++, ageFilter);
+                }
+                if (incomeFilter != null) {
+                    stmt.setString(paramIndex++, incomeFilter);
+                }
+                if (contextFilter != null) {
+                    stmt.setString(paramIndex++, contextFilter);
+                }
+            }
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getDouble("value");
+            }
+
+            return 0.0;
+        } catch (SQLException e) {
+            System.err.println("Error fetching metric from database: " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
+
+    /**
+     * Helper method to modify SQL queries to include audience filters
+     */
+    private static String addAudienceFiltersToQuery(String sql, String metricName) {
+        // Extract main parts of the query
+        String selectPart = sql.substring(0, sql.indexOf("FROM"));
+        String fromWherePart = sql.substring(sql.indexOf("FROM"));
+
+        // For impressions, we can directly filter
+        if (metricName.equalsIgnoreCase("impressions")) {
+            StringBuilder newSql = new StringBuilder(sql);
+            boolean hasWhere = sql.contains("WHERE");
+
+            // Add filter conditions
+            if (hasWhere) {
+                newSql.append(" AND ");
+            } else {
+                newSql.append(" WHERE ");
+            }
+
+            newSql.append("(gender = ? OR ? IS NULL) AND ")
+                .append("(age = ? OR ? IS NULL) AND ")
+                .append("(income = ? OR ? IS NULL) AND ")
+                .append("(context = ? OR ? IS NULL)");
+
+            return newSql.toString();
+        }
+        // For clicks, uniques, etc. we need to join with impressions
+        else if (metricName.equalsIgnoreCase("clicks") || metricName.equalsIgnoreCase("uniques")) {
+            return selectPart +
+                " FROM ClickLogs c JOIN ImpressionLogs i ON c.user_id = i.user_id " +
+                " WHERE c.campaign_id = ? AND c.log_date BETWEEN ? AND ? " +
+                " AND i.campaign_id = c.campaign_id " +
+                " AND (i.gender = ? OR ? IS NULL) " +
+                " AND (i.age = ? OR ? IS NULL) " +
+                " AND (i.income = ? OR ? IS NULL) " +
+                " AND (i.context = ? OR ? IS NULL)";
+        }
+        // For total_cost, it's more complex - we already have a compound query
+        else if (metricName.equalsIgnoreCase("total_cost")) {
+            // This would require more complex logic to filter both impression costs and click costs
+            // For simplicity, we might want to handle this separately
+            return sql;
+        }
+
+        return sql;
+    }
+
+    /**
+     * Calculate derived metrics from basic metrics
+     */
+    private static double getMetricFromBasicMetrics(
+        int campaignId,
+        String metricName,
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        String genderFilter,
+        String ageFilter,
+        String incomeFilter,
+        String contextFilter) {
+
+        // Get base metrics needed for calculation
+        double impressions = getMetricDirectFromDB(
+            campaignId, "impressions", startDate, endDate,
+            genderFilter, ageFilter, incomeFilter, contextFilter);
+
+        double clicks = getMetricDirectFromDB(
+            campaignId, "clicks", startDate, endDate,
+            genderFilter, ageFilter, incomeFilter, contextFilter);
+
+        double conversions = getMetricDirectFromDB(
+            campaignId, "conversions", startDate, endDate,
+            genderFilter, ageFilter, incomeFilter, contextFilter);
+
+        double bounces = getMetricDirectFromDB(
+            campaignId, "bounces", startDate, endDate,
+            genderFilter, ageFilter, incomeFilter, contextFilter);
+
+        double totalCost = getMetricDirectFromDB(
+            campaignId, "total_cost", startDate, endDate,
+            genderFilter, ageFilter, incomeFilter, contextFilter);
+
+        // Calculate the requested metric
+        switch (metricName.toLowerCase()) {
+            case "ctr":
+                return impressions > 0 ? clicks / impressions : 0;
+
+            case "cpc":
+                return clicks > 0 ? totalCost / clicks : 0;
+
+            case "cpa":
+                return conversions > 0 ? totalCost / conversions : 0;
+
+            case "cpm":
+                return impressions > 0 ? (totalCost / impressions) * 1000 : 0;
+
+            case "bounce_rate":
+                return clicks > 0 ? bounces / clicks : 0;
+
+            default:
+                return 0;
+        }
+    }
+
 }
