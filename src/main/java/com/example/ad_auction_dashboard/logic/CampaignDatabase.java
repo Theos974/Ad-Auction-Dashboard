@@ -112,7 +112,7 @@ public class CampaignDatabase {
      * @throws SQLException If a database error occurs
      */
     private static void grantAccessToAllAdmins(Connection conn, int campaignId, int assignedBy) throws SQLException {
-        // First, get all admin users - FIX: Using correct case "USERS" instead of "users"
+        // First, get all admin users - Using correct case "USERS" instead of "users"
         PreparedStatement stmt = conn.prepareStatement(
             "SELECT id FROM USERS WHERE role = 'admin' AND id != ?"
         );
@@ -138,6 +138,9 @@ public class CampaignDatabase {
         initDatabaseFolder();
 
         try (Connection conn = getConnection()) {
+            // Create tables if they don't exist first
+            createTablesIfNotExist(conn);
+
             // Get all campaigns
             PreparedStatement stmt = conn.prepareStatement(
                 "SELECT campaign_id FROM Campaigns"
@@ -169,6 +172,9 @@ public class CampaignDatabase {
         initDatabaseFolder();
 
         try (Connection conn = getConnection()) {
+            // Create tables if they don't exist
+            createTablesIfNotExist(conn);
+
             // Load campaign properties
             PreparedStatement stmt = conn.prepareStatement(
                 "SELECT bounce_pages_threshold, bounce_seconds_threshold FROM Campaigns WHERE campaign_id = ?"
@@ -724,254 +730,6 @@ public class CampaignDatabase {
         }
     }
 
-    /**
-     * Get metrics for a specific time period and filters directly from the database
-     * rather than loading all data
-     */
-    public static Map<String, Object> getFilteredMetrics(
-        int campaignId,
-        LocalDateTime startDate,
-        LocalDateTime endDate,
-        String genderFilter,
-        String contextFilter) {
-
-        Map<String, Object> metrics = new HashMap<>();
-
-        try (Connection conn = getConnection()) {
-            // Query for impressions with filters
-            StringBuilder impressionsQuery = new StringBuilder(
-                "SELECT COUNT(*) as impression_count, SUM(impression_cost) as impression_cost " +
-                    "FROM ImpressionLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?"
-            );
-
-            // Add filters if provided
-            if (genderFilter != null && !genderFilter.isEmpty() && !genderFilter.equals("All")) {
-                impressionsQuery.append(" AND gender = ?");
-            }
-            if (contextFilter != null && !contextFilter.isEmpty() && !contextFilter.equals("All")) {
-                impressionsQuery.append(" AND context = ?");
-            }
-
-            PreparedStatement stmt = conn.prepareStatement(impressionsQuery.toString());
-            int paramIndex = 1;
-            stmt.setInt(paramIndex++, campaignId);
-            stmt.setTimestamp(paramIndex++, Timestamp.valueOf(startDate));
-            stmt.setTimestamp(paramIndex++, Timestamp.valueOf(endDate));
-
-            if (genderFilter != null && !genderFilter.isEmpty() && !genderFilter.equals("All")) {
-                stmt.setString(paramIndex++, genderFilter);
-            }
-            if (contextFilter != null && !contextFilter.isEmpty() && !contextFilter.equals("All")) {
-                stmt.setString(paramIndex++, contextFilter);
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                metrics.put("impressions", rs.getInt("impression_count"));
-                metrics.put("impression_cost", rs.getDouble("impression_cost"));
-            }
-
-            // Similar approach for clicks, conversions, etc.
-            // ...
-
-            // Get the number of unique users
-            String uniquesQuery =
-                "SELECT COUNT(DISTINCT user_id) as unique_count " +
-                    "FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
-
-            stmt = conn.prepareStatement(uniquesQuery);
-            stmt.setInt(1, campaignId);
-            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
-            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
-
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                metrics.put("uniques", rs.getInt("unique_count"));
-            }
-
-            // Calculate bounce rate directly in SQL
-            String bounceQuery =
-                "SELECT COUNT(*) as bounce_count FROM ServerLogs " +
-                    "WHERE campaign_id = ? AND entry_date BETWEEN ? AND ? " +
-                    "AND (pages_viewed <= ? OR (TIMESTAMPDIFF(SECOND, entry_date, exit_date) <= ?))";
-
-            stmt = conn.prepareStatement(bounceQuery);
-            stmt.setInt(1, campaignId);
-            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
-            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
-            stmt.setInt(4, getBouncePageThreshold(conn, campaignId));
-            stmt.setInt(5, getBounceTimeThreshold(conn, campaignId));
-
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                metrics.put("bounces", rs.getInt("bounce_count"));
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Error getting filtered metrics: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return metrics;
-    }
-
-    /**
-     * Get time-based metrics for charts directly from the database
-     */
-    public static Map<String, Map<String, Object>> getTimeSeriesMetrics(
-        int campaignId,
-        LocalDateTime startDate,
-        LocalDateTime endDate,
-        String granularity) {
-
-        Map<String, Map<String, Object>> timeSeriesData = new HashMap<>();
-
-        try (Connection conn = getConnection()) {
-            String timeFormat;
-            String groupBy;
-
-            // Set SQL time format based on granularity
-            switch (granularity) {
-                case "Hourly":
-                    timeFormat = "FORMAT(log_date, 'yyyy-MM-dd HH:00:00')";
-                    groupBy = "HOUR";
-                    break;
-                case "Daily":
-                    timeFormat = "FORMAT(log_date, 'yyyy-MM-dd')";
-                    groupBy = "DAY";
-                    break;
-                case "Weekly":
-                    // H2 specific format for week grouping
-                    timeFormat = "FORMATDATETIME(log_date, 'yyyy-ww')";
-                    groupBy = "WEEK";
-                    break;
-                default:
-                    timeFormat = "FORMAT(log_date, 'yyyy-MM-dd')";
-                    groupBy = "DAY";
-            }
-
-            // Query impressions grouped by time
-            String query =
-                "SELECT " + timeFormat + " as time_bucket, " +
-                    "COUNT(*) as count, SUM(impression_cost) as cost " +
-                    "FROM ImpressionLogs " +
-                    "WHERE campaign_id = ? AND log_date BETWEEN ? AND ? " +
-                    "GROUP BY " + groupBy + "(log_date) " +
-                    "ORDER BY time_bucket";
-
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, campaignId);
-            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
-            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
-
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                String timeBucket = rs.getString("time_bucket");
-                Map<String, Object> bucketData = new HashMap<>();
-                bucketData.put("impressions", rs.getInt("count"));
-                bucketData.put("impression_cost", rs.getDouble("cost"));
-
-                timeSeriesData.put(timeBucket, bucketData);
-            }
-
-            // Similar queries for clicks, conversions, etc.
-            // ...
-        } catch (SQLException e) {
-            System.err.println("Error getting time series metrics: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return timeSeriesData;
-    }
-
-    /**
-     * Get histogram data directly from the database
-     */
-    public static Map<String, Integer> getClickCostHistogram(
-        int campaignId,
-        LocalDateTime startDate,
-        LocalDateTime endDate,
-        int numBins) {
-
-        Map<String, Integer> histogramData = new LinkedHashMap<>();
-
-        try (Connection conn = getConnection()) {
-            // First get min and max click costs
-            String minMaxQuery =
-                "SELECT MIN(click_cost) as min_cost, MAX(click_cost) as max_cost " +
-                    "FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?";
-
-            PreparedStatement stmt = conn.prepareStatement(minMaxQuery);
-            stmt.setInt(1, campaignId);
-            stmt.setTimestamp(2, Timestamp.valueOf(startDate));
-            stmt.setTimestamp(3, Timestamp.valueOf(endDate));
-
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                double minCost = rs.getDouble("min_cost");
-                double maxCost = rs.getDouble("max_cost");
-
-                // Add buffer to max
-                maxCost += 0.001;
-
-                // Calculate bin width
-                double binWidth = (maxCost - minCost) / numBins;
-
-                // Now get the histogram data using SQL CASE statements
-                StringBuilder histQuery = new StringBuilder(
-                    "SELECT ");
-
-                for (int i = 0; i < numBins; i++) {
-                    double lowerBound = minCost + (i * binWidth);
-                    double upperBound = lowerBound + binWidth;
-
-                    histQuery.append("SUM(CASE WHEN click_cost >= ")
-                        .append(lowerBound)
-                        .append(" AND click_cost < ")
-                        .append(upperBound)
-                        .append(" THEN 1 ELSE 0 END) as bin")
-                        .append(i);
-
-                    if (i < numBins - 1) {
-                        histQuery.append(", ");
-                    }
-
-                    // Format bin label
-                    String binLabel;
-                    if (lowerBound < 0.01 && upperBound < 0.01) {
-                        binLabel = String.format("$%.4f-$%.4f", lowerBound, upperBound);
-                    } else {
-                        binLabel = String.format("$%.2f-$%.2f", lowerBound, upperBound);
-                    }
-
-                    // Initialize the bin in the result map
-                    histogramData.put(binLabel, 0);
-                }
-
-                histQuery.append(" FROM ClickLogs WHERE campaign_id = ? AND log_date BETWEEN ? AND ?");
-
-                stmt = conn.prepareStatement(histQuery.toString());
-                stmt.setInt(1, campaignId);
-                stmt.setTimestamp(2, Timestamp.valueOf(startDate));
-                stmt.setTimestamp(3, Timestamp.valueOf(endDate));
-
-                rs = stmt.executeQuery();
-                if (rs.next()) {
-                    int binIndex = 0;
-                    for (String binLabel : histogramData.keySet()) {
-                        histogramData.put(binLabel, rs.getInt("bin" + binIndex));
-                        binIndex++;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error generating histogram: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return histogramData;
-    }
-
     // Helper method to get bounce page threshold
     private static int getBouncePageThreshold(Connection conn, int campaignId) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(
@@ -1203,6 +961,9 @@ public class CampaignDatabase {
         List<CampaignInfo> campaigns = new ArrayList<>();
 
         try (Connection conn = getConnection()) {
+            // Ensure tables exist
+            createTablesIfNotExist(conn);
+
             // Check if the user is an admin
             boolean isAdmin = false;
             PreparedStatement adminCheckStmt = conn.prepareStatement(
@@ -1256,6 +1017,7 @@ public class CampaignDatabase {
 
         return campaigns;
     }
+
     /**
      * Get a specific metric directly from the database for a campaign with filters applied.
      * This provides a more efficient way to get a single metric without loading the entire campaign.

@@ -4,8 +4,8 @@ import com.example.ad_auction_dashboard.logic.Campaign;
 import com.example.ad_auction_dashboard.logic.CampaignComparisonDialog;
 import com.example.ad_auction_dashboard.logic.CampaignDatabase;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
+import com.example.ad_auction_dashboard.logic.FullCampaignComparisonView;
 import com.example.ad_auction_dashboard.logic.LogoutHandler;
-import com.example.ad_auction_dashboard.logic.MetricComparisonView;
 import com.example.ad_auction_dashboard.logic.SaveCampaignDialog;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
@@ -202,7 +202,7 @@ public class MetricSceneController {
 
         updateUI();
 
-        setupMetricClickHandlers();
+
     }
 
     private void applyFilters() {
@@ -554,55 +554,9 @@ public class MetricSceneController {
         alert.showAndWait();
     }
 
-    // Add these methods to MetricSceneController class
-
-    /**
-     * Set up click handlers for all metrics to enable comparison
-     */
-    private void setupMetricClickHandlers() {
-        // Only add click handlers if user has appropriate permissions
-        if (!UserSession.getInstance().isEditor()) {
-            return;
-        }
-
-        // Add click handler to each metric text with appropriate tooltips
-        setupMetricClickable(impressionsText, "Impressions", "Click to compare impressions with another campaign");
-        setupMetricClickable(clicksText, "Clicks", "Click to compare clicks with another campaign");
-        setupMetricClickable(uniquesText, "Unique Users", "Click to compare unique users with another campaign");
-        setupMetricClickable(bouncesText, "Bounces", "Click to compare bounces with another campaign");
-        setupMetricClickable(conversionsText, "Conversions", "Click to compare conversions with another campaign");
-        setupMetricClickable(totalCostText, "Total Cost", "Click to compare total cost with another campaign");
-        setupMetricClickable(ctrText, "CTR", "Click to compare CTR with another campaign");
-        setupMetricClickable(cpcText, "CPC", "Click to compare CPC with another campaign");
-        setupMetricClickable(cpaText, "CPA", "Click to compare CPA with another campaign");
-        setupMetricClickable(cpmText, "CPM", "Click to compare CPM with another campaign");
-        setupMetricClickable(bounceRateText, "Bounce Rate", "Click to compare bounce rate with another campaign");
-    }
-
-    /**
-     * Helper method to set up a metric text for comparison
-     */
-    private void setupMetricClickable(Text metricText, String metricName, String tooltipText) {
-        // Set style and tooltip
-        metricText.setStyle("-fx-cursor: hand; -fx-underline: false;");
-
-        // Add hover effect
-        metricText.setOnMouseEntered(e -> metricText.setStyle("-fx-cursor: hand; -fx-underline: true;"));
-        metricText.setOnMouseExited(e -> metricText.setStyle("-fx-cursor: hand; -fx-underline: false;"));
-
-        // Add tooltip
-        javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(tooltipText);
-        javafx.scene.control.Tooltip.install(metricText, tooltip);
-
-        // Add click handler
-        metricText.setOnMouseClicked(e -> compareMetric(metricName, metricText.getText()));
-    }
-
-    /**
-     * Compare the selected metric with the same metric from another campaign
-     */
-    private void compareMetric(String metricName, String currentValueText) {
-        // Check permissions again (redundant safety check)
+    @FXML
+    private void handleCompareFullCampaigns(ActionEvent event) {
+        // Check permissions first
         if (!UserSession.getInstance().isEditor()) {
             showAlert("You need Editor or Admin permissions to compare campaigns");
             return;
@@ -621,163 +575,34 @@ public class MetricSceneController {
             return;
         }
 
+        Campaign otherCampaign = null;
         try {
-            // Load the other campaign
-            Campaign otherCampaign = CampaignDatabase.loadCampaign(campaignToCompare.getCampaignId());
+            // Load the comparison campaign
+            otherCampaign = CampaignDatabase.loadCampaign(campaignToCompare.getCampaignId());
             if (otherCampaign == null) {
                 showAlert("Failed to load comparison campaign");
                 return;
             }
 
-            // Create metrics for the other campaign
+            // Create metrics object for the comparison campaign
             CampaignMetrics otherMetrics = new CampaignMetrics(otherCampaign);
 
-            // Apply the same filters as the current campaign
-            TimeFilteredMetrics otherFilteredMetrics = new TimeFilteredMetrics(
-                otherMetrics.getImpressionLogs(),
-                otherMetrics.getServerLogs(),
-                otherMetrics.getClickLogs(),
-                otherMetrics.getBouncePagesThreshold(),
-                otherMetrics.getBounceSecondsThreshold()
-            );
-
-            // Apply audience filters (same as current campaign)
-            if (genderFilterComboBox != null && !genderFilterComboBox.getValue().equals("All")) {
-                otherFilteredMetrics.setGenderFilter(genderFilterComboBox.getValue());
-            }
-
-            if (contextFilterComboBox != null && !contextFilterComboBox.getValue().equals("All")) {
-                otherFilteredMetrics.setContextFilter(contextFilterComboBox.getValue());
-            }
-
-            if (ageFilterComboBox != null && !ageFilterComboBox.getValue().equals("All")) {
-                otherFilteredMetrics.setAgeFilter(ageFilterComboBox.getValue());
-            }
-
-            if (incomeFilterComboBox != null && !incomeFilterComboBox.getValue().equals("All")) {
-                otherFilteredMetrics.setIncomeFilter(incomeFilterComboBox.getValue());
-            }
-
-            // Apply time frame to other metrics (use its own date range)
-            LocalDateTime otherStart = otherMetrics.getCampaignStartDate();
-            LocalDateTime otherEnd = otherMetrics.getCampaignEndDate();
-            otherFilteredMetrics.computeForTimeFrame(otherStart, otherEnd, "Daily");
-
-            // Get the values for comparison based on metric name
-            double currentValue;
-            double otherValue;
-            String formattedOtherValue;
-            String metricUnit = null;
-
-            // Determine which metric to compare and format appropriately
-            switch (metricName) {
-                case "Impressions":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getNumberOfImpressions() : metrics.getNumberOfImpressions();
-                    otherValue = otherFilteredMetrics.getNumberOfImpressions();
-                    formattedOtherValue = String.valueOf((int)otherValue);
-                    break;
-
-                case "Clicks":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getNumberOfClicks() : metrics.getNumberOfClicks();
-                    otherValue = otherFilteredMetrics.getNumberOfClicks();
-                    formattedOtherValue = String.valueOf((int)otherValue);
-                    break;
-
-                case "Unique Users":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getNumberOfUniques() : metrics.getNumberOfUniques();
-                    otherValue = otherFilteredMetrics.getNumberOfUniques();
-                    formattedOtherValue = String.valueOf((int)otherValue);
-                    break;
-
-                case "Bounces":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getNumberOfBounces() : metrics.getNumberOfBounces();
-                    otherValue = otherFilteredMetrics.getNumberOfBounces();
-                    formattedOtherValue = String.valueOf((int)otherValue);
-                    break;
-
-                case "Conversions":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getNumberOfConversions() : metrics.getNumberOfConversions();
-                    otherValue = otherFilteredMetrics.getNumberOfConversions();
-                    formattedOtherValue = String.valueOf((int)otherValue);
-                    break;
-
-                case "Total Cost":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getTotalCost() : metrics.getTotalCost();
-                    otherValue = otherFilteredMetrics.getTotalCost();
-                    formattedOtherValue = String.format("%.6f", otherValue);
-                    metricUnit = "$";
-                    break;
-
-                case "CTR":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getCTR() : metrics.getCTR();
-                    otherValue = otherFilteredMetrics.getCTR();
-                    formattedOtherValue = String.format("%.6f", otherValue);
-                    metricUnit = "%";
-                    break;
-
-                case "CPC":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getCPC() : metrics.getCPC();
-                    otherValue = otherFilteredMetrics.getCPC();
-                    formattedOtherValue = String.format("%.6f", otherValue);
-                    metricUnit = "$";
-                    break;
-
-                case "CPA":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getCPA() : metrics.getCPA();
-                    otherValue = otherFilteredMetrics.getCPA();
-                    formattedOtherValue = String.format("%.6f", otherValue);
-                    metricUnit = "$";
-                    break;
-
-                case "CPM":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getCPM() : metrics.getCPM();
-                    otherValue = otherFilteredMetrics.getCPM();
-                    formattedOtherValue = String.format("%.6f", otherValue);
-                    metricUnit = "$";
-                    break;
-
-                case "Bounce Rate":
-                    currentValue = timeFilteredMetrics != null ?
-                        timeFilteredMetrics.getBounceRate() : metrics.getBounceRate();
-                    otherValue = otherFilteredMetrics.getBounceRate();
-                    formattedOtherValue = String.format("%.6f", otherValue);
-                    metricUnit = "%";
-                    break;
-
-                default:
-                    showAlert("Unknown metric: " + metricName);
-                    return;
-            }
-
-            // Show comparison view with the results
-            MetricComparisonView.show(
+            // Show the full comparison view
+            FullCampaignComparisonView.show(
                 stage,
-                metricName,
+                this.metrics,  // Current campaign metrics
+                otherMetrics,  // Comparison campaign metrics
                 currentCampaignName,
-                campaignToCompare.getCampaignName(),
-                currentValue,
-                otherValue,
-                currentValueText,
-                formattedOtherValue,
-                metricUnit
+                campaignToCompare.getCampaignName()
             );
-
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error comparing campaigns: " + e.getMessage());
+        } finally {
+            // This helps ensure resources get cleaned up
+            System.gc();
         }
     }
-
 
 
 }

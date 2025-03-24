@@ -1,5 +1,6 @@
 package com.example.ad_auction_dashboard.logic;
 
+import java.util.ArrayList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -52,8 +53,14 @@ public class CampaignComparisonDialog {
         // Get accessible campaigns for current user
         UserSession session = UserSession.getInstance();
         int userId = session.getUser() != null ? session.getUser().getId() : 0;
-        List<CampaignDatabase.CampaignInfo> accessibleCampaigns =
-            CampaignDatabase.getAccessibleCampaigns(userId);
+
+        // Use try-with-resources to ensure connections get closed
+        List<CampaignDatabase.CampaignInfo> accessibleCampaigns = new ArrayList<>();
+        try {
+            accessibleCampaigns = CampaignDatabase.getAccessibleCampaigns(userId);
+        } catch (Exception e) {
+            System.err.println("Error loading campaigns: " + e.getMessage());
+        }
 
         // Filter out the current campaign
         accessibleCampaigns.removeIf(c -> c.getCampaignName().equals(currentCampaignName));
@@ -92,12 +99,6 @@ public class CampaignComparisonDialog {
         // Disable compare button if no campaigns are available
         Button compareButton = (Button) dialog.getDialogPane().lookupButton(selectButtonType);
         compareButton.setDisable(accessibleCampaigns.isEmpty());
-
-        // Add note about filters
-        Label filterNote = new Label("Note: Current audience filters will be applied to the comparison campaign.");
-        filterNote.setStyle("-fx-font-style: italic; -fx-text-fill: #666;");
-        filterNote.setPadding(new Insets(10, 0, 0, 0));
-        content.getChildren().add(filterNote);
 
         dialog.getDialogPane().setContent(content);
 
