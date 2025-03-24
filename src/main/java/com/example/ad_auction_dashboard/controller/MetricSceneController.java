@@ -575,32 +575,18 @@ public class MetricSceneController {
             return;
         }
 
-        Campaign otherCampaign = null;
         try {
-            // Load the comparison campaign
-            otherCampaign = CampaignDatabase.loadCampaign(campaignToCompare.getCampaignId());
-            if (otherCampaign == null) {
-                showAlert("Failed to load comparison campaign");
-                return;
-            }
-
-            // Create metrics object for the comparison campaign
-            CampaignMetrics otherMetrics = new CampaignMetrics(otherCampaign);
-
-            // Show the full comparison view
-            FullCampaignComparisonView.show(
+            // Simply pass the campaign ID to show comparison - no need to load full campaign!
+            FullCampaignComparisonView.showComparison(
                 stage,
-                this.metrics,  // Current campaign metrics
-                otherMetrics,  // Comparison campaign metrics
+                metrics,
+                campaignToCompare.getCampaignId(),
                 currentCampaignName,
                 campaignToCompare.getCampaignName()
             );
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Error comparing campaigns: " + e.getMessage());
-        } finally {
-            // This helps ensure resources get cleaned up
-            System.gc();
         }
     }
 

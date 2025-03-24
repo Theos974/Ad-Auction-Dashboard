@@ -1,7 +1,10 @@
 package com.example.ad_auction_dashboard.logic;
 
+import java.util.concurrent.ExecutionException;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -272,6 +275,76 @@ public class LoadCampaignDialog {
             } catch (Exception e) {
                 showErrorDialog("Error loading campaign: " + e.getMessage());
                 e.printStackTrace();
+            }
+        }
+
+        if (result.isPresent()) {
+            CampaignDatabase.CampaignInfo selectedCampaign = result.get();
+
+            // Show loading dialog
+            Dialog<Campaign> loadingDialog = new Dialog<>();
+            loadingDialog.setTitle("Loading Campaign");
+            loadingDialog.setHeaderText("Loading campaign data...");
+            loadingDialog.initOwner(owner);
+            loadingDialog.initModality(Modality.WINDOW_MODAL);
+
+            // Add progress indicator
+            ProgressIndicator progress = new ProgressIndicator();
+            progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+
+            Label statusLabel = new Label("Loading campaign. Please wait...");
+
+            VBox content = new VBox(10, progress, statusLabel);
+            content.setAlignment(Pos.CENTER);
+            content.setPadding(new Insets(20));
+
+            loadingDialog.getDialogPane().setContent(content);
+            loadingDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+            // Create loading task
+            Task<Campaign> loadTask = new Task<Campaign>() {
+                @Override
+                protected Campaign call() throws Exception {
+                    updateMessage("Checking campaign...");
+
+                    // Load campaign in background
+                    Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
+
+                    updateMessage("Campaign loaded successfully!");
+                    return campaign;
+                }
+            };
+
+            // Bind status updates
+            statusLabel.textProperty().bind(loadTask.messageProperty());
+
+            // Start task
+            Thread loadThread = new Thread(loadTask);
+            loadThread.setDaemon(true);
+            loadThread.start();
+
+            // Show dialog and wait for result or cancellation
+            loadingDialog.setResultConverter(dialogButton -> {
+                if (dialogButton == ButtonType.CANCEL) {
+                    loadTask.cancel();
+                    return null;
+                }
+                return null;
+            });
+
+            // Start showing dialog (non-blocking)
+            loadingDialog.show();
+
+            // Wait for task to complete
+            try {
+                Campaign campaign = loadTask.get();
+                loadingDialog.close();
+                return campaign;
+            } catch (InterruptedException | ExecutionException e) {
+                loadingDialog.close();
+                showErrorDialog("Error loading campaign: " + e.getMessage());
+                e.printStackTrace();
+                return null;
             }
         }
 

@@ -8,6 +8,8 @@ import com.example.ad_auction_dashboard.logic.LogoutHandler;
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -123,15 +125,23 @@ public class StartSceneController {
         // Get the current stage
         Stage stage = (Stage) loadFromDbBtn.getScene().getWindow();
 
-        // Show campaign selection dialog
+        // Show loading status
+        statusText.setText("Opening campaign selection dialog...");
+
+        // This must run on the JavaFX Application Thread since it shows a dialog
         Campaign loadedCampaign = LoadCampaignDialog.showDialog(stage);
 
         if (loadedCampaign != null) {
+            // Now we have a campaign, update status
+            statusText.setText("Campaign loaded successfully. Switching to metrics view...");
+
+            // Process the loaded campaign
             createCampaignFromData(loadedCampaign);
         } else {
             statusText.setText("No campaign was loaded.");
         }
     }
+
     private void createCampaignFromData(Campaign campaign) {
         statusText.setText("Campaign loaded. Switching to metrics view...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);

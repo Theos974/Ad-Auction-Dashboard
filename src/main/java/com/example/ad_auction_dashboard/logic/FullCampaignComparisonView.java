@@ -1,10 +1,15 @@
 package com.example.ad_auction_dashboard.logic;
 
+import java.time.LocalDateTime;
+import java.util.Map;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.BorderPane;
@@ -18,6 +23,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.time.temporal.ChronoUnit;
 import java.text.DecimalFormat;
+import javafx.concurrent.Task;
 
 /**
  * A view for comparing full campaign metrics side by side
@@ -26,19 +32,102 @@ public class FullCampaignComparisonView {
 
     /**
      * Show a dialog with a full comparison of two campaigns
+     * Uses optimized data retrieval from the CampaignMetrics table
      *
      * @param owner The owner window
-     * @param currentMetrics Metrics from the current campaign
-     * @param comparisonMetrics Metrics from the comparison campaign
+     * @param currentMetrics Metrics from the current campaign (already loaded)
+     * @param comparisonCampaignId ID of the campaign to compare with
      * @param currentName Name of the current campaign
      * @param comparisonName Name of the comparison campaign
      */
-    public static void show(Stage owner,
-                            CampaignMetrics currentMetrics,
-                            CampaignMetrics comparisonMetrics,
-                            String currentName,
-                            String comparisonName) {
+    public static void showComparison(Stage owner,
+                                      CampaignMetrics currentMetrics,
+                                      int comparisonCampaignId,
+                                      String currentName,
+                                      String comparisonName) {
 
+        // Create loading dialog first
+        Stage loadingStage = new Stage();
+        loadingStage.initModality(Modality.APPLICATION_MODAL);
+        loadingStage.initOwner(owner);
+        loadingStage.setTitle("Loading Comparison Data");
+
+        // Create loading indicator
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+
+        Label loadingLabel = new Label("Loading comparison data...");
+        VBox loadingContent = new VBox(20, progress, loadingLabel);
+        loadingContent.setAlignment(Pos.CENTER);
+        loadingContent.setPadding(new Insets(30));
+
+        Scene loadingScene = new Scene(loadingContent, 300, 200);
+        loadingStage.setScene(loadingScene);
+        loadingStage.show();
+
+        // Load the comparison data in a background task
+        Task<Void> compareTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    // Get metrics directly from the database using the new method
+                    Map<String, Double> comparisonMetrics = CampaignDatabase.getMetricsDirectlyFromDatabase(comparisonCampaignId);
+
+                    // Get additional campaign metadata separately (bounce thresholds, date range)
+                    CampaignDatabase.CampaignInfo campaignInfo = CampaignDatabase.getCampaignById(comparisonCampaignId);
+
+                    if (comparisonMetrics == null || campaignInfo == null) {
+                        Platform.runLater(() -> {
+                            loadingStage.close();
+                            showErrorDialog(owner, "Error loading comparison data",
+                                "The selected campaign could not be loaded from the database.");
+                        });
+                        return null;
+                    }
+
+                    // Extract metadata from campaignInfo
+                    LocalDateTime comparisonStartDate = campaignInfo.getStartDate();
+                    LocalDateTime comparisonEndDate = campaignInfo.getEndDate();
+                    int comparisonPagesThreshold = campaignInfo.getBouncePagesThreshold();
+                    int comparisonSecondsThreshold = campaignInfo.getBounceSecondsThreshold();
+
+                    // Create the comparison view on the JavaFX thread after data is loaded
+                    Platform.runLater(() -> {
+                        loadingStage.close(); // Close the loading dialog
+                        createComparisonWindow(owner, currentMetrics, comparisonMetrics,
+                            currentName, comparisonName, comparisonStartDate, comparisonEndDate,
+                            comparisonPagesThreshold, comparisonSecondsThreshold);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Platform.runLater(() -> {
+                        loadingStage.close();
+                        showErrorDialog(owner, "Error",
+                            "An error occurred while comparing campaigns: " + e.getMessage());
+                    });
+                }
+                return null;
+            }
+        };
+
+        // Start the task
+        Thread compareThread = new Thread(compareTask);
+        compareThread.setDaemon(true);
+        compareThread.start();
+    }
+
+    /**
+     * Creates and shows the actual comparison window with metrics
+     */
+    private static void createComparisonWindow(Stage owner,
+                                               CampaignMetrics currentMetrics,
+                                               Map<String, Double> comparisonMetrics,
+                                               String currentName,
+                                               String comparisonName,
+                                               LocalDateTime comparisonStartDate,
+                                               LocalDateTime comparisonEndDate,
+                                               int comparisonPagesThreshold,
+                                               int comparisonSecondsThreshold) {
         // Create stage
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
@@ -98,64 +187,62 @@ public class FullCampaignComparisonView {
         sep.setStyle("-fx-background-color: #666;");
         grid.add(sep, 0, 1, 4, 1);
 
-        // Add metrics rows
+        // Add metrics rows - using database metrics directly
         addMetricRow(grid, "Impressions",
             currentMetrics.getNumberOfImpressions(),
-            comparisonMetrics.getNumberOfImpressions(), 2, false);
+            comparisonMetrics.getOrDefault("impressions", 0.0).intValue(), 2, false);
 
         addMetricRow(grid, "Clicks",
             currentMetrics.getNumberOfClicks(),
-            comparisonMetrics.getNumberOfClicks(), 3, false);
+            comparisonMetrics.getOrDefault("clicks", 0.0).intValue(), 3, false);
 
         addMetricRow(grid, "Unique Users",
             currentMetrics.getNumberOfUniques(),
-            comparisonMetrics.getNumberOfUniques(), 4, false);
+            comparisonMetrics.getOrDefault("uniques", 0.0).intValue(), 4, false);
 
         addMetricRow(grid, "Bounces",
             currentMetrics.getNumberOfBounces(),
-            comparisonMetrics.getNumberOfBounces(), 5, false);
+            comparisonMetrics.getOrDefault("bounces", 0.0).intValue(), 5, false);
 
         addMetricRow(grid, "Conversions",
             currentMetrics.getNumberOfConversions(),
-            comparisonMetrics.getNumberOfConversions(), 6, false);
+            comparisonMetrics.getOrDefault("conversions", 0.0).intValue(), 6, false);
 
         addMetricRow(grid, "Total Cost",
             currentMetrics.getTotalCost(),
-            comparisonMetrics.getTotalCost(), 7, true);
+            comparisonMetrics.getOrDefault("totalCost", 0.0), 7, true);
 
         addMetricRow(grid, "CTR",
             currentMetrics.getCTR(),
-            comparisonMetrics.getCTR(), 8, true);
+            comparisonMetrics.getOrDefault("ctr", 0.0), 8, true);
 
         addMetricRow(grid, "CPC",
             currentMetrics.getCPC(),
-            comparisonMetrics.getCPC(), 9, true);
+            comparisonMetrics.getOrDefault("cpc", 0.0), 9, true);
 
         addMetricRow(grid, "CPA",
             currentMetrics.getCPA(),
-            comparisonMetrics.getCPA(), 10, true);
+            comparisonMetrics.getOrDefault("cpa", 0.0), 10, true);
 
         addMetricRow(grid, "CPM",
             currentMetrics.getCPM(),
-            comparisonMetrics.getCPM(), 11, true);
+            comparisonMetrics.getOrDefault("cpm", 0.0), 11, true);
 
         addMetricRow(grid, "Bounce Rate",
             currentMetrics.getBounceRate(),
-            comparisonMetrics.getBounceRate(), 12, true);
+            comparisonMetrics.getOrDefault("bounceRate", 0.0), 12, true);
 
         // Add campaign date ranges
         addDateRangeInfo(grid, "Date Range",
             currentMetrics.getCampaignStartDate(), currentMetrics.getCampaignEndDate(),
-            comparisonMetrics.getCampaignStartDate(), comparisonMetrics.getCampaignEndDate(),
-            13);
+            comparisonStartDate, comparisonEndDate, 13);
 
         // Add Bounce settings comparison
         addBounceSettingsInfo(grid, "Bounce Settings",
             currentMetrics.getBouncePagesThreshold(), currentMetrics.getBounceSecondsThreshold(),
-            comparisonMetrics.getBouncePagesThreshold(), comparisonMetrics.getBounceSecondsThreshold(),
-            14);
+            comparisonPagesThreshold, comparisonSecondsThreshold, 14);
 
-        // Wrap grid in ScrollPane to handle overflow
+        // Rest of the UI setup (ScrollPane, buttons, etc.)
         ScrollPane scrollPane = new ScrollPane(grid);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
@@ -177,13 +264,24 @@ public class FullCampaignComparisonView {
 
         // Create scene and show
         Scene scene = new Scene(layout, 900, 700);
-
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
     /**
-     * Add a metric row to the comparison grid
+     * Displays an error dialog
+     */
+    private static void showErrorDialog(Stage owner, String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.initOwner(owner);
+        alert.showAndWait();
+    }
+
+    /**
+     * Adds a metric row to the comparison grid
      */
     private static void addMetricRow(GridPane grid, String metricName, double currentValue,
                                      double comparisonValue, int rowIndex, boolean formatAsDecimal) {
