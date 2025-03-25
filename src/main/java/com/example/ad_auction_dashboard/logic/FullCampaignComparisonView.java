@@ -467,9 +467,9 @@ public class FullCampaignComparisonView {
         diffLabel.setFont(Font.font("System", FontWeight.NORMAL, 16));
 
         // Add to grid
-        grid.add(nameLabel, 0, rowIndex);
-        grid.add(currentLabel, 1, rowIndex);
-        grid.add(comparisonLabel, 2, rowIndex);
-        grid.add(diffLabel, 3, rowIndex);
+        grid.add(nameLabel, 0, rowIndex+1);
+        grid.add(currentLabel, 1, rowIndex+1);
+        grid.add(comparisonLabel, 2, rowIndex+1);
+        grid.add(diffLabel, 3, rowIndex+1);
     }
 }

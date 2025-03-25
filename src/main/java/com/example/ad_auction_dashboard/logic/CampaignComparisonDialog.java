@@ -37,6 +37,9 @@ public class CampaignComparisonDialog {
             return null;
         }
 
+        // CLEAR THE CACHE before loading campaigns
+        CampaignDatabase.clearCaches();  // Add this line
+
         // Create dialog
         javafx.scene.control.Dialog<CampaignDatabase.CampaignInfo> dialog = new javafx.scene.control.Dialog<>();
         dialog.setTitle("Compare Campaign");
