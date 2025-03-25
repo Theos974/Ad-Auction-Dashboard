@@ -1,5 +1,6 @@
 package com.example.ad_auction_dashboard.controller;
 
+import com.example.ad_auction_dashboard.Multimedia;
 import com.example.ad_auction_dashboard.logic.Campaign;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.FileHandler;
@@ -50,6 +51,7 @@ public class StartSceneController {
     @FXML
     public void initialize() {
         UserSession session = UserSession.getInstance();
+
 
         // Update welcome message with username
         if (session.getUser() != null) {

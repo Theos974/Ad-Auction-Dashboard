@@ -1,5 +1,6 @@
 package com.example.ad_auction_dashboard.controller;
 
+import com.example.ad_auction_dashboard.Multimedia;
 import com.example.ad_auction_dashboard.logic.UserDatabase;
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.RegisterScene;
@@ -39,6 +40,8 @@ public class LoginSceneController {
     public void initialize() {
         // Clear any previous status messages
         statusText.setText("");
+        Multimedia.playMusic("menu.mp3");
+
     }
 
     @FXML

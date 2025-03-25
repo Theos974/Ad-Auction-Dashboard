@@ -27,19 +27,31 @@
                     </padding>
                     <children>
                         <Button fx:id="mainMenuButton" onAction="#handleMainMenu" styleClass="sidebar-button">
-                            <graphic>
-                                <Label styleClass="sidebar-icon" text="🏠" />
-                            </graphic>
+                     <graphic>
+                        <ImageView fitHeight="22.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../../../images/home%20button%20white.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
                         </Button>
                         <Button fx:id="saveToDatabaseBtn" onAction="#handleToSaveToDatabase" styleClass="sidebar-button">
-                            <graphic>
-                                <Label styleClass="sidebar-icon" text="💼" />
-                            </graphic>
+                     <graphic>
+                        <ImageView fitHeight="22.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../../../images/save%20button%20white.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
                         </Button>
                         <Button fx:id="adminPanelBtn" onAction="#handleAdminPanel" styleClass="sidebar-button">
-                            <graphic>
-                                <Label styleClass="sidebar-icon" text="👥" />
-                            </graphic>
+                     <graphic>
+                        <ImageView fitHeight="29.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../../../images/admin%20image%20white.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
                         </Button>
                         <Button fx:id="logoutBtn" onAction="#handleLogout" styleClass="sidebar-button">
                             <graphic>
