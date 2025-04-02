@@ -509,6 +509,7 @@ public class AdminPanelController {
                         }
 
                         Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                        scene.getStylesheets().add("@../../../../styles/lightStyle.css");
                         stage.setScene(scene);
                         break;
                     default:

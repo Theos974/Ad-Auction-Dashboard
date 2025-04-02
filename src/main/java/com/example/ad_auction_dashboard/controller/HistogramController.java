@@ -553,6 +553,7 @@ public class HistogramController {
             // Switch to the metrics scene
             Scene scene = new Scene(root);
             Stage stage = (Stage) histogramChart.getScene().getWindow();
+            scene.getStylesheets().add("@../../../../styles/lightStyle.css");
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {

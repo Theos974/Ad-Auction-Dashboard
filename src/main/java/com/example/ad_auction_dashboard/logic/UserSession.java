@@ -8,6 +8,7 @@ public class UserSession {
     private UserDatabase.User currentUser;
     private String previousScene;
     private CampaignMetrics currentCampaignMetrics;
+    private String currentStyle;
     private Map<String, String> filterSettings = new HashMap<>();
 
     private UserSession() {}
@@ -80,6 +81,13 @@ public class UserSession {
 
     public void clearFilterSettings() {
         filterSettings.clear();
+    }
+
+    public void setCurrentStyle(String style){
+        this.currentStyle = style;
+    }
+    public String getCurrentStyle() {
+        return this.currentStyle;
     }
 
     // Modify the logout method to clear filters as well

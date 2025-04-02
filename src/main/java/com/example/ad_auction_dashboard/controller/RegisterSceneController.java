@@ -119,6 +119,7 @@ public class RegisterSceneController {
 
                             Stage stage = (Stage) registerBtn.getScene().getWindow();
                             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                            scene.getStylesheets().add("@../../../../styles/lightStyle.css");
                             stage.setScene(scene);
                             stage.show();
                         } catch (IOException e) {

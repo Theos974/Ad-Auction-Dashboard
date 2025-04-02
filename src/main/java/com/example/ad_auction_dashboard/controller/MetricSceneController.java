@@ -13,19 +13,15 @@ import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -85,6 +81,11 @@ public class MetricSceneController {
     @FXML
     private DatePicker endDatePicker;
 
+    @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
+
 
     // Add a field for TimeFilteredMetrics
     private TimeFilteredMetrics timeFilteredMetrics;
@@ -138,6 +139,15 @@ public class MetricSceneController {
             validateDateRange();
             applyFilters();
         });
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = UserSession.getInstance().getCurrentStyle();
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
+            System.out.println("Switched");
+        }
     }
 
     /**
@@ -375,6 +385,7 @@ public class MetricSceneController {
     // Transition back to the Main Menu (StartScene)
     @FXML
     private void handleMainMenu(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(currentStyle);
         try {
             // Load the start scene FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/StartScene.fxml"));
@@ -382,6 +393,7 @@ public class MetricSceneController {
             // Optionally clear previous campaign from memory if necessary
             Stage stage = (Stage) impressionsText.getScene().getWindow();
             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            scene.getStylesheets().add(currentStyle);
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
@@ -391,6 +403,7 @@ public class MetricSceneController {
     // Transition to the Chart Scene
     @FXML
     private void handleChartView(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(currentStyle);
         try {
             UserSession.getInstance().setCurrentCampaignMetrics(metrics);
 
@@ -403,6 +416,7 @@ public class MetricSceneController {
 
             Stage stage = (Stage) impressionsText.getScene().getWindow();
             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            scene.getStylesheets().add(currentStyle);
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
@@ -483,6 +497,7 @@ public class MetricSceneController {
             // Switch scene
             Stage stage = (Stage) impressionsText.getScene().getWindow();
             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            //scene.getStylesheets().add("@../../../../styles/lightStyle.css");
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
@@ -590,5 +605,17 @@ public class MetricSceneController {
         }
     }
 
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        }
+    }
 
 }

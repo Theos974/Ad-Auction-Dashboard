@@ -15,6 +15,7 @@ import com.example.ad_auction_dashboard.charts.BounceChart;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 
+import com.example.ad_auction_dashboard.logic.UserSession;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
@@ -24,6 +25,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
+import javafx.scene.shape.Circle;
 import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
@@ -40,6 +42,8 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -120,6 +124,11 @@ public class ChartSceneController {
 
     @FXML
     private HBox chartsContainer;
+
+    @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
 
     private CampaignMetrics campaignMetrics;
     private TimeFilteredMetrics timeFilteredMetrics;
@@ -231,6 +240,17 @@ public class ChartSceneController {
         // Initialize status label if present
         if (statusLabel != null) {
             statusLabel.setText("");
+        }
+
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = UserSession.getInstance().getCurrentStyle();
+        System.out.println("StyleChart: " + currentStyle);
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
+            System.out.println("Switched");
         }
     }
 
@@ -467,6 +487,7 @@ public class ChartSceneController {
 
     @FXML
     private void handleBackToMetrics(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(currentStyle);
         try {
             // Load the metrics scene
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
@@ -480,6 +501,7 @@ public class ChartSceneController {
             Scene scene = new Scene(root);
             // Use primaryChartContainer instead of chartContainer to get the scene
             Stage stage = (Stage) primaryChartContainer.getScene().getWindow();
+            scene.getStylesheets().add(currentStyle);
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
@@ -748,5 +770,18 @@ public class ChartSceneController {
         }
         if (selectedFile == null){printLabel.setText("No File Selected");}
         return selectedFile;
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        }
     }
 }

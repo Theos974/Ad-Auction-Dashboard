@@ -18,9 +18,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import java.io.File;
+import java.util.Objects;
+
 import javafx.stage.Stage;
 
 public class StartSceneController {
@@ -46,12 +50,16 @@ public class StartSceneController {
     @FXML
     private Text statusText;
 
+    @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
+
     private Campaign campaign;
 
     @FXML
     public void initialize() {
         UserSession session = UserSession.getInstance();
-
 
         // Update welcome message with username
         if (session.getUser() != null) {
@@ -76,6 +84,16 @@ public class StartSceneController {
             adminPanelBtn.setVisible(true);
         } else {
             adminPanelBtn.setVisible(false);
+        }
+
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = session.getCurrentStyle();
+        System.out.println("STYLE: " + currentStyle);
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
         }
     }
     // Event handler for loading a ZIP file and creating the campaign
@@ -106,6 +124,7 @@ public class StartSceneController {
         }
         statusText.setText("Campaign created. Switching scene...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
+        UserSession.getInstance().setCurrentStyle(currentStyle);
         try {
             UserSession.getInstance().setPreviousScene("StartScene");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
@@ -114,6 +133,7 @@ public class StartSceneController {
             controller.setMetrics(metrics);
             Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            scene.getStylesheets().add(currentStyle);
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
@@ -147,7 +167,7 @@ public class StartSceneController {
     private void createCampaignFromData(Campaign campaign) {
         statusText.setText("Campaign loaded. Switching to metrics view...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
-
+        UserSession.getInstance().setCurrentStyle(currentStyle);
         try {
             UserSession.getInstance().setPreviousScene("StartScene");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
@@ -157,6 +177,7 @@ public class StartSceneController {
 
             Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+            scene.getStylesheets().add(currentStyle);
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
@@ -176,6 +197,19 @@ public class StartSceneController {
         } catch (Exception e) {
             e.printStackTrace();
             statusText.setText("Error opening admin panel.");
+        }
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
     }
 
