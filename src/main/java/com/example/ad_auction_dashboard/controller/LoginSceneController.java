@@ -129,10 +129,11 @@ public class LoginSceneController {
 
     @FXML
     private void handleRegister(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             // Create a new RegisterScene using the current stage
             Stage stage = (Stage) registerBtn.getScene().getWindow();
-            new RegisterScene(stage, 930, 692);
+            new RegisterScene(stage, 930, 692, this.currentStyle);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();

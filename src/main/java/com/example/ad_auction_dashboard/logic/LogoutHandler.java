@@ -25,7 +25,7 @@ public class LogoutHandler {
         Stage currentStage = (Stage) sourceButton.getScene().getWindow();
 
         // Create a new login scene and show it
-        new LoginScene(currentStage, 930, 692);
+        new LoginScene(currentStage, 930, 692, UserSession.getInstance().getCurrentStyle());
         currentStage.show();
     }
 }

@@ -16,7 +16,7 @@ public class MainApp extends Application {
 
             // Create LoginScene as the entry point
 
-            new LoginScene(primaryStage, 930, 692);
+            //new LoginScene(primaryStage, 930, 692, );
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/LoginScene.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 930, 692);
