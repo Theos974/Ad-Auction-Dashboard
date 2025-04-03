@@ -480,6 +480,7 @@ public class MetricSceneController {
 
     @FXML
     private void handleHistogramView(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             UserSession.getInstance().setCurrentCampaignMetrics(metrics);
 
@@ -497,7 +498,7 @@ public class MetricSceneController {
             // Switch scene
             Stage stage = (Stage) impressionsText.getScene().getWindow();
             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            //scene.getStylesheets().add("@../../../../styles/lightStyle.css");
+            scene.getStylesheets().add(this.currentStyle);
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
@@ -512,12 +513,12 @@ public class MetricSceneController {
             showAlert("Admin Level Access Required");
             return;
         }
-
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             UserSession.getInstance().setCurrentCampaignMetrics(metrics);
             UserSession.getInstance().setPreviousScene("MetricScene");
             Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
-            new AdminPanelScene(stage, 930, 692);
+            new AdminPanelScene(stage, 930, 692, this.currentStyle);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -553,6 +554,7 @@ public class MetricSceneController {
     }
     @FXML
     private void handleLogout(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         if (logoutBtn != null) {
             LogoutHandler.handleLogout(event);
         }

@@ -21,6 +21,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
@@ -37,15 +38,12 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.WritableImage;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
@@ -113,6 +111,10 @@ public class HistogramController {
 
     @FXML
     private Button resetFiltersButton;
+    @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
 
     // Add a field for TimeFilteredMetrics
     private TimeFilteredMetrics timeFilteredMetrics;
@@ -200,6 +202,14 @@ public class HistogramController {
         if (exportComboBox != null){
             exportComboBox.getItems().addAll("PNG", "CSV", "PDF");
             exportComboBox.setValue("PNG");
+        }
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = UserSession.getInstance().getCurrentStyle();
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
         }
     }
 
@@ -542,6 +552,7 @@ public class HistogramController {
 
     @FXML
     private void handleBackToMetrics(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
             Parent root = loader.load();
@@ -553,7 +564,7 @@ public class HistogramController {
             // Switch to the metrics scene
             Scene scene = new Scene(root);
             Stage stage = (Stage) histogramChart.getScene().getWindow();
-            scene.getStylesheets().add("@../../../../styles/lightStyle.css");
+            scene.getStylesheets().add(this.currentStyle);
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
@@ -563,6 +574,7 @@ public class HistogramController {
 
     @FXML
     private void handleLogout(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         if (logoutBtn != null) {
             LogoutHandler.handleLogout(event);
         }
@@ -710,5 +722,18 @@ public class HistogramController {
         }
         if (selectedFile == null){printLabel.setText("No File Selected");}
         return selectedFile;
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        }
     }
 }

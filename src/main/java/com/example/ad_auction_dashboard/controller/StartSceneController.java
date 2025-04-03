@@ -189,10 +189,11 @@ public class StartSceneController {
     // Event handler for opening the admin panel
     @FXML
     private void handleAdminPanel(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             UserSession.getInstance().setPreviousScene("StartScene");
             Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
-            new AdminPanelScene(stage, 930, 692);
+            new AdminPanelScene(stage, 930, 692, this.currentStyle);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,6 +217,7 @@ public class StartSceneController {
     // Event handler for logout button
     @FXML
     private void handleLogout(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         LogoutHandler.handleLogout(event);
     }
 }

@@ -94,6 +94,11 @@
     -fx-alignment: center;
 }
 
+.gauge-super-container{
+    -fx-background-color:  #363642;
+    -fx-background-radius: 10;
+}
+
 .vbox-outlined {
     -fx-border-color: #333;
     -fx-border-width: 2;
@@ -257,6 +262,18 @@
     -fx-border-width: 2;
     -fx-background-radius: 15;
     -fx-border-radius: 15;
+}
+.user-edit-container {
+    -fx-background-color:  #42424f;
+    -fx-background-radius: 8;
+    -fx-padding: 15;
+}
+
+.admin-table .table-cell{
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+}
+.admin-text{
 }
 
 /* ===== BUTTON STYLES ===== */
@@ -849,4 +866,55 @@
     -fx-background-radius: 50%;
     -fx-border-radius: 50%;
     -fx-background-color: #363642;
+}
+
+.histogram-select {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+}
+
+.histogram-bar-chart{
+    -fx-background-color:  #363642;
+    -fx-plot-background-color:  #363642;
+    -fx-border-color:  #a365f5;
+    -fx-border-width: 2;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+}
+
+.histogram-text-area {
+    -fx-background-color:  #363642;
+    -fx-text-fill: white;
+    -fx-border-color:  #363642;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.histogram-export-button {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.histogram-export-button .label {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+}
+
+.histogram-export-button:hover .label {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+}
+
+.histogram-export-button:pressed .label {
+    -fx-background-color: rgba(0, 0, 0, 0.2);
+}
+/*REGISTER STUFF*/
+.register-scene{
+    -fx-background-color: #2d2d3b;
+}
+.register-text{
+    -fx-text-fill: white;
+    -fx-fill: white;
 }

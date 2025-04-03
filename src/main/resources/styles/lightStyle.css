@@ -249,6 +249,18 @@
     -fx-border-radius: 15;
 }
 
+.user-edit-container {
+    -fx-background-color:  #f5f5f7;
+    -fx-background-radius: 8;
+    -fx-padding: 15;
+}
+.admin-table{
+}
+.admin-text{
+    -fx-text-fill: black;
+    -fx-fill: black;
+}
+
 /* ===== BUTTON STYLES ===== */
 .show-comparison-button {
     -fx-background-color: #f5f5f7;
@@ -388,7 +400,8 @@
 .flat-button {
     -fx-background-color: #f5f5f5;
     -fx-background-radius: 5px;
-    -fx-border-width: 0;
+    -fx-border-width: 1;
+    -fx-border-color: black;
     -fx-font-family: 'Poppins', sans-serif;
     -fx-font-size: 15px;
     -fx-font-weight: 500;
@@ -699,49 +712,6 @@
     -fx-background-color: #f6f6f8;
 }
 
-/* Custom styles to match FXML preferences */
-.histogram-scene .top-container {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-padding: 10;
-}
-
-/* Chart styling to match FXML */
-.histogram-scene .chart {
-    -fx-background-color: #ffffff;
-    -fx-plot-background-color: #ffffff;
-    -fx-border-color: #7c78d5;
-    -fx-border-width: 2;
-    -fx-border-radius: 15;
-    -fx-background-radius: 15;
-    -fx-padding: 10;
-}
-
-.histogram-scene .chart-plot-background {
-    -fx-background-color: #ffffff;
-}
-
-/* Histogram text area styling to match FXML */
-.histogram-scene .text-area {
-    -fx-background-color: #ffffff;
-    -fx-text-fill: #333333;
-    -fx-border-color: #cccccc;
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-}
-
-.histogram-scene .text-area .content {
-    -fx-background-color: #ffffff;
-}
-
-/* Control labels styling (Date Range, bins, etc.) */
-.histogram-scene .control-label {
-    -fx-text-fill: #333333;
-    -fx-font-size: 14px;
-    -fx-font-weight: normal;
-}
-
 /* Date picker styling for histogram scene */
 .histogram-scene .date-picker {
     -fx-background-color: #ffffff;
@@ -783,6 +753,7 @@
 /* Histogram title */
 .histogram-scene .histogram-title {
     -fx-text-fill: #333333;
+    -fx-fill: #333333;
     -fx-font-size: 16px;
     -fx-font-weight: normal;
     -fx-alignment: center;
@@ -791,6 +762,7 @@
 /* Bin size label */
 .histogram-scene .bin-size-label {
     -fx-text-fill: #333333;
+    -fx-fill: #333333;
     -fx-font-size: 14px;
 }
 
@@ -798,5 +770,49 @@
 .histogram-scene .rounded-button {
     -fx-background-radius: 50%;
     -fx-border-radius: 50%;
-    -fx-background-color: #f0f0f0;
+    -fx-background-color: #f5f5f7;
+}
+
+.histogram-select {
+    -fx-background-color: #f6f6f8;
+    -fx-border-color: transparent;
+    -fx-text-fill: #333333;
+}
+
+.histogram-bar-chart{
+    -fx-background-color: #f5f5f7;
+    -fx-plot-background-color: #f5f5f7;
+    -fx-border-color: #a365f5;
+    -fx-border-width: 2;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+}
+
+.histogram-text-area {
+    -fx-background-color: #f5f5f7;
+    -fx-text-fill: #333333;
+    -fx-border-color: #f5f5f7;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.histogram-export-button {
+    -fx-background-color: #f5f5f7;
+    -fx-text-fill: #333333;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.histogram-export-button .label {
+    -fx-background-color: #f5f5f7;
+    -fx-text-fill: #333333;
+    -fx-font-size: 16px;
+}
+
+.histogram-export-button:hover .label {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+.histogram-export-button:pressed .label {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
 }
