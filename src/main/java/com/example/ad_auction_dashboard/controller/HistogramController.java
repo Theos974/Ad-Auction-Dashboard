@@ -177,7 +177,7 @@ public class HistogramController {
         // Initialize context filter combobox
         if (contextFilterComboBox != null) {
             contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
-                "Blog", "Hobbies", "Travel");
+                "Blog");
             contextFilterComboBox.setValue("All");
             contextFilterComboBox.setOnAction(e -> updateHistogram());
         }

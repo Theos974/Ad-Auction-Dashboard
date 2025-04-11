@@ -109,7 +109,7 @@ public class MetricSceneController {
         // Initialize context filter
         if (contextFilterComboBox != null) {
             contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
-                "Blog", "Hobbies", "Travel");
+                "Blog");
             contextFilterComboBox.setValue("All");
             contextFilterComboBox.setOnAction(e -> applyFilters());
         }

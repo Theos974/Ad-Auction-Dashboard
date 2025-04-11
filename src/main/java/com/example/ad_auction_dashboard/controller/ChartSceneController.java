@@ -163,7 +163,7 @@ public class ChartSceneController {
 
         // Setup context filter options
         contextFilterComboBox.getItems().addAll("All", "News", "Shopping", "Social Media",
-            "Blog", "Hobbies", "Travel");
+            "Blog");
         contextFilterComboBox.setValue("All"); // Default
 
         // Setup age filter options (new)

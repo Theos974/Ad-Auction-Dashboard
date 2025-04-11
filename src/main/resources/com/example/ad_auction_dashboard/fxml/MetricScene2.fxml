@@ -16,7 +16,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane styleClass="metrics-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
+<BorderPane styleClass="metrics-scene" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.MetricSceneController">
     <center>
         <AnchorPane prefHeight="769.0" prefWidth="1001.0" styleClass="metrics-container" BorderPane.alignment="CENTER">
             <children>
@@ -28,9 +28,10 @@
                     <children>
                         <Button fx:id="mainMenuButton" onAction="#handleMainMenu" styleClass="sidebar-button">
                      <graphic>
+
                         <ImageView fitHeight="22.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../../../../images/home%20button%20white.png" />
+                              <Image url="@../../../../images/home button white.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -39,7 +40,7 @@
                      <graphic>
                         <ImageView fitHeight="22.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../../../../images/save%20button%20white.png" />
+                              <Image url="@../../../../images/save button white.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -48,7 +49,7 @@
                      <graphic>
                         <ImageView fitHeight="29.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../../../../images/admin%20image%20white.png" />
+                              <Image url="@../../../../images/admin image white.png" />
                            </image>
                         </ImageView>
                      </graphic>
