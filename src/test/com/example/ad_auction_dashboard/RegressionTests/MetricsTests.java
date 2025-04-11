@@ -18,8 +18,7 @@ import org.junit.jupiter.api.Test;
 
 public class MetricsTests {
 
-    // Helper constructor for Campaign if you don't have one that accepts arrays.
-    // You may use setters if needed.
+
     private Campaign createCampaign(ImpressionLog[] imps, ClickLog[] cls, ServerLog[] srvs) {
         Campaign campaign = new Campaign(imps,cls,srvs);
         return campaign;

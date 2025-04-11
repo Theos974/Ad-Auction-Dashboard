@@ -131,21 +131,25 @@ public class FileHandler {
         }
     }
 
-    public String readFromCsv(String filePath){
+    public String readFromCsv(String filePath) {
         StringBuilder output = new StringBuilder();
-        try {
-            File file = new File(filePath);
-            BufferedReader reader = new BufferedReader(new FileReader(file));
+        File file = new File(filePath);
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            while ((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
-            output.replace(output.length()-1, output.length(), "");
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println(e);
+        }
+
+        if (output.length() > 0) {
+            output.replace(output.length() - 1, output.length(), "");
         }
         return output.toString();
     }
+
     public String[] splitCsv(String csvFile){
         return csvFile.split("\n");
     }
