@@ -404,7 +404,7 @@
                                     <children>
                                         <Label styleClass="section-title" text="Histograms" />
                                         <!-- Clickable histogram chart -->
-                                        <Button onAction="#handleHistogramView" prefHeight="180.0" prefWidth="250.0" styleClass="histogram-button">
+                                        <Button fx:id="histogramButton" onAction="#handleHistogramView" prefHeight="180.0" prefWidth="250.0" styleClass="histogram-button">
                                             <graphic>
                                                 <!-- Bar chart SVG representation -->
                                                 <SVGPath content="M10,20V14H14V20H10M16,20V10H20V20H16M2,20V4H6V20H2M8,20V8H12V20H8" fill="WHITE" scaleX="5.0" scaleY="5.0" styleClass="histogram-Graphic" />

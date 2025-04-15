@@ -23,7 +23,7 @@
 
             <!-- Navigation bar with back, export/print, and logout buttons -->
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Button onAction="#handleBackToMetrics" styleClass="transparent-button">
+                <Button fx:id="backButton" onAction="#handleBackToMetrics" styleClass="transparent-button">
                     <graphic>
                         <ImageView fitHeight="36.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true" styleClass="back">
                             <image>
@@ -37,8 +37,8 @@
             <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
 
                 <ComboBox fx:id="exportComboBox" prefWidth="150.0" promptText="Export Format" />
-                <Button onAction="#exportData" styleClass="nav-button" text="Export" />
-                <Button onAction="#printData" styleClass="nav-button" text="Print" />
+                <Button fx:id="exportButton" onAction="#exportData" styleClass="nav-button" text="Export" />
+                <Button fx:id="printButton" onAction="#printData" styleClass="nav-button" text="Print" />
 
                 <Region minWidth="20.0" />
 
@@ -89,6 +89,7 @@
 
             <!-- Status label for feedback -->
             <Label fx:id="statusLabel" style="-fx-text-fill: #ffcc66; -fx-font-style: italic;" />
+         <Label fx:id="printLabel" style="-fx-text-fill: #ffcc66; -fx-font-style: italic;" />
         </VBox>
     </top>
 

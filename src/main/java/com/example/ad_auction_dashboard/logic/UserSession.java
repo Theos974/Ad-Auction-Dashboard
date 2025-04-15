@@ -1,5 +1,7 @@
 package com.example.ad_auction_dashboard.logic;
 
+import com.example.ad_auction_dashboard.controller.ChartSceneController;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +11,8 @@ public class UserSession {
     private String previousScene;
     private CampaignMetrics currentCampaignMetrics;
     private String currentStyle;
+
+    private ChartSceneController controller;
     private Map<String, String> filterSettings = new HashMap<>();
 
     private UserSession() {}

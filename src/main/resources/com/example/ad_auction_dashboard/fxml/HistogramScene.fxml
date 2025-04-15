@@ -29,7 +29,7 @@
                 <HBox alignment="CENTER" styleClass="gauge-container">
                     <children>
                         <!-- Back button at left corner -->
-                        <Button mnemonicParsing="false" onAction="#handleBackToMetrics" prefHeight="50.0" prefWidth="40.0" styleClass="transparent-button">
+                        <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBackToMetrics" prefHeight="50.0" prefWidth="40.0" styleClass="transparent-button">
                             <graphic>
                                 <ImageView fitHeight="36.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true" styleClass="back">
                                     <image>
@@ -160,8 +160,8 @@
                             <children>
                                 <Region prefHeight="27.0" prefWidth="7.0" />
                                 <ComboBox fx:id="exportComboBox" prefWidth="150.0" />
-                                <Button mnemonicParsing="false" onAction="#exportData" prefHeight="18.0" prefWidth="55.0" styleClass="histogram-export-button" text="Export" />
-                                <Button mnemonicParsing="false" onAction="#printData" prefHeight="18.0" prefWidth="46.0" styleClass="histogram-export-button" text="Print" />
+                                <Button fx:id="exportButton" mnemonicParsing="false" onAction="#exportData" prefHeight="18.0" prefWidth="55.0" styleClass="histogram-export-button" text="Export" />
+                                <Button fx:id="printButton" mnemonicParsing="false" onAction="#printData" prefHeight="18.0" prefWidth="46.0" styleClass="histogram-export-button" text="Print" />
                                 <Label fx:id="printLabel" styleClass="admin-text" />
                             </children>
                         </HBox>

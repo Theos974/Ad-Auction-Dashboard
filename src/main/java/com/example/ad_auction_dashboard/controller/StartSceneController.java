@@ -14,9 +14,11 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.shape.Circle;
@@ -25,6 +27,7 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.util.Objects;
 
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 public class StartSceneController {
@@ -52,6 +55,9 @@ public class StartSceneController {
 
     @FXML
     private ToggleButton colourSwitch;
+
+    private Popup loadingPopup = null;
+    private Label loadingLabel = null;
 
     private String currentStyle;
 
@@ -106,12 +112,29 @@ public class StartSceneController {
         File selected = fileChooser.showOpenDialog(loadZipBtn.getScene().getWindow());
         if (selected != null) {
             FileHandler fileHandler = new FileHandler();
-            campaign = fileHandler.openZip(selected.getAbsolutePath());
-            if (campaign != null) {
-                statusText.setText("Campaign loaded from: " + selected.getName());
-            } else {
-                statusText.setText("Error loading campaign from ZIP.");
-            }
+//            loadingLabel = new Label("Loading ZIP");
+//            loadingPopup = new Popup();
+//            loadingPopup.getContent().add(loadingLabel);
+//            loadingPopup.show(loadZipBtn.getScene().getWindow());
+            fileHandler.setStartScene(this);
+            loadZipBtn.getScene().setCursor(Cursor.WAIT);
+            new Thread(() -> {
+                toggleControls(true);
+                campaign = fileHandler.openZip(selected.getAbsolutePath());
+                if (campaign != null) {
+                    statusText.setText("Campaign loaded from: " + selected.getName());
+                } else {
+                    statusText.setText("Error loading campaign from ZIP.");
+                }
+                statusText.getScene().setCursor(Cursor.DEFAULT);
+                toggleControls(false);
+            }).start();
+        }
+    }
+
+    public void updatePopup(String update){
+        if (loadingPopup != null && loadingPopup.isShowing()){
+            loadingLabel.setText("Loading: " + update);
         }
     }
 
@@ -122,23 +145,27 @@ public class StartSceneController {
             statusText.setText("Please load a ZIP file first.");
             return;
         }
+        toggleControls(true);
         statusText.setText("Campaign created. Switching scene...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
         UserSession.getInstance().setCurrentStyle(currentStyle);
-        try {
-            UserSession.getInstance().setPreviousScene("StartScene");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
-            Parent root = loader.load();
-            MetricSceneController controller = loader.getController();
-            controller.setMetrics(metrics);
-            Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            scene.getStylesheets().add(currentStyle);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-            statusText.setText("Error switching scene.");
-        }
+        statusText.getScene().setCursor(Cursor.WAIT);
+        new Thread (() -> {
+            try {
+                UserSession.getInstance().setPreviousScene("StartScene");
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
+                Parent root = loader.load();
+                MetricSceneController controller = loader.getController();
+                controller.setMetrics(metrics);
+                Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
+                Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                scene.getStylesheets().add(currentStyle);
+                Platform.runLater(() -> stage.setScene(scene));
+            } catch (IOException e) {
+                e.printStackTrace();
+                statusText.setText("Error switching scene.");
+            }
+        }).start();
     }
 
     // Event handler for loading from database (for viewers)
@@ -151,6 +178,7 @@ public class StartSceneController {
         statusText.setText("Opening campaign selection dialog...");
 
         // This must run on the JavaFX Application Thread since it shows a dialog
+        toggleControls(true);
         Campaign loadedCampaign = LoadCampaignDialog.showDialog(stage);
 
         if (loadedCampaign != null) {
@@ -160,6 +188,7 @@ public class StartSceneController {
             // Process the loaded campaign
             createCampaignFromData(loadedCampaign);
         } else {
+            toggleControls(false);
             statusText.setText("No campaign was loaded.");
         }
     }
@@ -168,21 +197,24 @@ public class StartSceneController {
         statusText.setText("Campaign loaded. Switching to metrics view...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
         UserSession.getInstance().setCurrentStyle(currentStyle);
-        try {
-            UserSession.getInstance().setPreviousScene("StartScene");
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
-            Parent root = loader.load();
-            MetricSceneController controller = loader.getController();
-            controller.setMetrics(metrics);
+        statusText.getScene().setCursor(Cursor.WAIT);
+        new Thread(() -> {
+            try {
+                UserSession.getInstance().setPreviousScene("StartScene");
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
+                Parent root = loader.load();
+                MetricSceneController controller = loader.getController();
+                controller.setMetrics(metrics);
 
-            Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            scene.getStylesheets().add(currentStyle);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-            statusText.setText("Error switching to metrics view.");
-        }
+                Stage stage = (Stage) createCampaignBtn.getScene().getWindow();
+                Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                scene.getStylesheets().add(currentStyle);
+                Platform.runLater(() -> stage.setScene(scene));
+            } catch (IOException e) {
+                e.printStackTrace();
+                statusText.setText("Error switching to metrics view.");
+            }
+        }).start();
     }
 
 
@@ -219,5 +251,13 @@ public class StartSceneController {
     private void handleLogout(ActionEvent event) {
         UserSession.getInstance().setCurrentStyle(this.currentStyle);
         LogoutHandler.handleLogout(event);
+    }
+
+    public void toggleControls(Boolean bool){
+        logoutBtn.setDisable(bool);
+        adminPanelBtn.setDisable(bool);
+        loadZipBtn.setDisable(bool);
+        loadFromDbBtn.setDisable(bool);
+        createCampaignBtn.setDisable(bool);
     }
 }

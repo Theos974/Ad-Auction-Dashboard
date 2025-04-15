@@ -1,5 +1,7 @@
 package com.example.ad_auction_dashboard.logic;
 
+import com.example.ad_auction_dashboard.controller.StartSceneController;
+
 import java.io.*;
 import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +14,8 @@ import java.util.zip.ZipFile;
 
 public class FileHandler {
 
+    private com.example.ad_auction_dashboard.controller.StartSceneController startScene;
+
     public static void main(String[] args) {
         FileHandler fileHandler = new FileHandler();
         String temp = fileHandler.readFromCsv("src/main/test.csv");
@@ -23,6 +27,7 @@ public class FileHandler {
         List<ImpressionLog> impressionLogs = new ArrayList<>();
         List<ClickLog> clickLogs = new ArrayList<>();
         List<ServerLog> serverLogs = new ArrayList<>();
+        int count = 0;
 
         try (ZipFile zipFile = new ZipFile(filePath)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -36,7 +41,6 @@ public class FileHandler {
                     // Read header to determine file type
                     String header = reader.readLine();
                     if (header == null) continue;
-
                     String line;
                     switch (header) {
                         case "Date,ID,Gender,Age,Income,Context,Impression Cost":
@@ -196,5 +200,9 @@ public class FileHandler {
             output.add(new ServerLog(log[0], log[1], log[2], log[3], log[4]));
         }
         return output.toArray(new ServerLog[0]);
+    }
+
+    public void setStartScene(StartSceneController startScene) {
+        this.startScene = startScene;
     }
 }

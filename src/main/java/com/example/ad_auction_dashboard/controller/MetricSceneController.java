@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -58,6 +60,12 @@ public class MetricSceneController {
 
     @FXML
     private Button logoutBtn;
+    @FXML
+    private Button mainMenuButton;
+    @FXML
+    private Button chartsViewButton;
+    @FXML
+    private Button histogramButton;
 
     private CampaignMetrics metrics; // the campaign data model
     @FXML
@@ -218,43 +226,47 @@ public class MetricSceneController {
     private void applyFilters() {
         if (timeFilteredMetrics == null) return;
 
-        // Get filter values
-        String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
-        String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
-        String age = (ageFilterComboBox != null) ? ageFilterComboBox.getValue() : "All";
-        String income = (incomeFilterComboBox != null) ? incomeFilterComboBox.getValue() : "All";
+        new Thread(() -> {
+            toggleFilters(true);
+            // Get filter values
+            String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
+            String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+            String age = (ageFilterComboBox != null) ? ageFilterComboBox.getValue() : "All";
+            String income = (incomeFilterComboBox != null) ? incomeFilterComboBox.getValue() : "All";
 
-        // Apply filters
-        timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
-        timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
-        timeFilteredMetrics.setAgeFilter(age.equals("All") ? null : age);
-        timeFilteredMetrics.setIncomeFilter(income.equals("All") ? null : income);
+            // Apply filters
+            timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
+            timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
+            timeFilteredMetrics.setAgeFilter(age.equals("All") ? null : age);
+            timeFilteredMetrics.setIncomeFilter(income.equals("All") ? null : income);
 
-        // Save filter settings to UserSession
-        saveFilterSettingsToSession();
+            // Save filter settings to UserSession
+            saveFilterSettingsToSession();
 
-        // Get time boundaries from date pickers if available, otherwise use full range
-        LocalDateTime start, end;
+            // Get time boundaries from date pickers if available, otherwise use full range
+            LocalDateTime start, end;
+            if (startDatePicker != null && startDatePicker.getValue() != null) {
+                // Start at beginning of selected day
+                start = startDatePicker.getValue().atStartOfDay();
+            } else {
+                start = metrics.getCampaignStartDate();
+            }
 
-        if (startDatePicker != null && startDatePicker.getValue() != null) {
-            // Start at beginning of selected day
-            start = startDatePicker.getValue().atStartOfDay();
-        } else {
-            start = metrics.getCampaignStartDate();
-        }
+            if (endDatePicker != null && endDatePicker.getValue() != null) {
+                // End at end of selected day (23:59:59)
+                end = endDatePicker.getValue().atTime(23, 59, 59);
+            } else {
+                end = metrics.getCampaignEndDate();
+            }
+            // Apply time frame
+            timeFilteredMetrics.computeForTimeFrame(start, end, "Daily");
 
-        if (endDatePicker != null && endDatePicker.getValue() != null) {
-            // End at end of selected day (23:59:59)
-            end = endDatePicker.getValue().atTime(23, 59, 59);
-        } else {
-            end = metrics.getCampaignEndDate();
-        }
-
-        // Apply time frame
-        timeFilteredMetrics.computeForTimeFrame(start, end, "Daily");
-
-        // Update metrics display with filtered data
-        updateUIWithFilteredData();
+            // Update metrics display with filtered data
+            Platform.runLater(() -> {
+                this.updateUIWithFilteredData();
+                toggleFilters(false);
+            });
+        }).start();
     }
 
     @FXML
@@ -276,20 +288,26 @@ public class MetricSceneController {
         }
 
         if (timeFilteredMetrics != null) {
-            timeFilteredMetrics.setGenderFilter(null);
-            timeFilteredMetrics.setContextFilter(null);
-            timeFilteredMetrics.setAgeFilter(null);
-            timeFilteredMetrics.setIncomeFilter(null);
+            toggleFilters(true);
+            new Thread(() -> {
+                timeFilteredMetrics.setGenderFilter(null);
+                timeFilteredMetrics.setContextFilter(null);
+                timeFilteredMetrics.setAgeFilter(null);
+                timeFilteredMetrics.setIncomeFilter(null);
 
-            // Clear filters in session
-            UserSession.getInstance().clearFilterSettings();
+                // Clear filters in session
+                UserSession.getInstance().clearFilterSettings();
 
-            // Recompute for full range
-            LocalDateTime start = metrics.getCampaignStartDate();
-            LocalDateTime end = metrics.getCampaignEndDate();
-            timeFilteredMetrics.computeForTimeFrame(start, end, "Daily");
+                // Recompute for full range
+                LocalDateTime start = metrics.getCampaignStartDate();
+                LocalDateTime end = metrics.getCampaignEndDate();
+                timeFilteredMetrics.computeForTimeFrame(start, end, "Daily");
 
-            updateUI(); // Use original unfiltered metrics
+                Platform.runLater(() -> {
+                    this.updateUI();
+                    toggleFilters(false);
+                }); // Use original unfiltered metrics);
+            }).start();
         }
     }
 
@@ -386,41 +404,48 @@ public class MetricSceneController {
     @FXML
     private void handleMainMenu(ActionEvent event) {
         UserSession.getInstance().setCurrentStyle(currentStyle);
-        try {
-            // Load the start scene FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/StartScene.fxml"));
-            Parent root = loader.load();
-            // Optionally clear previous campaign from memory if necessary
-            Stage stage = (Stage) impressionsText.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            scene.getStylesheets().add(currentStyle);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        toggleControls(true);
+        new Thread(() -> {
+            try {
+                // Load the start scene FXML
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/StartScene.fxml"));
+                Parent root = loader.load();
+                // Optionally clear previous campaign from memory if necessary
+                Stage stage = (Stage) impressionsText.getScene().getWindow();
+                Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                scene.getStylesheets().add(currentStyle);
+                Platform.runLater(() -> stage.setScene(scene));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     // Transition to the Chart Scene
     @FXML
     private void handleChartView(ActionEvent event) {
         UserSession.getInstance().setCurrentStyle(currentStyle);
-        try {
-            UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+        toggleControls(true);
+        // Retrieve the ChartSceneController
+        new Thread(() -> {
+            try {
+                UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/ChartScene.fxml"));
+//                ChartSceneController chartController = loader.getController();
+//                chartController.setCampaignMetrics(metrics);
+                Parent root = loader.load();
+                // Pass the campaign data
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/ChartScene.fxml"));
-            Parent root = loader.load();
-            // Retrieve the ChartSceneController
-            ChartSceneController chartController = loader.getController();
-            // Pass the campaign data
-            chartController.setCampaignMetrics(metrics);
-
-            Stage stage = (Stage) impressionsText.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            scene.getStylesheets().add(currentStyle);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                Stage stage = (Stage) impressionsText.getScene().getWindow();
+                Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                scene.getStylesheets().add(currentStyle);
+                Platform.runLater(() -> {
+                    stage.setScene(scene);
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     /**
@@ -459,10 +484,12 @@ public class MetricSceneController {
 
                         // Update the bounce criteria in the metrics object
                         // This will automatically recalculate bounce-related metrics
-                        metrics.setBounceCriteria(newPagesThreshold, newSecondsThreshold);
+                        new Thread(() -> {
+                            metrics.setBounceCriteria(newPagesThreshold, newSecondsThreshold);
 
-                        // Update the UI to show the new values
-                        updateUI();
+                            // Update the UI to show the new values
+                            Platform.runLater(this::updateUI);
+                        }).start();
 
                     } catch (NumberFormatException e) {
                         showAlert("Invalid number format for seconds threshold");
@@ -481,28 +508,31 @@ public class MetricSceneController {
     @FXML
     private void handleHistogramView(ActionEvent event) {
         UserSession.getInstance().setCurrentStyle(this.currentStyle);
-        try {
-            UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+        toggleControls(true);
+        new Thread(() -> {
+            try {
+                UserSession.getInstance().setCurrentCampaignMetrics(metrics);
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(
-                "/com/example/ad_auction_dashboard/fxml/HistogramScene.fxml"));
-            Parent root = loader.load();
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                        "/com/example/ad_auction_dashboard/fxml/HistogramScene.fxml"));
+                Parent root = loader.load();
 
-            // Get controller and pass data
-            HistogramController controller = loader.getController();
-            controller.setCampaignMetrics(metrics);
+                // Get controller and pass data
+                HistogramController controller = loader.getController();
+                controller.setCampaignMetrics(metrics);
 
-            // Default to click cost histogram
-            controller.setHistogramType("Click Cost");
+                // Default to click cost histogram
+                controller.setHistogramType("Click Cost");
 
-            // Switch scene
-            Stage stage = (Stage) impressionsText.getScene().getWindow();
-            Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
-            scene.getStylesheets().add(this.currentStyle);
-            stage.setScene(scene);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                // Switch scene
+                Stage stage = (Stage) impressionsText.getScene().getWindow();
+                Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                scene.getStylesheets().add(this.currentStyle);
+                Platform.runLater(() -> stage.setScene(scene));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     // Event handler for opening the admin panel
@@ -514,16 +544,19 @@ public class MetricSceneController {
             return;
         }
         UserSession.getInstance().setCurrentStyle(this.currentStyle);
-        try {
-            UserSession.getInstance().setCurrentCampaignMetrics(metrics);
-            UserSession.getInstance().setPreviousScene("MetricScene");
-            Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
-            new AdminPanelScene(stage, 930, 692, this.currentStyle);
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            showAlert("Error accessing Admin panel");
-        }
+        toggleControls(true);
+        new Thread(() -> {
+            try {
+                UserSession.getInstance().setCurrentCampaignMetrics(metrics);
+                UserSession.getInstance().setPreviousScene("MetricScene");
+                Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
+                new AdminPanelScene(stage, 930, 692, this.currentStyle);
+                Platform.runLater(stage::show);
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert("Error accessing Admin panel");
+            }
+        }).start();
     }
     @FXML
     private void handleToSaveToDatabase(ActionEvent event) {
@@ -556,6 +589,7 @@ public class MetricSceneController {
     private void handleLogout(ActionEvent event) {
         UserSession.getInstance().setCurrentStyle(this.currentStyle);
         if (logoutBtn != null) {
+            toggleControls(true);
             LogoutHandler.handleLogout(event);
         }
     }
@@ -618,6 +652,25 @@ public class MetricSceneController {
             colourSwitch.getScene().getStylesheets().clear();
             colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
+    }
+
+    private void toggleControls(Boolean bool){
+        mainMenuButton.setDisable(bool);
+        adminPanelBtn.setDisable(bool);
+        logoutBtn.setDisable(bool);
+        chartsViewButton.setDisable(bool);
+        histogramButton.setDisable(bool);
+        saveToDatabaseBtn.setDisable(bool);
+    }
+
+    public void toggleFilters(Boolean bool){
+        contextFilterComboBox.setDisable(bool);
+        genderFilterComboBox.setDisable(bool);
+        ageFilterComboBox.setDisable(bool);
+        incomeFilterComboBox.setDisable(bool);
+        startDatePicker.setDisable(bool);
+        endDatePicker.setDisable(bool);
+        resetFiltersButton.setDisable(bool);
     }
 
 }
