@@ -619,6 +619,7 @@ public class MetricSceneController {
         // Show dialog to select campaign to compare with
         Stage stage = (Stage) impressionsText.getScene().getWindow();
         CampaignDatabase.CampaignInfo campaignToCompare =
+                //aware of problems with dialogs
             CampaignComparisonDialog.showDialog(stage, currentCampaignName);
 
         if (campaignToCompare == null) {

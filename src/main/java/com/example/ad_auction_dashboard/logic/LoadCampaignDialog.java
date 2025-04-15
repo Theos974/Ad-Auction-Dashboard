@@ -273,6 +273,7 @@ public class LoadCampaignDialog {
                         protected Campaign call() throws Exception {
                             updateMessage("Checking campaign...");
 
+                            //aware of problems with dialogs
                             // Load campaign in background
                             Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
 
