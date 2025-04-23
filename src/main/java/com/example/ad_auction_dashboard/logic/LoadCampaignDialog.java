@@ -1,12 +1,15 @@
 package com.example.ad_auction_dashboard.logic;
 
 import java.util.concurrent.ExecutionException;
+
+import com.example.ad_auction_dashboard.controller.StartSceneController;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -14,6 +17,7 @@ import javafx.stage.Stage;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Dialog to load a campaign from the database
@@ -26,7 +30,7 @@ public class LoadCampaignDialog {
      * @param owner The owner window
      * @return The loaded campaign, or null if canceled or an error occurred
      */
-    public static Campaign showDialog(Stage owner) {
+    public static void showDialog(Stage owner, StartSceneController startSceneController) {
         // Create dialog
         Dialog<CampaignDatabase.CampaignInfo> dialog = new Dialog<>();
         dialog.setTitle("Load Campaign");
@@ -194,6 +198,7 @@ public class LoadCampaignDialog {
                     showInfoDialog("Permission Denied",
                         "You don't have permission to delete this campaign. Only admins or the campaign creator can delete campaigns.");
                     event.consume();
+                    Platform.runLater(() -> startSceneController.toggleControls(false));
                     return;
                 }
 
@@ -205,28 +210,32 @@ public class LoadCampaignDialog {
                 );
 
                 if (confirmed) {
-                    boolean deleted = CampaignDatabase.deleteCampaign(selectedCampaign.getCampaignId());
+                    new Thread(() -> {
 
-                    if (deleted) {
-                        // Refresh the list - check if filter is active
-                        if (isAdmin && finalFilterComboBox != null &&
-                            finalFilterComboBox.getValue().equals("All Campaigns")) {
-                            campaignListView.setItems(FXCollections.observableArrayList(
-                                CampaignDatabase.getAllCampaigns()));
-                        } else if (finalFilterComboBox != null &&
-                            finalFilterComboBox.getValue().equals("My Campaigns")) {
-                            campaignListView.setItems(FXCollections.observableArrayList(
-                                CampaignDatabase.getUserCampaigns(userId)));
-                        } else {
-                            campaignListView.setItems(FXCollections.observableArrayList(
-                                CampaignDatabase.getAccessibleCampaigns(userId)));
-                        }
+                        boolean deleted = (CampaignDatabase.deleteCampaign(selectedCampaign.getCampaignId()));
+                        Platform.runLater(() -> {
+                            if (deleted) {
+                                // Refresh the list - check if filter is active
+                                if (isAdmin && finalFilterComboBox != null &&
+                                        finalFilterComboBox.getValue().equals("All Campaigns")) {
+                                    campaignListView.setItems(FXCollections.observableArrayList(
+                                            CampaignDatabase.getAllCampaigns()));
+                                } else if (finalFilterComboBox != null &&
+                                        finalFilterComboBox.getValue().equals("My Campaigns")) {
+                                    campaignListView.setItems(FXCollections.observableArrayList(
+                                            CampaignDatabase.getUserCampaigns(userId)));
+                                } else {
+                                    campaignListView.setItems(FXCollections.observableArrayList(
+                                            CampaignDatabase.getAccessibleCampaigns(userId)));
+                                }
 
-                        showInfoDialog("Campaign Deleted",
-                            "Campaign \"" + selectedCampaign.getCampaignName() + "\" was deleted successfully.");
-                    } else {
-                        showErrorDialog("Failed to delete campaign. Please try again.");
-                    }
+                                showInfoDialog("Campaign Deleted",
+                                        "Campaign \"" + selectedCampaign.getCampaignName() + "\" was deleted successfully.");
+                            } else {
+                                showErrorDialog("Failed to delete campaign. Please try again.");
+                            }
+                        });
+                    }).start();
                 }
             } else {
                 showErrorDialog("Please select a campaign to delete.");
@@ -260,95 +269,93 @@ public class LoadCampaignDialog {
                 if (isAdmin ||
                     selectedCampaign.getUserId() == userId ||
                     CampaignDatabase.canUserAccessCampaign(userId, selectedCampaign.getCampaignId())) {
-
-                    // Load campaign from database
-                    Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
-
-                    if (campaign != null) {
-                        return campaign;
-                    } else {
-                        showErrorDialog("Failed to load campaign data. Please try again.");
-                    }
+                    new Thread(() -> {
+                        Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId(), startSceneController);
+                    }).start();
+                    return;
                 } else {
+                    Platform.runLater(() -> startSceneController.toggleControls(false));
                     showErrorDialog("You don't have permission to access this campaign.");
                 }
             } catch (Exception e) {
+                Platform.runLater(() -> startSceneController.toggleControls(false));
                 showErrorDialog("Error loading campaign: " + e.getMessage());
                 e.printStackTrace();
             }
         }
 
-        if (result.isPresent()) {
-            CampaignDatabase.CampaignInfo selectedCampaign = result.get();
-
-            // Show loading dialog
-            Dialog<Campaign> loadingDialog = new Dialog<>();
-            loadingDialog.setTitle("Loading Campaign");
-            loadingDialog.setHeaderText("Loading campaign data...");
-            loadingDialog.initOwner(owner);
-            loadingDialog.initModality(Modality.WINDOW_MODAL);
-
-            // Add progress indicator
-            ProgressIndicator progress = new ProgressIndicator();
-            progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-
-            Label statusLabel = new Label("Loading campaign. Please wait...");
-
-            VBox content = new VBox(10, progress, statusLabel);
-            content.setAlignment(Pos.CENTER);
-            content.setPadding(new Insets(20));
-
-            loadingDialog.getDialogPane().setContent(content);
-            loadingDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-
-            // Create loading task
-            Task<Campaign> loadTask = new Task<Campaign>() {
-                @Override
-                protected Campaign call() throws Exception {
-                    updateMessage("Checking campaign...");
-
-                    // Load campaign in background
-                    Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
-
-                    updateMessage("Campaign loaded successfully!");
-                    return campaign;
-                }
-            };
-
-            // Bind status updates
-            statusLabel.textProperty().bind(loadTask.messageProperty());
-
-            // Start task
-            Thread loadThread = new Thread(loadTask);
-            loadThread.setDaemon(true);
-            loadThread.start();
-
-            // Show dialog and wait for result or cancellation
-            loadingDialog.setResultConverter(dialogButton -> {
-                if (dialogButton == ButtonType.CANCEL) {
-                    loadTask.cancel();
-                    return null;
-                }
-                return null;
-            });
-
-            // Start showing dialog (non-blocking)
-            loadingDialog.show();
-
-            // Wait for task to complete
-            try {
-                Campaign campaign = loadTask.get();
-                loadingDialog.close();
-                return campaign;
-            } catch (InterruptedException | ExecutionException e) {
-                loadingDialog.close();
-                showErrorDialog("Error loading campaign: " + e.getMessage());
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        return null;
+//        if (result.isPresent()) {
+//            CampaignDatabase.CampaignInfo selectedCampaign = result.get();
+//
+//            // Show loading dialog
+//            Dialog<Campaign> loadingDialog = new Dialog<>();
+//            loadingDialog.setTitle("Loading Campaign");
+//            loadingDialog.setHeaderText("Loading campaign data...");
+//            loadingDialog.initOwner(owner);
+//            loadingDialog.initModality(Modality.WINDOW_MODAL);
+//
+//            // Add progress indicator
+//            ProgressIndicator progress = new ProgressIndicator();
+//            progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+//
+//            Label statusLabel = new Label("Loading campaign. Please wait...");
+//
+//            VBox content = new VBox(10, progress, statusLabel);
+//            content.setAlignment(Pos.CENTER);
+//            content.setPadding(new Insets(20));
+//
+//            loadingDialog.getDialogPane().setContent(content);
+//            loadingDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+//
+//            // Create loading task
+//            Task<Campaign> loadTask = new Task<Campaign>() {
+//                @Override
+//                protected Campaign call() throws Exception {
+//                    updateMessage("Checking campaign...");
+//
+//                    // Load campaign in background
+//                    Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
+//
+//                    updateMessage("Campaign loaded successfully!");
+//                    return campaign;
+//                }
+//            };
+//
+//            // Bind status updates
+//            statusLabel.textProperty().bind(loadTask.messageProperty());
+//
+//            // Start task
+//            Thread loadThread = new Thread(loadTask);
+//            loadThread.setDaemon(true);
+//            loadThread.start();
+//
+//            // Show dialog and wait for result or cancellation
+//            loadingDialog.setResultConverter(dialogButton -> {
+//                if (dialogButton == ButtonType.CANCEL) {
+//                    loadTask.cancel();
+//                    return null;
+//                }
+//                return null;
+//            });
+//
+//            // Start showing dialog (non-blocking)
+//            loadingDialog.show();
+//
+//            // Wait for task to complete
+//            try {
+//                Campaign campaign = loadTask.get();
+//                loadingDialog.close();
+//                return campaign;
+//            } catch (InterruptedException | ExecutionException e) {
+//                loadingDialog.close();
+//                showErrorDialog("Error loading campaign: " + e.getMessage());
+//                e.printStackTrace();
+//                return null;
+//            }
+//        }
+//
+        Platform.runLater(() -> startSceneController.toggleControls(false));
+        return;
     }
 
     private static boolean showConfirmationDialog(String title, String header, String content) {

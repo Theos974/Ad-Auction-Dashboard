@@ -3,6 +3,8 @@ package com.example.ad_auction_dashboard.logic;
 import com.example.ad_auction_dashboard.logic.CampaignDatabase;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -87,14 +89,28 @@ public class SaveCampaignDialog {
             int userId = getUserId();
 
             // Save campaign to database
-            int campaignId = CampaignDatabase.saveCampaign(campaignMetrics, campaignName, userId);
+            Task<Boolean> task = new Task<Boolean>() {
+                @Override
+                protected Boolean call() throws Exception {
+                    int campaignId = CampaignDatabase.saveCampaign(campaignMetrics, campaignName, userId);
+                    if (campaignId != -1) {
+                        Platform.runLater(() -> showInfoDialog("Campaign Saved",
+                                "Campaign \"" + campaignName + "\" saved successfully with ID: " + campaignId));
+                        return true;
+                    } else {
+                        Platform.runLater(() -> showErrorDialog("Failed to save campaign. Please try again."));
+                        return false;
+                    }
 
-            if (campaignId != -1) {
-                showInfoDialog("Campaign Saved",
-                    "Campaign \"" + campaignName + "\" saved successfully with ID: " + campaignId);
-                return true;
-            } else {
-                showErrorDialog("Failed to save campaign. Please try again.");
+                }
+            };
+
+            Thread a = new Thread(task);
+            a.setDaemon(false);
+            a.start();
+            try {
+                return task.get();
+            } catch (Exception e){
                 return false;
             }
         }

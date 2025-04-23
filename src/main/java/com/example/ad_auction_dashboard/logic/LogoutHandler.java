@@ -2,6 +2,7 @@ package com.example.ad_auction_dashboard.logic;
 
 import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.LoginScene;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
@@ -18,14 +19,19 @@ public class LogoutHandler {
      */
     public static void handleLogout(ActionEvent event) {
         // Clear the user session
-        UserSession.getInstance().logout();
+        new Thread(() -> {
+            UserSession.getInstance().logout();
 
-        // Get the current stage from the event source
-        Button sourceButton = (Button) event.getSource();
-        Stage currentStage = (Stage) sourceButton.getScene().getWindow();
+            // Get the current stage from the event source
+            Button sourceButton = (Button) event.getSource();
+            Platform.runLater(() -> {
+                Stage currentStage = (Stage) sourceButton.getScene().getWindow();
 
-        // Create a new login scene and show it
-        new LoginScene(currentStage, 930, 692);
-        currentStage.show();
+                // Create a new login scene and show it
+                new LoginScene(currentStage, 930, 692, UserSession.getInstance().getCurrentStyle());
+
+                currentStage.show();
+            });
+        }).start();
     }
 }

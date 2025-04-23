@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -19,16 +21,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -120,6 +116,11 @@ public class AdminPanelController {
     private Button backBtn;
 
     @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
+
+    @FXML
     private Button logoutBtn;
 
     // State variables
@@ -143,6 +144,15 @@ public class AdminPanelController {
 
         // Initial button state
         updateAccessButtons();
+
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = UserSession.getInstance().getCurrentStyle();
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
+        }
     }
 
     private void initializeUserManagementTab() {
@@ -484,6 +494,7 @@ public class AdminPanelController {
 
     @FXML
     private void handleBack(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             Stage stage = (Stage) backBtn.getScene().getWindow();
 
@@ -491,7 +502,7 @@ public class AdminPanelController {
             if (UserSession.getInstance().getPreviousScene() != null) {
                 switch (UserSession.getInstance().getPreviousScene()) {
                     case "StartScene":
-                        new StartScene(stage, 930, 692);
+                        new StartScene(stage, 930, 692, this.currentStyle);
                         break;
                     case "MetricScene":
                         // Reload Metric Scene with preserved metrics
@@ -509,15 +520,16 @@ public class AdminPanelController {
                         }
 
                         Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                        scene.getStylesheets().add(this.currentStyle);
                         stage.setScene(scene);
                         break;
                     default:
                         // Fallback to Start Scene if previous scene is not recognized
-                        new StartScene(stage, 930, 692);
+                        new StartScene(stage, 930, 692, this.currentStyle);
                 }
             } else {
                 // Default fallback
-                new StartScene(stage, 930, 692);
+                new StartScene(stage, 930, 692, this.currentStyle);
             }
             stage.show();
         } catch (Exception e) {
@@ -528,6 +540,7 @@ public class AdminPanelController {
 
     @FXML
     private void handleLogout(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         LogoutHandler.handleLogout(event);
     }
 
@@ -565,6 +578,19 @@ public class AdminPanelController {
     private void showCampaignStatus(String message) {
         if (campaignStatusText != null) {
             campaignStatusText.setText(message);
+        }
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
     }
 

@@ -10,6 +10,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -20,17 +21,17 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: #2d2d3b;" styleClass="histogram-scene" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.HistogramController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" styleClass="histogram-scene" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.HistogramController">
     <top>
-        <VBox spacing="10.0" style="-fx-background-color: #363642; -fx-background-radius: 10;" BorderPane.alignment="CENTER">
+        <VBox spacing="10.0" styleClass="gauge-super-container" BorderPane.alignment="CENTER">
             <children>
                 <!-- Navigation buttons in corners -->
-                <HBox alignment="CENTER" styleClass="gauge-container" stylesheets="@../../../../styles/style.css">
+                <HBox alignment="CENTER" styleClass="gauge-container">
                     <children>
                         <!-- Back button at left corner -->
-                        <Button mnemonicParsing="false" onAction="#handleBackToMetrics" prefHeight="50.0" prefWidth="40.0" style="-fx-background-color: #363642; -fx-text-fill: white; -fx-background-radius: 50%;">
+                        <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBackToMetrics" prefHeight="50.0" prefWidth="40.0" styleClass="transparent-button">
                             <graphic>
-                                <ImageView fitHeight="36.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
+                                <ImageView fitHeight="36.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true" styleClass="back">
                                     <image>
                                         <Image url="@../../../../images/back button.png" />
                                     </image>
@@ -45,39 +46,39 @@
                         <HBox alignment="CENTER" spacing="15.0" style="-fx-background-radius: 10;">
                             <children>
                                 <!-- Gender Filter -->
-                                <Label minWidth="60.0" text="Gender:" textFill="WHITE">
+                                <Label minWidth="60.0" styleClass="admin-text" text="Gender:" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
                                 </Label>
-                                <ComboBox fx:id="genderFilterComboBox" prefWidth="100.0" style="-fx-background-color: #363642; -fx-text-fill: white;" />
+                                <ComboBox fx:id="genderFilterComboBox" prefWidth="100.0" styleClass="histogram-select" />
 
                                 <!-- Age Filter (New) -->
-                                <Label minWidth="40.0" text="Age:" textFill="WHITE">
+                                <Label minWidth="40.0" styleClass="admin-text" text="Age:" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
                                 </Label>
-                                <ComboBox fx:id="ageFilterComboBox" prefWidth="100.0" style="-fx-background-color: #363642; -fx-text-fill: white;" />
+                                <ComboBox fx:id="ageFilterComboBox" prefWidth="100.0" styleClass="histogram-select" />
 
                                 <!-- Income Filter (New) -->
-                                <Label minWidth="60.0" text="Income:" textFill="WHITE">
+                                <Label minWidth="60.0" styleClass="admin-text" text="Income:" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
                                 </Label>
-                                <ComboBox fx:id="incomeFilterComboBox" prefWidth="100.0" style="-fx-background-color: #363642; -fx-text-fill: white;" />
+                                <ComboBox fx:id="incomeFilterComboBox" prefWidth="100.0" styleClass="histogram-select" />
 
                                 <!-- Context Filter -->
-                                <Label minWidth="70.0" text="Context:" textFill="WHITE">
+                                <Label minWidth="70.0" styleClass="admin-text" text="Context:" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
                                 </Label>
-                                <ComboBox fx:id="contextFilterComboBox" prefWidth="120.0" style="-fx-background-color: #363642; -fx-text-fill: white;" />
+                                <ComboBox fx:id="contextFilterComboBox" prefWidth="120.0" styleClass="histogram-select" />
 
                                 <!-- Reset Button -->
-                                <Button fx:id="resetFiltersButton" mnemonicParsing="false" onAction="#handleResetFilters" prefHeight="25.0" prefWidth="134.0" style="-fx-background-color: #363642; -fx-text-fill: white;" text="Reset Filters" />
+                                <Button fx:id="resetFiltersButton" mnemonicParsing="false" onAction="#handleResetFilters" prefHeight="25.0" prefWidth="134.0" styleClass="histogram-select" text="Reset Filters" />
                             </children>
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -85,15 +86,16 @@
                         </HBox>
 
                         <!-- Log off button at right corner -->
-                        <Button fx:id="logoutBtn" mnemonicParsing="false" onAction="#handleLogout" prefHeight="25.0" prefWidth="43.0" style="-fx-background-color: #363642; -fx-background-radius: 50%;">
+                        <Button fx:id="logoutBtn" mnemonicParsing="false" onAction="#handleLogout" prefHeight="25.0" prefWidth="43.0" styleClass="transparent-button">
                             <graphic>
-                                <ImageView fitHeight="35.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                                <ImageView fitHeight="35.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="logoff">
                                     <image>
                                         <Image url="@../../../../images/white log off.png" />
                                     </image>
                                 </ImageView>
                             </graphic>
                         </Button>
+                  <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
                     </children>
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -106,14 +108,14 @@
                         <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-radius: 10;">
                             <children>
                                 <!-- Fixed width for label to avoid truncation -->
-                                <Label minWidth="100.0" text="Date Range:" textFill="WHITE">
+                                <Label minWidth="100.0" styleClass="admin-text" text="Date Range:" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
                                 </Label>
                                 <DatePicker fx:id="startDatePicker" promptText="Start Date" style="-fx-background-color: #363642; -fx-text-fill: white;" />
                                 <!-- Extra spacing and minimum width -->
-                                <Label minWidth="30.0" text="to" textFill="WHITE">
+                                <Label minWidth="30.0" styleClass="admin-text" text="to" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
@@ -127,7 +129,7 @@
                                 <ComboBox fx:id="histogramTypeComboBox" prefWidth="150.0" style="-fx-background-color: #363642; -fx-text-fill: white;" visible="false" />
 
                                 <!-- Increased width for label -->
-                                <Label minWidth="50.0" text="bins:" textFill="WHITE">
+                                <Label minWidth="50.0" styleClass="admin-text" text="bins:" textFill="WHITE">
                                     <font>
                                         <Font size="14.0" />
                                     </font>
@@ -157,10 +159,10 @@
                         <HBox prefHeight="100.0" prefWidth="200.0">
                             <children>
                                 <Region prefHeight="27.0" prefWidth="7.0" />
-                                <ComboBox fx:id="exportComboBox" prefWidth="150.0" stylesheets="@../../../../styles/style.css" />
-                                <Button mnemonicParsing="false" onAction="#exportData" prefHeight="18.0" prefWidth="55.0" style="-fx-background-color: #363642; -fx-text-fill: white;" styleClass="transparent-button" stylesheets="@../../../../styles/style.css" text="Export" />
-                                <Button mnemonicParsing="false" onAction="#printData" prefHeight="18.0" prefWidth="46.0" style="-fx-background-color: #363642; -fx-text-fill: white;" styleClass="transparent-button" stylesheets="@../../../../styles/style.css" text="Print" />
-                                <Label fx:id="printLabel" style="-fx-text-fill: white;" stylesheets="@../../../../styles/style.css" />
+                                <ComboBox fx:id="exportComboBox" prefWidth="150.0" />
+                                <Button fx:id="exportButton" mnemonicParsing="false" onAction="#exportData" prefHeight="18.0" prefWidth="55.0" styleClass="histogram-export-button" text="Export" />
+                                <Button fx:id="printButton" mnemonicParsing="false" onAction="#printData" prefHeight="18.0" prefWidth="46.0" styleClass="histogram-export-button" text="Print" />
+                                <Label fx:id="printLabel" styleClass="admin-text" />
                             </children>
                         </HBox>
                     </children>
@@ -174,11 +176,11 @@
     <center>
         <AnchorPane BorderPane.alignment="CENTER">
             <children>
-                <VBox alignment="CENTER" layoutX="50.0" layoutY="14.0" prefHeight="541.0" prefWidth="800.0" stylesheets="@../../../../styles/style.css" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0">
+                <VBox alignment="CENTER" layoutX="50.0" layoutY="14.0" prefHeight="541.0" prefWidth="800.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0">
                     <children>
 
                         <!-- Title centered and larger -->
-                        <Label alignment="CENTER" contentDisplay="CENTER" text="HISTOGRAM" textAlignment="CENTER" textFill="WHITE">
+                        <Label alignment="CENTER" contentDisplay="CENTER" styleClass="admin-text" text="HISTOGRAM" textAlignment="CENTER" textFill="WHITE">
                             <font>
                                 <Font name="System Bold" size="22.0" />
                             </font>
@@ -193,7 +195,7 @@
                         </Label>
                         <StackPane>
                             <children>
-                                <BarChart fx:id="histogramChart" animated="false" legendSide="RIGHT" prefHeight="454.0" prefWidth="817.0" style="-fx-background-color: #363642; -fx-plot-background-color: #363642; -fx-border-color: #a365f5; -fx-border-width: 2; -fx-background-radius: 15; -fx-border-radius: 15;">
+                                <BarChart fx:id="histogramChart" animated="false" legendSide="RIGHT" prefHeight="454.0" prefWidth="817.0" styleClass="histogram-bar-chart">
                                     <xAxis>
                                         <CategoryAxis label="Click Cost Range" side="BOTTOM" tickLabelFill="WHITE" fx:id="xAxis" />
                                     </xAxis>
@@ -206,7 +208,7 @@
                                 </BarChart>
                             </children>
                         </StackPane>
-                        <TextArea fx:id="descriptionTextArea" editable="false" prefHeight="57.0" prefWidth="820.0" style="-fx-background-color: #363642; -fx-text-fill: white; -fx-border-color: #363642; -fx-background-radius: 10; -fx-border-radius: 10;" wrapText="true">
+                        <TextArea fx:id="descriptionTextArea" editable="false" prefHeight="57.0" prefWidth="820.0" styleClass="histogram-text-area" wrapText="true">
                             <VBox.margin>
                                 <Insets top="10.0" />
                             </VBox.margin>

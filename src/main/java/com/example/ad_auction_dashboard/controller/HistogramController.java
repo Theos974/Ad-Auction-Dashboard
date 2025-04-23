@@ -21,11 +21,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.itextpdf.text.Document;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.opencsv.CSVWriter;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -37,15 +39,12 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DateCell;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.WritableImage;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
@@ -86,6 +85,12 @@ public class HistogramController {
 
     @FXML
     private TextArea descriptionTextArea;
+    @FXML
+    private Button exportButton;
+    @FXML
+    private Button printButton;
+    @FXML
+    private Button backButton;
 
     @FXML
     private Label statusLabel; // Optional: can add this to your FXML for status messages
@@ -113,6 +118,10 @@ public class HistogramController {
 
     @FXML
     private Button resetFiltersButton;
+    @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
 
     // Add a field for TimeFilteredMetrics
     private TimeFilteredMetrics timeFilteredMetrics;
@@ -200,6 +209,14 @@ public class HistogramController {
         if (exportComboBox != null){
             exportComboBox.getItems().addAll("PNG", "CSV", "PDF");
             exportComboBox.setValue("PNG");
+        }
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = UserSession.getInstance().getCurrentStyle();
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
         }
     }
 
@@ -306,23 +323,29 @@ public class HistogramController {
 
     @FXML
     private void handleResetFilters() {
-        if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
-        if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
-        if (ageFilterComboBox != null) ageFilterComboBox.setValue("All");
-        if (incomeFilterComboBox != null) incomeFilterComboBox.setValue("All");
+        toggleFilters(true);
+        new Thread(() -> {
+            Platform.runLater(() -> {
+                if (genderFilterComboBox != null) genderFilterComboBox.setValue("All");
+                if (contextFilterComboBox != null) contextFilterComboBox.setValue("All");
+                if (ageFilterComboBox != null) ageFilterComboBox.setValue("All");
+                if (incomeFilterComboBox != null) incomeFilterComboBox.setValue("All");
+                if (timeFilteredMetrics != null) {
+                    timeFilteredMetrics.setGenderFilter(null);
+                    timeFilteredMetrics.setContextFilter(null);
+                    timeFilteredMetrics.setAgeFilter(null);
+                    timeFilteredMetrics.setIncomeFilter(null);}
+                });
 
-        if (timeFilteredMetrics != null) {
-            timeFilteredMetrics.setGenderFilter(null);
-            timeFilteredMetrics.setContextFilter(null);
-            timeFilteredMetrics.setAgeFilter(null);
-            timeFilteredMetrics.setIncomeFilter(null);
+                // Clear filters in session
+                UserSession.getInstance().clearFilterSettings();
 
-            // Clear filters in session
-            UserSession.getInstance().clearFilterSettings();
-
-            // Update histogram with reset filters
-            updateHistogram();
-        }
+                // Update histogram with reset filters
+                Platform.runLater(() -> {
+                    updateHistogram();
+                    toggleFilters(false);
+                });
+        }).start();
     }
 
     public void setHistogramType(String histogramType) {
@@ -335,160 +358,165 @@ public class HistogramController {
     private void updateHistogram() {
         if (campaignMetrics == null) return;
 
-        if (timeFilteredMetrics != null) {
-            // Get filter values
-            String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
-            String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
-            String age = (ageFilterComboBox != null) ? ageFilterComboBox.getValue() : "All";
-            String income = (incomeFilterComboBox != null) ? incomeFilterComboBox.getValue() : "All";
+        toggleFilters(true);
+        new Thread(() -> {
+            if (timeFilteredMetrics != null) {
+                // Get filter values
+                String gender = (genderFilterComboBox != null) ? genderFilterComboBox.getValue() : "All";
+                String context = (contextFilterComboBox != null) ? contextFilterComboBox.getValue() : "All";
+                String age = (ageFilterComboBox != null) ? ageFilterComboBox.getValue() : "All";
+                String income = (incomeFilterComboBox != null) ? incomeFilterComboBox.getValue() : "All";
 
-            // Apply filters
-            timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
-            timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
-            timeFilteredMetrics.setAgeFilter(age.equals("All") ? null : age);
-            timeFilteredMetrics.setIncomeFilter(income.equals("All") ? null : income);
+                // Apply filters
+                    timeFilteredMetrics.setGenderFilter(gender.equals("All") ? null : gender);
+                    timeFilteredMetrics.setContextFilter(context.equals("All") ? null : context);
+                    timeFilteredMetrics.setAgeFilter(age.equals("All") ? null : age);
+                    timeFilteredMetrics.setIncomeFilter(income.equals("All") ? null : income);
 
-            // Save filter settings to UserSession
-            saveFilterSettingsToSession();
-        }
-
-        // Get date range
-        LocalDate startDate = startDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
-        if (startDate == null || endDate == null) return;
-
-        // Additional validation to ensure start date is not after end date
-        if (startDate.isAfter(endDate)) {
-            endDatePicker.setValue(startDate);
-            endDate = startDate;
-            showAlert(
-                "Start date cannot be after end date. Both dates have been set to the same day.");
-            return; // Skip processing to let the user see the message
-        }
-
-        // Validate date range against campaign boundaries
-        if (campaignMetrics.getCampaignStartDate() != null &&
-            campaignMetrics.getCampaignEndDate() != null) {
-            LocalDate campaignStartDate = campaignMetrics.getCampaignStartDate().toLocalDate();
-            LocalDate campaignEndDate = campaignMetrics.getCampaignEndDate().toLocalDate();
-
-            // Ensure dates are within campaign range
-            if (startDate.isBefore(campaignStartDate)) {
-                startDate = campaignStartDate;
-                startDatePicker.setValue(startDate);
-                showAlert("Start date adjusted to campaign start date.");
+                // Save filter settings to UserSession
+                saveFilterSettingsToSession();
             }
 
-            if (endDate.isAfter(campaignEndDate)) {
-                endDate = campaignEndDate;
-                endDatePicker.setValue(endDate);
-                showAlert("End date adjusted to campaign end date.");
-            }
-        }
+            // Get date range
+            LocalDate startDate = startDatePicker.getValue();
+            LocalDate endDate = endDatePicker.getValue();
+            if (startDate == null || endDate == null) return;
 
-        // Convert to LocalDateTime
-        LocalDateTime start = startDate.atStartOfDay();
-        LocalDateTime end = endDate.atTime(LocalTime.MAX);
-
-        // Get selected histogram type
-        String selectedType = histogramTypeComboBox.getValue();
-        HistogramGenerator generator = histogramGenerators.get(selectedType);
-
-        if (generator != null) {
-            // Update chart labels - ensure they're checked for null
-            if (histogramTitleLabel != null) {
-                histogramTitleLabel.setText(generator.getTitle());
-                // Ensure the title is visible
-                histogramTitleLabel.setVisible(true);
+            // Additional validation to ensure start date is not after end date
+            if (startDate.isAfter(endDate)) {
+                endDatePicker.setValue(startDate);
+                endDate = startDate;
+                showAlert(
+                        "Start date cannot be after end date. Both dates have been set to the same day.");
+                return; // Skip processing to let the user see the message
             }
 
-            if (xAxis != null) {
-                xAxis.setLabel(generator.getXAxisLabel());
-            }
+            // Validate date range against campaign boundaries
+            if (campaignMetrics.getCampaignStartDate() != null &&
+                    campaignMetrics.getCampaignEndDate() != null) {
+                LocalDate campaignStartDate = campaignMetrics.getCampaignStartDate().toLocalDate();
+                LocalDate campaignEndDate = campaignMetrics.getCampaignEndDate().toLocalDate();
 
-            if (yAxis != null) {
-                yAxis.setLabel(generator.getYAxisLabel());
-            }
-
-            // Ensure description is visible and set
-            if (descriptionTextArea != null) {
-                descriptionTextArea.setText(generator.getDescription());
-                descriptionTextArea.setVisible(true);
-            }
-
-            // Get bin count from slider with proper rounding
-            int binCount = (int) Math.round(binSizeSlider.getValue());
-
-            try {
-                // Calculate histogram data using the FILTERED method
-                Map<String, Integer> histogramData;
-
-                // Check if filters are applied
-                if (timeFilteredMetrics != null &&
-                    (!genderFilterComboBox.getValue().equals("All") ||
-                        !contextFilterComboBox.getValue().equals("All") ||
-                        !ageFilterComboBox.getValue().equals("All") ||
-                        !incomeFilterComboBox.getValue().equals("All"))) {
-
-                    // Use the filtered method when filters are active
-                    histogramData =
-                        ((ClickCostHistogramGenerator) generator).generateFilteredHistogramData(
-                            campaignMetrics, timeFilteredMetrics, start, end, binCount);
-                } else {
-                    // Use standard method when no filters are active
-                    histogramData = generator.generateHistogramData(
-                        campaignMetrics, start, end, binCount);
+                // Ensure dates are within campaign range
+                if (startDate.isBefore(campaignStartDate)) {
+                    startDate = campaignStartDate;
+                    startDatePicker.setValue(startDate);
+                    showAlert("Start date adjusted to campaign start date.");
                 }
 
-                // Update the chart
-                histogramChart.getData().clear();
-                XYChart.Series<String, Number> series = new XYChart.Series<>();
-                series.setName("Frequency");
+                if (endDate.isAfter(campaignEndDate)) {
+                    endDate = campaignEndDate;
+                    endDatePicker.setValue(endDate);
+                    showAlert("End date adjusted to campaign end date.");
+                }
+            }
 
-                // Check if there's actual data
-                if (histogramData.isEmpty() ||
-                    (histogramData.size() == 1 &&
-                        (histogramData.containsKey("No data available") ||
-                            histogramData.containsKey("No data in selected range") ||
-                            histogramData.containsKey(
-                                "No data in selected range or with selected filters")))) {
-                    // Add placeholder for no data
-                    series.getData().add(new XYChart.Data<>("No data available", 0));
-                } else {
-                    // Add real histogram data
-                    for (Map.Entry<String, Integer> entry : histogramData.entrySet()) {
-                        series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-                    }
+            // Convert to LocalDateTime
+            LocalDateTime start = startDate.atStartOfDay();
+            LocalDateTime end = endDate.atTime(LocalTime.MAX);
+
+            // Get selected histogram type
+            String selectedType = histogramTypeComboBox.getValue();
+            HistogramGenerator generator = histogramGenerators.get(selectedType);
+
+            if (generator != null) {
+                // Update chart labels - ensure they're checked for null
+                if (histogramTitleLabel != null) {
+                    histogramTitleLabel.setText(generator.getTitle());
+                    // Ensure the title is visible
+                    histogramTitleLabel.setVisible(true);
                 }
 
-                histogramChart.getData().add(series);
-
-                // Apply styling to the bars to make them green
-                for (XYChart.Data<String, Number> data : series.getData()) {
-                    if (data.getNode() != null) {
-                        data.getNode().setStyle("-fx-bar-fill: #4CAF50;");
-                    }
-                }
-
-                // Set y-axis to start at 0
-                if (yAxis != null) {
-                    yAxis.setForceZeroInRange(true);
-                }
-
-                // Improve x-axis label display
                 if (xAxis != null) {
-                    xAxis.setTickLabelRotation(45);
+                    xAxis.setLabel(generator.getXAxisLabel());
                 }
 
-            } catch (Exception e) {
-                // Handle errors gracefully
-                e.printStackTrace();
+                if (yAxis != null) {
+                    yAxis.setLabel(generator.getYAxisLabel());
+                }
+
+                // Ensure description is visible and set
                 if (descriptionTextArea != null) {
-                    descriptionTextArea.setText("Error generating histogram: " + e.getMessage() +
-                        "\nPlease try different date ranges or bin sizes.");
+                    descriptionTextArea.setText(generator.getDescription());
+                    descriptionTextArea.setVisible(true);
+                }
+
+                // Get bin count from slider with proper rounding
+                int binCount = (int) Math.round(binSizeSlider.getValue());
+
+                try {
+                    // Calculate histogram data using the FILTERED method
+                    Map<String, Integer> histogramData;
+
+                    // Check if filters are applied
+                    if (timeFilteredMetrics != null &&
+                            (!genderFilterComboBox.getValue().equals("All") ||
+                                    !contextFilterComboBox.getValue().equals("All") ||
+                                    !ageFilterComboBox.getValue().equals("All") ||
+                                    !incomeFilterComboBox.getValue().equals("All"))) {
+
+                        // Use the filtered method when filters are active
+                        histogramData =
+                                ((ClickCostHistogramGenerator) generator).generateFilteredHistogramData(
+                                        campaignMetrics, timeFilteredMetrics, start, end, binCount);
+                    } else {
+                        // Use standard method when no filters are active
+                        histogramData = generator.generateHistogramData(
+                                campaignMetrics, start, end, binCount);
+                    }
+
+                    // Update the chart
+                    Platform.runLater(() -> {
+                        histogramChart.getData().clear();
+                        XYChart.Series<String, Number> series = new XYChart.Series<>();
+                        series.setName("Frequency");
+
+                        // Check if there's actual data
+                        if (histogramData.isEmpty() ||
+                                (histogramData.size() == 1 &&
+                                        (histogramData.containsKey("No data available") ||
+                                                histogramData.containsKey("No data in selected range") ||
+                                                histogramData.containsKey(
+                                                        "No data in selected range or with selected filters")))) {
+                            // Add placeholder for no data
+                            series.getData().add(new XYChart.Data<>("No data available", 0));
+                        } else {
+                            // Add real histogram data
+                            for (Map.Entry<String, Integer> entry : histogramData.entrySet()) {
+                                series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                            }
+                        }
+                        histogramChart.getData().add(series);
+                        // Apply styling to the bars to make them green
+                        for (XYChart.Data<String, Number> data : series.getData()) {
+                            if (data.getNode() != null) {
+                                data.getNode().setStyle("-fx-bar-fill: #4CAF50;");
+                            }
+                        }
+
+                        // Set y-axis to start at 0
+                        if (yAxis != null) {
+                            yAxis.setForceZeroInRange(true);
+                        }
+
+                        // Improve x-axis label display
+                        if (xAxis != null) {
+                            xAxis.setTickLabelRotation(45);
+                        }
+                        toggleFilters(false);
+                    });
+
+
+                } catch (Exception e) {
+                    // Handle errors gracefully
+                    e.printStackTrace();
+                    if (descriptionTextArea != null) {
+                        Platform.runLater(() -> descriptionTextArea.setText("Error generating histogram: " + e.getMessage() +
+                                "\nPlease try different date ranges or bin sizes."));
+                    }
                 }
             }
-        }
+        }).start();
     }
 
     private void saveFilterSettingsToSession() {
@@ -542,27 +570,37 @@ public class HistogramController {
 
     @FXML
     private void handleBackToMetrics(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
-            Parent root = loader.load();
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
+        toggleControls(true);
+        new Thread(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
+                Parent root = loader.load();
 
-            // Get the controller and pass the campaign metrics
-            MetricSceneController controller = loader.getController();
-            controller.setMetrics(campaignMetrics);
+                // Get the controller and pass the campaign metrics
+                MetricSceneController controller = loader.getController();
+                controller.setMetrics(campaignMetrics);
 
-            // Switch to the metrics scene
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) histogramChart.getScene().getWindow();
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                // Switch to the metrics scene
+                Scene scene = new Scene(root);
+
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) histogramChart.getScene().getWindow();
+                    scene.getStylesheets().add(this.currentStyle);
+                    stage.setScene(scene);
+                    stage.show();
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML
     private void handleLogout(ActionEvent event) {
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         if (logoutBtn != null) {
+            toggleControls(true);
             LogoutHandler.handleLogout(event);
         }
     }
@@ -572,70 +610,82 @@ public class HistogramController {
         if (exportComboBox.getValue().equals("PNG")){
             File selectedFile = getChosenFile("png");
             WritableImage image = histogramChart.snapshot(new SnapshotParameters(), null);
+            new Thread(() -> {
 
-            try{
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
-            } catch (IOException e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+                try{
+                    ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
+                } catch (IOException e){
+                    Platform.runLater(() -> printLabel.setText("Writing Error!"));
+                    System.err.println(e);
+                }
+            }).start();
         }else if (exportComboBox.getValue().equals("CSV")){
             File selectedFile = getChosenFile("csv");
-            try {
-                FileWriter fileWriter = new FileWriter(selectedFile);
-                CSVWriter writer = new CSVWriter(fileWriter);
-                writer.writeNext(new String[]{"X","Y"});
-                XYChart.Series<String, Number> series;
-                for (int i = 0; i < histogramChart.getData().size(); i++) {
-                    series = (XYChart.Series<String, Number>) histogramChart.getData().get(i);
-                    for (XYChart.Data<String, Number> dataPoint : series.getData()) {
-                        String xValue = dataPoint.getXValue();
-                        Number yValue = dataPoint.getYValue();
-                        writer.writeNext(new String[]{xValue, yValue.toString()});
+            new Thread(() -> {
+                try {
+                    FileWriter fileWriter = new FileWriter(selectedFile);
+                    CSVWriter writer = new CSVWriter(fileWriter);
+                    writer.writeNext(new String[]{"X","Y"});
+                    XYChart.Series<String, Number> series;
+                    for (int i = 0; i < histogramChart.getData().size(); i++) {
+                        series = (XYChart.Series<String, Number>) histogramChart.getData().get(i);
+                        for (XYChart.Data<String, Number> dataPoint : series.getData()) {
+                            String xValue = dataPoint.getXValue();
+                            Number yValue = dataPoint.getYValue();
+                            writer.writeNext(new String[]{xValue, yValue.toString()});
+                        }
                     }
+                    writer.close();
+                } catch (Exception e){
+                    Platform.runLater(() -> printLabel.setText("Writing Error!"));
+                    System.err.println(e);
                 }
-                writer.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            }).start();
         }else if (exportComboBox.getValue().equals("PDF")){
             File selectedFile = getChosenFile("pdf");
-            try {
-                WritableImage writableImage = histogramChart.snapshot(new SnapshotParameters(), null);
-                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
-                com.itextpdf.text.Image graph = com.itextpdf.text.Image.getInstance(byteOutput.toByteArray());
-                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
-                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
-                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
-                document.open();
-                document.add(graph);
-                document.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            WritableImage writableImage = histogramChart.snapshot(new SnapshotParameters(), null);
+            new Thread(() -> {
+                try {
+                    ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                    com.itextpdf.text.Image graph = com.itextpdf.text.Image.getInstance(byteOutput.toByteArray());
+                    graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                    Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                    PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                    document.open();
+                    document.add(graph);
+                    document.close();
+                } catch (Exception e){
+                    Platform.runLater(() -> printLabel.setText("Writing Error!"));
+                    System.err.println(e);
+                }
+            }).start();
         }
     }
 
     @FXML void printData(ActionEvent event){
         if (exportComboBox.getValue().equals("PNG") || exportComboBox.getValue().equals("PDF")){
-            try {
-                java.awt.Image graph = getPrintableImage(histogramChart.snapshot(new SnapshotParameters(), null));
-                PrinterJob printJob = PrinterJob.getPrinterJob();
-                printJob.setPrintable(new Printable() {
-                    @Override
-                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                        if (pageIndex != 0){return NO_SUCH_PAGE;}
-                        graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
-                        return PAGE_EXISTS;}});
-                boolean doPrint = printJob.printDialog();
-                if (doPrint){try {printJob.print();
-                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
-                }
-            } catch (Exception e){
-                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+            java.awt.Image graph = getPrintableImage(histogramChart.snapshot(new SnapshotParameters(), null));
+            new Thread(() -> {
+                try {
+                    PrinterJob printJob = PrinterJob.getPrinterJob();
+                    printJob.setPrintable(new Printable() {
+                        @Override
+                        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                            if (pageIndex != 0){return NO_SUCH_PAGE;}
+                            graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
+                            return PAGE_EXISTS;}});
+                    boolean doPrint = printJob.printDialog();
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");togglePrint(true);});
+                    if (doPrint){try {printJob.print();
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    } else {
+                        Platform.runLater(() -> togglePrint(false));
+                    }
+                } catch (Exception e){
+                    Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
+            }).start();
         } else if (exportComboBox.getValue().equals("CSV")){
             printLabel.setText("CSV cannot be printed!");
         }
@@ -709,5 +759,40 @@ public class HistogramController {
         }
         if (selectedFile == null){printLabel.setText("No File Selected");}
         return selectedFile;
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        }
+    }
+
+    private void toggleControls(Boolean bool){
+        exportButton.setDisable(bool);
+        printButton.setDisable(bool);
+        logoutBtn.setDisable(bool);
+        backButton.setDisable(bool);
+        binSizeSlider.setDisable(bool);
+    }
+
+    public void toggleFilters(Boolean bool){
+        contextFilterComboBox.setDisable(bool);
+        genderFilterComboBox.setDisable(bool);
+        ageFilterComboBox.setDisable(bool);
+        incomeFilterComboBox.setDisable(bool);
+        startDatePicker.setDisable(bool);
+        endDatePicker.setDisable(bool);
+        resetFiltersButton.setDisable(bool);
+    }
+    public void togglePrint(Boolean bool){
+        printButton.setDisable(bool);
+        exportButton.setDisable(bool);
     }
 }

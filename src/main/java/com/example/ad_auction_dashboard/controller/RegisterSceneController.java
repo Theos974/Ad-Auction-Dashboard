@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.controller;
 
 import com.example.ad_auction_dashboard.logic.UserDatabase;
+import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.LoginScene;
 import java.io.IOException;
 import javafx.event.ActionEvent;
@@ -8,10 +9,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -45,6 +44,11 @@ public class RegisterSceneController {
     private Text statusText;
 
     @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
+
+    @FXML
     public void initialize() {
         // Initialize the role dropdown - only "user" available during registration
         roleComboBox.getItems().add("Viewer");
@@ -53,6 +57,16 @@ public class RegisterSceneController {
 
         // Clear any previous status messages
         statusText.setText("");
+
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        if (UserSession.getInstance().getCurrentStyle() == null){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+        } else {
+            currentStyle = UserSession.getInstance().getCurrentStyle();
+        }
     }
 
     @FXML
@@ -93,7 +107,7 @@ public class RegisterSceneController {
             statusText.setText("Passwords do not match");
             return;
         }
-
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
         try {
             // Attempt to add the user to the database
             System.out.println(UserDatabase.isUserUnique(username,email,phone));
@@ -119,6 +133,7 @@ public class RegisterSceneController {
 
                             Stage stage = (Stage) registerBtn.getScene().getWindow();
                             Scene scene = new Scene(root, stage.getWidth(), stage.getHeight());
+                            scene.getStylesheets().add(this.currentStyle);
                             stage.setScene(scene);
                             stage.show();
                         } catch (IOException e) {
@@ -137,10 +152,28 @@ public class RegisterSceneController {
     }
 
     @FXML
-    private void handleBackToLogin(ActionEvent event) throws IOException {
+    private void handleBackToLogin(ActionEvent event) {
         // Create a new LoginScene using the current stage
-        Stage stage = (Stage) loginBtn.getScene().getWindow();
-        new LoginScene(stage, 930, 692);
-        stage.show();
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
+        try {
+            Stage stage = (Stage) loginBtn.getScene().getWindow();
+            new LoginScene(stage, 930, 692, this.currentStyle);
+            stage.show();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        }
     }
 }

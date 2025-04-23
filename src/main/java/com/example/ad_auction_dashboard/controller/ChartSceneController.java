@@ -15,15 +15,18 @@ import com.example.ad_auction_dashboard.charts.BounceChart;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 
+import com.example.ad_auction_dashboard.logic.UserSession;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.opencsv.CSVWriter;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
+import javafx.scene.shape.Circle;
 import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
@@ -40,6 +43,8 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -113,6 +118,13 @@ public class ChartSceneController {
     private VBox secondaryChartContainer;
 
     @FXML
+    private Button backButton;
+    @FXML
+    private Button printButton;
+    @FXML
+    private Button exportButton;
+
+    @FXML
     private LineChart primaryChart;
 
     @FXML
@@ -120,6 +132,11 @@ public class ChartSceneController {
 
     @FXML
     private HBox chartsContainer;
+
+    @FXML
+    private ToggleButton colourSwitch;
+
+    private String currentStyle;
 
     private CampaignMetrics campaignMetrics;
     private TimeFilteredMetrics timeFilteredMetrics;
@@ -232,6 +249,18 @@ public class ChartSceneController {
         if (statusLabel != null) {
             statusLabel.setText("");
         }
+
+        Circle thumb = new Circle(12);
+        thumb.getStyleClass().add("thumb");
+        colourSwitch.setGraphic(thumb);
+
+        currentStyle = UserSession.getInstance().getCurrentStyle();
+        System.out.println("StyleChart: " + currentStyle);
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+            colourSwitch.setSelected(true);
+            System.out.println("Switched");
+        }
+        this.setCampaignMetrics(UserSession.getInstance().getCurrentCampaignMetrics());
     }
 
     /**
@@ -240,6 +269,7 @@ public class ChartSceneController {
     private void applyFilters() {
         if (timeFilteredMetrics == null) return;
 
+        toggleFilters(true);
         // Get selected gender filter
         String gender = genderFilterComboBox.getValue();
         if (gender.equals("All")) gender = null;
@@ -256,17 +286,26 @@ public class ChartSceneController {
         String income = incomeFilterComboBox.getValue();
         if (income.equals("All")) income = null;
 
-        // Apply filters to timeFilteredMetrics
-        timeFilteredMetrics.setGenderFilter(gender);
-        timeFilteredMetrics.setContextFilter(context);
-        timeFilteredMetrics.setAgeFilter(age);
-        timeFilteredMetrics.setIncomeFilter(income);
+        String finalGender = gender;
+        String finalContext = context;
+        String finalAge = age;
+        String finalIncome = income;
+        new Thread(() -> {
+            // Apply filters to timeFilteredMetrics
+            timeFilteredMetrics.setGenderFilter(finalGender);
+            timeFilteredMetrics.setContextFilter(finalContext);
+            timeFilteredMetrics.setAgeFilter(finalAge);
+            timeFilteredMetrics.setIncomeFilter(finalIncome);
 
-        // Update status label to show active filters
-        updateFilterStatus();
+            // Update status label to show active filters
+            updateFilterStatus();
 
-        // Update charts with the new filters
-        updateCharts();
+            // Update charts with the new filters
+            Platform.runLater(() -> {
+                updateCharts();
+                toggleFilters(false);
+            });
+        }).start();
     }
 
     @FXML
@@ -276,25 +315,31 @@ public class ChartSceneController {
     private void resetFilters() {
         if (timeFilteredMetrics == null) return;
 
+        toggleFilters(true);
         // Reset UI components
         genderFilterComboBox.setValue("All");
         contextFilterComboBox.setValue("All");
         ageFilterComboBox.setValue("All");
         incomeFilterComboBox.setValue("All");
 
-        // Reset filters in the metrics object
-        timeFilteredMetrics.setGenderFilter(null);
-        timeFilteredMetrics.setContextFilter(null);
-        timeFilteredMetrics.setAgeFilter(null);
-        timeFilteredMetrics.setIncomeFilter(null);
+        new Thread(() -> {
+            // Reset filters in the metrics object
+            timeFilteredMetrics.setGenderFilter(null);
+            timeFilteredMetrics.setContextFilter(null);
+            timeFilteredMetrics.setAgeFilter(null);
+            timeFilteredMetrics.setIncomeFilter(null);
 
-        // Update status label
-        if (statusLabel != null) {
-            statusLabel.setText("Filters reset to default.");
-        }
+            // Update status label
+            if (statusLabel != null) {
+                Platform.runLater(() -> statusLabel.setText("Filters reset to default."));
+            }
 
-        // Update charts
-        updateCharts();
+            // Update charts
+            Platform.runLater(() -> {
+                updateCharts();
+                toggleFilters(false);
+            });
+        }).start();
     }
 
     /**
@@ -330,9 +375,9 @@ public class ChartSceneController {
 
         // Update status label
         if (status.length() > 0) {
-            statusLabel.setText("Active filters: " + status);
+            Platform.runLater(() -> statusLabel.setText("Active filters: " + status));
         } else {
-            statusLabel.setText("No filters active");
+            Platform.runLater(() -> statusLabel.setText("No filters active"));
         }
     }
 
@@ -422,70 +467,85 @@ public class ChartSceneController {
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.atTime(LocalTime.MAX);
 
-        try {
-            // Update status if processing a lot of data
-            if (statusLabel != null && currentGranularity.equals("Hourly") &&
-                ChronoUnit.DAYS.between(startDate, endDate) > 14) {
-                statusLabel.setText("Processing large amount of hourly data...");
-            }
-
-            // Compute metrics for the time frame with granularity
-            timeFilteredMetrics.computeForTimeFrame(start, end, currentGranularity);
-
-            // Create and display primary chart
-            String primaryChartType = primaryChartTypeComboBox.getValue();
-            Chart primaryChartImpl = chartRegistry.get(primaryChartType);
-            if (primaryChartImpl != null) {
-                VBox primaryChartNode = primaryChartImpl.createChart(
-                    timeFilteredMetrics, start, end, currentGranularity);
-                primaryChartContainer.getChildren().clear();
-                primaryChartContainer.getChildren().add(primaryChartNode);
-                primaryChart = (LineChart) primaryChartNode.getChildren().get(0);
-            }
-
-            // Create and display secondary chart if comparison is enabled
-            if (compareToggleButton.isSelected()) {
-                String secondaryChartType = secondaryChartTypeComboBox.getValue();
-                Chart secondaryChartImpl = chartRegistry.get(secondaryChartType);
-                if (secondaryChartImpl != null) {
-                    VBox secondaryChartNode = secondaryChartImpl.createChart(
-                        timeFilteredMetrics, start, end, currentGranularity);
-                    secondaryChartContainer.getChildren().clear();
-                    secondaryChartContainer.getChildren().add(secondaryChartNode);
-                    secondaryChart = (LineChart) secondaryChartNode.getChildren().get(0);
+        new Thread(() -> {
+            try {
+                // Update status if processing a lot of data
+                if (statusLabel != null && currentGranularity.equals("Hourly") &&
+                        ChronoUnit.DAYS.between(startDate, endDate) > 14) {
+                    statusLabel.setText("Processing large amount of hourly data...");
                 }
-            }
 
-            // Update filter status message
-            updateFilterStatus();
-        } catch (Exception e) {
-            // Show error to user
-            showAlert("Error creating chart: " + e.getMessage());
-            e.printStackTrace();
-        }
+                // Compute metrics for the time frame with granularity
+                timeFilteredMetrics.computeForTimeFrame(start, end, currentGranularity);
+
+                // Create and display primary chart
+                String primaryChartType = primaryChartTypeComboBox.getValue();
+                Chart primaryChartImpl = chartRegistry.get(primaryChartType);
+                if (primaryChartImpl != null) {
+                    VBox primaryChartNode = primaryChartImpl.createChart(
+                            timeFilteredMetrics, start, end, currentGranularity);
+                    Platform.runLater(() -> {
+                        primaryChartContainer.getChildren().clear();
+                        primaryChartContainer.getChildren().add(primaryChartNode);
+                        primaryChart = (LineChart) primaryChartNode.getChildren().get(0);
+                    });
+                }
+
+                // Create and display secondary chart if comparison is enabled
+                if (compareToggleButton.isSelected()) {
+                    String secondaryChartType = secondaryChartTypeComboBox.getValue();
+                    Chart secondaryChartImpl = chartRegistry.get(secondaryChartType);
+                    if (secondaryChartImpl != null) {
+                        VBox secondaryChartNode = secondaryChartImpl.createChart(
+                                timeFilteredMetrics, start, end, currentGranularity);
+                        Platform.runLater(() -> {
+                            secondaryChartContainer.getChildren().clear();
+                            secondaryChartContainer.getChildren().add(secondaryChartNode);
+                            secondaryChart = (LineChart) secondaryChartNode.getChildren().get(0);
+                        });
+                    }
+                }
+
+                // Update filter status message
+                Platform.runLater(() -> {
+                    updateFilterStatus();
+                    toggleFilters(false);
+                });
+            } catch (Exception e) {
+                // Show error to user
+                showAlert("Error creating chart: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML
     private void handleBackToMetrics(ActionEvent event) {
-        try {
-            // Load the metrics scene
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
-            Parent root = loader.load();
+        UserSession.getInstance().setCurrentStyle(currentStyle);
+            new Thread(() -> {
+                try {
+                // Load the metrics scene
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
+                Parent root = loader.load();
 
-            // Get the controller and pass the campaign metrics
-            MetricSceneController controller = loader.getController();
-            controller.setMetrics(campaignMetrics);
+                // Get the controller and pass the campaign metrics
+                MetricSceneController controller = loader.getController();
+                controller.setMetrics(campaignMetrics);
 
-            // Switch to the metrics scene
-            Scene scene = new Scene(root);
-            // Use primaryChartContainer instead of chartContainer to get the scene
-            Stage stage = (Stage) primaryChartContainer.getScene().getWindow();
-            stage.setScene(scene);
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Error returning to metrics view: " + e.getMessage());
-        }
+                // Switch to the metrics scene
+                Scene scene = new Scene(root);
+                // Use primaryChartContainer instead of chartContainer to get the scene
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) primaryChartContainer.getScene().getWindow();
+                    scene.getStylesheets().add(currentStyle);
+                    stage.setScene(scene);
+                    stage.show();
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+                showAlert("Error returning to metrics view: " + e.getMessage());
+            }
+            }).start();
     }
 
     @FXML
@@ -494,124 +554,138 @@ public class ChartSceneController {
             File selectedFile = getChosenFile("png");
             WritableImage image = primaryChart.snapshot(new SnapshotParameters(), null);
 
-            try{
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
-            } catch (IOException e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            new Thread(() -> {
+                try{
+                    ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
+                } catch (IOException e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
+                }
+            }).start();
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PNG")){
             File selectedFile = getChosenFile("png");
             WritableImage image = secondaryChart.snapshot(new SnapshotParameters(), null);
-            try{
-                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
-            } catch (IOException e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            new Thread(() -> {
+                try{
+                    ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", selectedFile);
+                } catch (IOException e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
+                }
+            }).start();
         }
         else if (exportComboBox.getValue().equals("Chart 1 CSV")){
             File selectedFile = getChosenFile("csv");
-            try {
-                FileWriter fileWriter = new FileWriter(selectedFile);
-                CSVWriter writer = new CSVWriter(fileWriter);
-                writer.writeNext(new String[]{"X","Y"});
-                XYChart.Series<String, Number> series;
-                for (int i = 0; i < primaryChart.getData().size(); i++) {
-                    series = (XYChart.Series<String, Number>) primaryChart.getData().get(i);
-                    for (XYChart.Data<String, Number> dataPoint : series.getData()) {
-                        String xValue = dataPoint.getXValue();
-                        Number yValue = dataPoint.getYValue();
-                        writer.writeNext(new String[]{xValue, yValue.toString()});
+            new Thread(() -> {
+                try {
+                    FileWriter fileWriter = new FileWriter(selectedFile);
+                    CSVWriter writer = new CSVWriter(fileWriter);
+                    writer.writeNext(new String[]{"X","Y"});
+                    XYChart.Series<String, Number> series;
+                    for (int i = 0; i < primaryChart.getData().size(); i++) {
+                        series = (XYChart.Series<String, Number>) primaryChart.getData().get(i);
+                        for (XYChart.Data<String, Number> dataPoint : series.getData()) {
+                            String xValue = dataPoint.getXValue();
+                            Number yValue = dataPoint.getYValue();
+                            writer.writeNext(new String[]{xValue, yValue.toString()});
+                        }
                     }
+                    writer.close();
+                } catch (Exception e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
                 }
-                writer.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            });
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 CSV")){
             File selectedFile = getChosenFile("csv");
-            try {
-                FileWriter fileWriter = new FileWriter(selectedFile);
-                CSVWriter writer = new CSVWriter(fileWriter);
-                writer.writeNext(new String[]{"X","Y"});
-                XYChart.Series<String, Number> series;
-                for (int i = 0; i < secondaryChart.getData().size(); i++) {
-                    series = (XYChart.Series<String, Number>) secondaryChart.getData().get(i);
-                    for (XYChart.Data<String, Number> dataPoint : series.getData()) {
-                        String xValue = dataPoint.getXValue();
-                        Number yValue = dataPoint.getYValue();
-                        writer.writeNext(new String[]{xValue, yValue.toString()});
+            new Thread(() -> {
+                try {
+                    FileWriter fileWriter = new FileWriter(selectedFile);
+                    CSVWriter writer = new CSVWriter(fileWriter);
+                    writer.writeNext(new String[]{"X","Y"});
+                    XYChart.Series<String, Number> series;
+                    for (int i = 0; i < secondaryChart.getData().size(); i++) {
+                        series = (XYChart.Series<String, Number>) secondaryChart.getData().get(i);
+                        for (XYChart.Data<String, Number> dataPoint : series.getData()) {
+                            String xValue = dataPoint.getXValue();
+                            Number yValue = dataPoint.getYValue();
+                            writer.writeNext(new String[]{xValue, yValue.toString()});
+                        }
                     }
+                    writer.close();
+                } catch (Exception e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
                 }
-                writer.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            }).start();
         }
         else if (exportComboBox.getValue().equals("Chart 1 PDF")){
             File selectedFile = getChosenFile("pdf");
-            try {
-                WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
-                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
-                Image graph = Image.getInstance(byteOutput.toByteArray());
-                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
-                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
-                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
-                document.open();
-                document.add(graph);
-                document.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
+            new Thread(() -> {
+                try {
+                    ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                    Image graph = Image.getInstance(byteOutput.toByteArray());
+                    graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                    Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                    PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                    document.open();
+                    document.add(graph);
+                    document.close();
+                } catch (Exception e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
+                }
+            }).start();
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Chart 2 PDF")){
             File selectedFile = getChosenFile("pdf");
-            try {
-                WritableImage writableImage = secondaryChart.snapshot(new SnapshotParameters(), null);
-                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
-                Image graph = Image.getInstance(byteOutput.toByteArray());
-                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
-                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
-                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
-                document.open();
-                document.add(graph);
-                document.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            WritableImage writableImage = secondaryChart.snapshot(new SnapshotParameters(), null);
+            new Thread(() -> {
+                try {
+                    ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                    Image graph = Image.getInstance(byteOutput.toByteArray());
+                    graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                    Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                    PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                    document.open();
+                    document.add(graph);
+                    document.close();
+                } catch (Exception e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
+                }
+            }).start();
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
             File selectedFile = getChosenFile("pdf");
-            try {
-                WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
-                ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
-                Image graph = Image.getInstance(byteOutput.toByteArray());
-                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
-                Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
-                PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
-                document.open();
-                document.add(graph);
-                writableImage = secondaryChart.snapshot(new SnapshotParameters(), null);
-                byteOutput.reset();
-                ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
-                graph = Image.getInstance(byteOutput.toByteArray());
-                graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
-                document.add(graph);
-                document.close();
-            } catch (Exception e){
-                printLabel.setText("Writing Error!");
-                System.err.println(e);
-            }
+            WritableImage writableImage = primaryChart.snapshot(new SnapshotParameters(), null);
+            WritableImage writableImage2 = secondaryChart.snapshot(new SnapshotParameters(), null);
+            new Thread(() -> {
+                try {
+                    ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", byteOutput);
+                    Image graph = Image.getInstance(byteOutput.toByteArray());
+                    graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                    Document document = new Document(PageSize.A4.rotate(), 0, 0, 0, 0);
+                    PdfWriter.getInstance(document, new FileOutputStream(selectedFile));
+                    document.open();
+                    document.add(graph);
+                    byteOutput.reset();
+                    ImageIO.write(SwingFXUtils.fromFXImage(writableImage2, null), "png", byteOutput);
+                    graph = Image.getInstance(byteOutput.toByteArray());
+                    graph.scaleToFit(PageSize.A4.getHeight(), PageSize.A4.getWidth());
+                    document.add(graph);
+                    document.close();
+                } catch (Exception e){
+                    printLabel.setText("Writing Error!");
+                    System.err.println(e);
+                }
+            }).start();
         } else if (secondaryChart == null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF") || exportComboBox.getValue().equals("Combined PDF"))){
             printLabel.setText("Secondary Chart doesn't Exist!");
         } else {
@@ -622,61 +696,82 @@ public class ChartSceneController {
     @FXML
     private void printData(ActionEvent actionEvent){
         if (exportComboBox.getValue().equals("Chart 1 PNG") || exportComboBox.getValue().equals("Chart 1 PDF")){
-            try {
-                java.awt.Image graph = getPrintableImage(primaryChart.snapshot(new SnapshotParameters(), null));
-                PrinterJob printJob = PrinterJob.getPrinterJob();
-                printJob.setPrintable(new Printable() {
-                    @Override
-                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                        if (pageIndex != 0){return NO_SUCH_PAGE;}
-                        graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
-                        return PAGE_EXISTS;}});
-                boolean doPrint = printJob.printDialog();
-                if (doPrint){try {printJob.print();
-                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
-                }
-            } catch (Exception e){
-                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+            java.awt.Image graph = getPrintableImage(primaryChart.snapshot(new SnapshotParameters(), null));
+            new Thread(() -> {
+
+                try {
+                    PrinterJob printJob = PrinterJob.getPrinterJob();
+                    printJob.setPrintable(new Printable() {
+                        @Override
+                        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                            if (pageIndex != 0){return NO_SUCH_PAGE;}
+                            graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
+                            return PAGE_EXISTS;}});
+                    boolean doPrint = printJob.printDialog();
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");togglePrint(true);});
+                    if (doPrint){try {printJob.print();
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    }else {
+                        Platform.runLater(() -> togglePrint(false));
+                    }
+                } catch (Exception e){
+                    Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
+            }).start();
         }
         else if (secondaryChart != null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF"))){
-            try {
-                java.awt.Image graph = getPrintableImage(secondaryChart.snapshot(new SnapshotParameters(), null));
-                PrinterJob printJob = PrinterJob.getPrinterJob();
-                printJob.setPrintable(new Printable() {
-                    @Override
-                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                        if (pageIndex != 0){return NO_SUCH_PAGE;}
-                        graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
-                        return PAGE_EXISTS;}});
-                boolean doPrint = printJob.printDialog();
-                if (doPrint){try {printJob.print();
-                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
-                }
-            } catch (Exception e){
-                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+            java.awt.Image graph = getPrintableImage(secondaryChart.snapshot(new SnapshotParameters(), null));
+            new Thread(() -> {
+                try {
+                    PrinterJob printJob = PrinterJob.getPrinterJob();
+                    printJob.setPrintable(new Printable() {
+                        @Override
+                        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                            if (pageIndex != 0){return NO_SUCH_PAGE;}
+                            graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
+                            return PAGE_EXISTS;}});
+                    boolean doPrint = printJob.printDialog();
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");togglePrint(true);});
+                    if (doPrint){try {printJob.print();
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    }else {
+                        Platform.runLater(() -> togglePrint(false));
+                    }
+                } catch (Exception e){
+                    Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
+            }).start();
         }
         else if (secondaryChart != null && exportComboBox.getValue().equals("Combined PDF")){
-            try {
-                java.awt.Image graph1 = getPrintableImage(primaryChart.snapshot(new SnapshotParameters(), null));
-                java.awt.Image graph2 = getPrintableImage(secondaryChart.snapshot(new SnapshotParameters(), null));
-                java.awt.Image[] graphs = {graph1, graph2};
-                PrinterJob printJob = PrinterJob.getPrinterJob();
-                printJob.setPrintable(new Printable() {
-                    @Override
-                    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                        if (pageIndex >= graphs.length){return NO_SUCH_PAGE;}
-                        graphics.drawImage(graphs[pageIndex], 0, 0, (int) graphs[pageIndex].getWidth(null), (int) ((int) graphs[pageIndex].getHeight(null) * 0.9), null);
-                        return PAGE_EXISTS;}});
-                boolean doPrint = printJob.printDialog();
-                if (doPrint){try {printJob.print();
-                } catch (PrinterException e1) {printLabel.setText("Print Error! Please Try Again");e1.printStackTrace();}
-                }
-            } catch (Exception e){
-                printLabel.setText("Print Error! Please Try Again");System.err.println(e);}
+            java.awt.Image graph1 = getPrintableImage(primaryChart.snapshot(new SnapshotParameters(), null));
+            java.awt.Image graph2 = getPrintableImage(secondaryChart.snapshot(new SnapshotParameters(), null));
+            new Thread(() -> {
+                try {
+                    java.awt.Image[] graphs = {graph1, graph2};
+                    PrinterJob printJob = PrinterJob.getPrinterJob();
+                    printJob.setPrintable(new Printable() {
+                        @Override
+                        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                            if (pageIndex >= graphs.length){return NO_SUCH_PAGE;}
+                            graphics.drawImage(graphs[pageIndex], 0, 0, (int) graphs[pageIndex].getWidth(null), (int) ((int) graphs[pageIndex].getHeight(null) * 0.9), null);
+                            return PAGE_EXISTS;}});
+                    boolean doPrint = printJob.printDialog();
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");
+                    togglePrint(true);});
+                    if (doPrint){try {printJob.print();
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");
+                        togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    }else {
+                        Platform.runLater(() -> togglePrint(false));
+                    }
+                } catch (Exception e){
+                    Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
+            }).start();
         } else if (secondaryChart == null && (exportComboBox.getValue().equals("Chart 2 PNG") || exportComboBox.getValue().equals("Chart 2 PDF"))){
-            printLabel.setText("Secondary Chart doesn't Exist!");
+            Platform.runLater(() -> printLabel.setText("Secondary Chart doesn't Exist!"));
         }else {
-            printLabel.setText("CSV cannot be printed!");
+            Platform.runLater(() -> printLabel.setText("CSV cannot be printed!"));
         }
     }
 
@@ -748,5 +843,42 @@ public class ChartSceneController {
         }
         if (selectedFile == null){printLabel.setText("No File Selected");}
         return selectedFile;
+    }
+
+    @FXML
+    private void toggleColour(ActionEvent event){
+        if (colourSwitch.isSelected()){
+            currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        } else {
+            currentStyle = this.getClass().getClassLoader().getResource("styles/style.css").toString();
+            colourSwitch.getScene().getStylesheets().clear();
+            colourSwitch.getScene().getStylesheets().add(currentStyle);
+        }
+    }
+
+    private void toggleControls(Boolean bool){
+        exportButton.setDisable(bool);
+        printButton.setDisable(bool);
+        backButton.setDisable(bool);
+        primaryChartTypeComboBox.setDisable(bool);
+        secondaryChartTypeComboBox.setDisable(bool);
+    }
+
+    public void toggleFilters(Boolean bool){
+        contextFilterComboBox.setDisable(bool);
+        genderFilterComboBox.setDisable(bool);
+        ageFilterComboBox.setDisable(bool);
+        incomeFilterComboBox.setDisable(bool);
+        startDatePicker.setDisable(bool);
+        endDatePicker.setDisable(bool);
+        resetFiltersButton.setDisable(bool);
+        timeGranularityComboBox.setDisable(bool);
+    }
+
+    public void togglePrint(Boolean bool){
+        printButton.setDisable(bool);
+        exportButton.setDisable(bool);
     }
 }

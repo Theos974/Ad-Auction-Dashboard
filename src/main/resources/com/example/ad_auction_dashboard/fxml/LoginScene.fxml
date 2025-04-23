@@ -5,24 +5,41 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.LoginSceneController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="692.0" prefWidth="930.0" styleClass="login-scene" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.LoginSceneController">
     <top>
-        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <children>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="SEG EFFICIENCY Dashboards" textAlignment="CENTER">
-                    <font>
-                        <Font name="System Bold" size="33.0" />
-                    </font>
-                </Text>
-            </children>
+        <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <GridPane alignment="CENTER" prefHeight="100.0" prefWidth="974.0">
+              <columnConstraints>
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="login-title" text="SEG EFFICIENCY Dashboards" textAlignment="CENTER" GridPane.columnIndex="1">
+                          <font>
+                              <Font name="System Bold" size="33.0" />
+                          </font>
+                      </Text>
+                  <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
+               </children>
+            </GridPane>
+         </children>
         </HBox>
     </top>
     <center>
@@ -33,29 +50,29 @@
                   <Image url="@../../../../images/small logo.png" />
                </image>
             </ImageView>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Login to Your Account">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="login-prompt" text="Login to Your Account">
                     <font>
                         <Font size="24.0" />
                     </font>
                 </Text>
                 <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="8.0">
                     <children>
-                        <Label text="Username">
+                        <Label styleClass="login-text" text="Username">
                             <font>
                                 <Font size="14.0" />
                             </font>
                         </Label>
-                        <TextField fx:id="usernameField" maxWidth="300.0" promptText="Enter your username">
+                        <TextField fx:id="usernameField" maxWidth="300.0" promptText="Enter your username" styleClass="login-text-input">
                             <VBox.margin>
                                 <Insets bottom="10.0" />
                             </VBox.margin>
                         </TextField>
-                        <Label text="Password">
+                        <Label styleClass="login-text" text="Password">
                             <font>
                                 <Font size="14.0" />
                             </font>
                         </Label>
-                        <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Enter your password">
+                        <PasswordField fx:id="passwordField" maxWidth="300.0" promptText="Enter your password" styleClass="login-text-input">
                             <VBox.margin>
                                 <Insets bottom="10.0" />
                             </VBox.margin>
@@ -70,7 +87,7 @@
                         </Button>
                         <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="5.0">
                             <children>
-                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Don't have an account?" />
+                                <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="login-text" text="Don't have an account?" />
                                 <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;" text="Register" />
                             </children>
                             <VBox.margin>

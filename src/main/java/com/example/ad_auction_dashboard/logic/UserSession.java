@@ -1,5 +1,7 @@
 package com.example.ad_auction_dashboard.logic;
 
+import com.example.ad_auction_dashboard.controller.ChartSceneController;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +10,9 @@ public class UserSession {
     private UserDatabase.User currentUser;
     private String previousScene;
     private CampaignMetrics currentCampaignMetrics;
+    private String currentStyle;
+
+    private ChartSceneController controller;
     private Map<String, String> filterSettings = new HashMap<>();
 
     private UserSession() {}
@@ -80,6 +85,13 @@ public class UserSession {
 
     public void clearFilterSettings() {
         filterSettings.clear();
+    }
+
+    public void setCurrentStyle(String style){
+        this.currentStyle = style;
+    }
+    public String getCurrentStyle() {
+        return this.currentStyle;
     }
 
     // Modify the logout method to clear filters as well
