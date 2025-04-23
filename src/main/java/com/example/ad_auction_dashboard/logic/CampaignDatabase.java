@@ -1,5 +1,8 @@
 package com.example.ad_auction_dashboard.logic;
 
+import com.example.ad_auction_dashboard.controller.StartSceneController;
+import javafx.application.Platform;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -198,10 +201,48 @@ public class CampaignDatabase {
         }
     }
 
+    public static Campaign loadCampaign(int campaignId){
+        initDatabaseFolder();
+
+        try (Connection conn = getConnection()) {
+            // Create tables if they don't exist
+            createTablesIfNotExist(conn);
+
+            // Load campaign properties
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT bounce_pages_threshold, bounce_seconds_threshold FROM Campaigns WHERE campaign_id = ?"
+            );
+            stmt.setInt(1, campaignId);
+
+            ResultSet rs = stmt.executeQuery();
+            if (!rs.next()) {
+                System.err.println("Campaign not found with ID: " + campaignId);
+                return null;
+            }
+
+            int bouncePagesThreshold = rs.getInt("bounce_pages_threshold");
+            int bounceSecondsThreshold = rs.getInt("bounce_seconds_threshold");
+
+            // Load logs
+            ImpressionLog[] impressionLogs = loadImpressionLogs(conn, campaignId);
+            ClickLog[] clickLogs = loadClickLogs(conn, campaignId);
+            ServerLog[] serverLogs = loadServerLogs(conn, campaignId);
+
+            // Create and return Campaign object
+            Campaign campaign = new Campaign(impressionLogs, clickLogs, serverLogs);
+            System.out.println("Campaign loaded successfully with ID: " + campaignId);
+            //Platform.runLater(() -> startSceneController.createCampaignFromData(campaign));
+            return campaign;
+        } catch (Exception e) {
+            System.err.println("Error loading campaign: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    };
     /**
      * Load a campaign from the database with optimized parallel loading
      */
-    public static Campaign loadCampaign(int campaignId) {
+    public static Campaign loadCampaign(int campaignId, StartSceneController startSceneController) {
         initDatabaseFolder();
 
         try (Connection conn = getConnection()) {
@@ -224,13 +265,17 @@ public class CampaignDatabase {
             int bounceSecondsThreshold = rs.getInt("bounce_seconds_threshold");
 
             // Load logs
+            Platform.runLater(() -> startSceneController.updatePopup("impression"));
             ImpressionLog[] impressionLogs = loadImpressionLogs(conn, campaignId);
+            Platform.runLater(() -> startSceneController.updatePopup("click"));
             ClickLog[] clickLogs = loadClickLogs(conn, campaignId);
+            Platform.runLater(() -> startSceneController.updatePopup("server"));
             ServerLog[] serverLogs = loadServerLogs(conn, campaignId);
 
             // Create and return Campaign object
             Campaign campaign = new Campaign(impressionLogs, clickLogs, serverLogs);
             System.out.println("Campaign loaded successfully with ID: " + campaignId);
+            Platform.runLater(() -> startSceneController.createCampaignFromData(campaign));
             return campaign;
         } catch (Exception e) {
             System.err.println("Error loading campaign: " + e.getMessage());

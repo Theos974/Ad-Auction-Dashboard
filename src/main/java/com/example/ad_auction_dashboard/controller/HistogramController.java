@@ -466,27 +466,26 @@ public class HistogramController {
                     }
 
                     // Update the chart
-                    Platform.runLater(() -> histogramChart.getData().clear());
-                    XYChart.Series<String, Number> series = new XYChart.Series<>();
-                    series.setName("Frequency");
-
-                    // Check if there's actual data
-                    if (histogramData.isEmpty() ||
-                            (histogramData.size() == 1 &&
-                                    (histogramData.containsKey("No data available") ||
-                                            histogramData.containsKey("No data in selected range") ||
-                                            histogramData.containsKey(
-                                                    "No data in selected range or with selected filters")))) {
-                        // Add placeholder for no data
-                        series.getData().add(new XYChart.Data<>("No data available", 0));
-                    } else {
-                        // Add real histogram data
-                        for (Map.Entry<String, Integer> entry : histogramData.entrySet()) {
-                            series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
-                        }
-                    }
-
                     Platform.runLater(() -> {
+                        histogramChart.getData().clear();
+                        XYChart.Series<String, Number> series = new XYChart.Series<>();
+                        series.setName("Frequency");
+
+                        // Check if there's actual data
+                        if (histogramData.isEmpty() ||
+                                (histogramData.size() == 1 &&
+                                        (histogramData.containsKey("No data available") ||
+                                                histogramData.containsKey("No data in selected range") ||
+                                                histogramData.containsKey(
+                                                        "No data in selected range or with selected filters")))) {
+                            // Add placeholder for no data
+                            series.getData().add(new XYChart.Data<>("No data available", 0));
+                        } else {
+                            // Add real histogram data
+                            for (Map.Entry<String, Integer> entry : histogramData.entrySet()) {
+                                series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+                            }
+                        }
                         histogramChart.getData().add(series);
                         // Apply styling to the bars to make them green
                         for (XYChart.Data<String, Number> data : series.getData()) {
@@ -677,8 +676,12 @@ public class HistogramController {
                             graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
                             return PAGE_EXISTS;}});
                     boolean doPrint = printJob.printDialog();
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");togglePrint(true);});
                     if (doPrint){try {printJob.print();
-                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();}
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    } else {
+                        Platform.runLater(() -> togglePrint(false));
                     }
                 } catch (Exception e){
                     Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
@@ -787,5 +790,9 @@ public class HistogramController {
         startDatePicker.setDisable(bool);
         endDatePicker.setDisable(bool);
         resetFiltersButton.setDisable(bool);
+    }
+    public void togglePrint(Boolean bool){
+        printButton.setDisable(bool);
+        exportButton.setDisable(bool);
     }
 }

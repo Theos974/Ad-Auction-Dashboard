@@ -24,11 +24,14 @@ public class LogoutHandler {
 
             // Get the current stage from the event source
             Button sourceButton = (Button) event.getSource();
-            Stage currentStage = (Stage) sourceButton.getScene().getWindow();
+            Platform.runLater(() -> {
+                Stage currentStage = (Stage) sourceButton.getScene().getWindow();
 
-            // Create a new login scene and show it
-            new LoginScene(currentStage, 930, 692, UserSession.getInstance().getCurrentStyle());
-            Platform.runLater(currentStage::show);
+                // Create a new login scene and show it
+                new LoginScene(currentStage, 930, 692, UserSession.getInstance().getCurrentStyle());
+
+                currentStage.show();
+            });
         }).start();
     }
 }

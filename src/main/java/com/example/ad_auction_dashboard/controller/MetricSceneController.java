@@ -549,9 +549,11 @@ public class MetricSceneController {
             try {
                 UserSession.getInstance().setCurrentCampaignMetrics(metrics);
                 UserSession.getInstance().setPreviousScene("MetricScene");
-                Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
-                new AdminPanelScene(stage, 930, 692, this.currentStyle);
-                Platform.runLater(stage::show);
+                Platform.runLater(() -> {
+                    Stage stage = (Stage) adminPanelBtn.getScene().getWindow();
+                    new AdminPanelScene(stage, 930, 692, this.currentStyle);
+                    stage.show();
+                });
             } catch (Exception e) {
                 e.printStackTrace();
                 showAlert("Error accessing Admin panel");

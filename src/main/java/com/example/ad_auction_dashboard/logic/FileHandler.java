@@ -1,6 +1,7 @@
 package com.example.ad_auction_dashboard.logic;
 
 import com.example.ad_auction_dashboard.controller.StartSceneController;
+import javafx.application.Platform;
 
 import java.io.*;
 import java.nio.Buffer;
@@ -15,6 +16,8 @@ import java.util.zip.ZipFile;
 public class FileHandler {
 
     private com.example.ad_auction_dashboard.controller.StartSceneController startScene;
+    private int count = -1;
+    private String logType = "Impression";
 
     public static void main(String[] args) {
         FileHandler fileHandler = new FileHandler();
@@ -24,14 +27,24 @@ public class FileHandler {
 
    //process each file line by line rather than entire
     public Campaign openZip(String filePath) {
+        count = 0;
         List<ImpressionLog> impressionLogs = new ArrayList<>();
         List<ClickLog> clickLogs = new ArrayList<>();
         List<ServerLog> serverLogs = new ArrayList<>();
-        int count = 0;
 
         try (ZipFile zipFile = new ZipFile(filePath)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
+            new Thread(() -> {
+                while(count != -1){
+                    try {
+                        startScene.updatePopup(logType, count);
+                        Thread.sleep(100);
+                    } catch (Exception e){
+                        System.err.println(e);
+                    }
+                }
+            }).start();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
 
@@ -44,10 +57,12 @@ public class FileHandler {
                     String line;
                     switch (header) {
                         case "Date,ID,Gender,Age,Income,Context,Impression Cost":
+                            logType = "Impression";
                             // Process impression logs line by line
                             while ((line = reader.readLine()) != null) {
                                 String[] parts = line.split(",");
                                 if (parts.length == 7) {
+                                    count++;
                                     impressionLogs.add(new ImpressionLog(
                                         parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6]));
                                 }
@@ -55,10 +70,13 @@ public class FileHandler {
                             break;
 
                         case "Entry Date,ID,Exit Date,Pages Viewed,Conversion":
+                            logType = "Server";
+                            count = 0;
                             // Process server logs line by line
                             while ((line = reader.readLine()) != null) {
                                 String[] parts = line.split(",");
                                 if (parts.length == 5) {
+                                    count++;
                                     serverLogs.add(new ServerLog(
                                         parts[0], parts[1], parts[2], parts[3], parts[4]));
                                 }
@@ -66,10 +84,13 @@ public class FileHandler {
                             break;
 
                         case "Date,ID,Click Cost":
+                            count = 0;
+                            logType = "Cost";
                             // Process click logs line by line
                             while ((line = reader.readLine()) != null) {
                                 String[] parts = line.split(",");
                                 if (parts.length == 3) {
+                                    count++;
                                     clickLogs.add(new ClickLog(
                                         parts[0], parts[1], parts[2]));
                                 }
@@ -78,6 +99,8 @@ public class FileHandler {
                     }
                 }
             }
+            count = -1;
+            logType = "Impression";
         } catch (Exception e) {
             System.err.println("Error processing zip file: " + e.getMessage());
             e.printStackTrace();

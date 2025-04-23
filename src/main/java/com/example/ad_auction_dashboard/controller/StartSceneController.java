@@ -10,6 +10,9 @@ import com.example.ad_auction_dashboard.logic.UserSession;
 import com.example.ad_auction_dashboard.viewer.AdminPanelScene;
 import java.io.IOException;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -98,10 +101,11 @@ public class StartSceneController {
 
         currentStyle = session.getCurrentStyle();
         System.out.println("STYLE: " + currentStyle);
-        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())){
+        if (Objects.equals(currentStyle, this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString())) {
             colourSwitch.setSelected(true);
         }
     }
+
     // Event handler for loading a ZIP file and creating the campaign
     @FXML
     private void handleLoadZip(ActionEvent event) {
@@ -132,10 +136,11 @@ public class StartSceneController {
         }
     }
 
-    public void updatePopup(String update){
-        if (loadingPopup != null && loadingPopup.isShowing()){
-            loadingLabel.setText("Loading: " + update);
-        }
+    public void updatePopup(String logType, int count) {
+        statusText.setText("Loading " + logType + " Log Number: " + count);
+    }
+    public void updatePopup(String logType){
+        statusText.setText("Loading all " + logType + " logs from the database!");
     }
 
     // Event handler for switching to the campaign screen
@@ -150,7 +155,7 @@ public class StartSceneController {
         CampaignMetrics metrics = new CampaignMetrics(campaign);
         UserSession.getInstance().setCurrentStyle(currentStyle);
         statusText.getScene().setCursor(Cursor.WAIT);
-        new Thread (() -> {
+        new Thread(() -> {
             try {
                 UserSession.getInstance().setPreviousScene("StartScene");
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/ad_auction_dashboard/fxml/MetricScene2.fxml"));
@@ -179,21 +184,10 @@ public class StartSceneController {
 
         // This must run on the JavaFX Application Thread since it shows a dialog
         toggleControls(true);
-        Campaign loadedCampaign = LoadCampaignDialog.showDialog(stage);
-
-        if (loadedCampaign != null) {
-            // Now we have a campaign, update status
-            statusText.setText("Campaign loaded successfully. Switching to metrics view...");
-
-            // Process the loaded campaign
-            createCampaignFromData(loadedCampaign);
-        } else {
-            toggleControls(false);
-            statusText.setText("No campaign was loaded.");
-        }
+        LoadCampaignDialog.showDialog(stage, this);
     }
 
-    private void createCampaignFromData(Campaign campaign) {
+    public void createCampaignFromData(Campaign campaign) {
         statusText.setText("Campaign loaded. Switching to metrics view...");
         CampaignMetrics metrics = new CampaignMetrics(campaign);
         UserSession.getInstance().setCurrentStyle(currentStyle);
@@ -234,8 +228,8 @@ public class StartSceneController {
     }
 
     @FXML
-    private void toggleColour(ActionEvent event){
-        if (colourSwitch.isSelected()){
+    private void toggleColour(ActionEvent event) {
+        if (colourSwitch.isSelected()) {
             currentStyle = this.getClass().getClassLoader().getResource("styles/lightStyle.css").toString();
             colourSwitch.getScene().getStylesheets().clear();
             colourSwitch.getScene().getStylesheets().add(currentStyle);
@@ -253,7 +247,7 @@ public class StartSceneController {
         LogoutHandler.handleLogout(event);
     }
 
-    public void toggleControls(Boolean bool){
+    public void toggleControls(Boolean bool) {
         logoutBtn.setDisable(bool);
         adminPanelBtn.setDisable(bool);
         loadZipBtn.setDisable(bool);

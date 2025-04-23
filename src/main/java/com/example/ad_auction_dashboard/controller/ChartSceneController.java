@@ -708,10 +708,12 @@ public class ChartSceneController {
                             graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
                             return PAGE_EXISTS;}});
                     boolean doPrint = printJob.printDialog();
-                    Platform.runLater(() -> printLabel.setText("Trying to create Print Job"));
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");togglePrint(true);});
                     if (doPrint){try {printJob.print();
-                        Platform.runLater(() -> printLabel.setText("Successfully Printed"));
-                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();}
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    }else {
+                        Platform.runLater(() -> togglePrint(false));
                     }
                 } catch (Exception e){
                     Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
@@ -729,10 +731,12 @@ public class ChartSceneController {
                             graphics.drawImage(graph, 0, 0, (int) graph.getWidth(null), (int) ((int) graph.getHeight(null) * 0.8), null);
                             return PAGE_EXISTS;}});
                     boolean doPrint = printJob.printDialog();
-                    Platform.runLater(() -> printLabel.setText("Trying to create Print Job"));
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");togglePrint(true);});
                     if (doPrint){try {printJob.print();
-                        Platform.runLater(() -> printLabel.setText("Successfully Printed"));
-                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();}
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    }else {
+                        Platform.runLater(() -> togglePrint(false));
                     }
                 } catch (Exception e){
                     Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
@@ -752,10 +756,14 @@ public class ChartSceneController {
                             graphics.drawImage(graphs[pageIndex], 0, 0, (int) graphs[pageIndex].getWidth(null), (int) ((int) graphs[pageIndex].getHeight(null) * 0.9), null);
                             return PAGE_EXISTS;}});
                     boolean doPrint = printJob.printDialog();
-                    Platform.runLater(() -> printLabel.setText("Trying to create Print Job"));
+                    Platform.runLater(() -> {printLabel.setText("Trying to create Print Job");
+                    togglePrint(true);});
                     if (doPrint){try {printJob.print();
-                        Platform.runLater(() -> printLabel.setText("Successfully Printed"));
-                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();}
+                        Platform.runLater(() -> {printLabel.setText("Successfully Printed");
+                        togglePrint(false);});
+                    } catch (PrinterException e1) {Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));e1.printStackTrace();togglePrint(false);}
+                    }else {
+                        Platform.runLater(() -> togglePrint(false));
                     }
                 } catch (Exception e){
                     Platform.runLater(() -> printLabel.setText("Print Error! Please Try Again"));System.err.println(e);}
@@ -867,5 +875,10 @@ public class ChartSceneController {
         endDatePicker.setDisable(bool);
         resetFiltersButton.setDisable(bool);
         timeGranularityComboBox.setDisable(bool);
+    }
+
+    public void togglePrint(Boolean bool){
+        printButton.setDisable(bool);
+        exportButton.setDisable(bool);
     }
 }

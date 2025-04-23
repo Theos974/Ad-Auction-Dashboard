@@ -2,6 +2,7 @@ package com.example.ad_auction_dashboard.logic;
 
 import java.util.concurrent.ExecutionException;
 
+import com.example.ad_auction_dashboard.controller.StartSceneController;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -29,7 +30,7 @@ public class LoadCampaignDialog {
      * @param owner The owner window
      * @return The loaded campaign, or null if canceled or an error occurred
      */
-    public static Campaign showDialog(Stage owner) {
+    public static void showDialog(Stage owner, StartSceneController startSceneController) {
         // Create dialog
         Dialog<CampaignDatabase.CampaignInfo> dialog = new Dialog<>();
         dialog.setTitle("Load Campaign");
@@ -197,6 +198,7 @@ public class LoadCampaignDialog {
                     showInfoDialog("Permission Denied",
                         "You don't have permission to delete this campaign. Only admins or the campaign creator can delete campaigns.");
                     event.consume();
+                    Platform.runLater(() -> startSceneController.toggleControls(false));
                     return;
                 }
 
@@ -267,30 +269,16 @@ public class LoadCampaignDialog {
                 if (isAdmin ||
                     selectedCampaign.getUserId() == userId ||
                     CampaignDatabase.canUserAccessCampaign(userId, selectedCampaign.getCampaignId())) {
-
-                    Task<Campaign> loadTask = new Task<Campaign>() {
-                        @Override
-                        protected Campaign call() throws Exception {
-                            updateMessage("Checking campaign...");
-
-                            //aware of problems with dialogs
-                            // Load campaign in background
-                            Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
-
-                            updateMessage("Campaign loaded successfully!");
-                            return campaign;
-                        }
-                    };
-                    new Thread(loadTask).start();
-                    try{
-                        return loadTask.get();
-                    } catch (Exception e){
-                        showErrorDialog("Failed to load campaign data. Please try again.");
-                    }
+                    new Thread(() -> {
+                        Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId(), startSceneController);
+                    }).start();
+                    return;
                 } else {
+                    Platform.runLater(() -> startSceneController.toggleControls(false));
                     showErrorDialog("You don't have permission to access this campaign.");
                 }
             } catch (Exception e) {
+                Platform.runLater(() -> startSceneController.toggleControls(false));
                 showErrorDialog("Error loading campaign: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -366,7 +354,8 @@ public class LoadCampaignDialog {
 //            }
 //        }
 //
-        return null;
+        Platform.runLater(() -> startSceneController.toggleControls(false));
+        return;
     }
 
     private static boolean showConfirmationDialog(String title, String header, String content) {
