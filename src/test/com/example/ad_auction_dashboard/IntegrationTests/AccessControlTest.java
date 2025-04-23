@@ -1,4 +1,4 @@
-package com.example.ad_auction_dashboard;
+package com.example.ad_auction_dashboard.IntegrationTests;
 
 import com.example.ad_auction_dashboard.logic.*;
 import org.junit.jupiter.api.AfterEach;
@@ -197,15 +197,8 @@ public class AccessControlTest {
             "5" + System.currentTimeMillis() % 10000000000L, "password", "viewer");
         UserDatabase.User newViewer = UserDatabase.getUser(newViewerUsername);
 
-        // Viewer should not be able to assign campaign to another user
-        // This would normally be enforced in the controller layer, not at the database level
-        // So we're testing the expected behavior if the controller was enforcing this
 
-        // For demonstration purposes, we can't test this directly because the CampaignDatabase
-        // doesn't have role-based access control built in at the API level.
-        // In a real app, this would be enforced by the controller or service layer.
-
-        // Instead, we'll verify that the viewer permission level doesn't include admin capabilities
+        // we'll verify that the viewer permission level doesn't include admin capabilities
         assertFalse(viewerUser.isAdmin(), "Viewer should not have admin permissions");
         assertFalse(viewerUser.isEditor(), "Viewer should not have editor permissions");
         assertTrue(viewerUser.isViewer(), "Viewer should have viewer permissions");

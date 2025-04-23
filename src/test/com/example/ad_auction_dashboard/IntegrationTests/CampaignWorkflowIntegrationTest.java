@@ -1,25 +1,19 @@
-package com.example.ad_auction_dashboard;
+package com.example.ad_auction_dashboard.IntegrationTests;
 
+import static org.junit.jupiter.api.Assertions.*;
 import com.example.ad_auction_dashboard.logic.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
 import java.io.FileOutputStream;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.io.File;
+import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-/**
- * Integration tests for the Ad Auction Dashboard
- * Tests interactions between different components of the system
- */
-public class IntegrationTest {
+public class CampaignWorkflowIntegrationTest {
 
     // Test files
     private File testZipFile;
@@ -69,6 +63,7 @@ public class IntegrationTest {
         if (editorUser != null) UserDatabase.deleteUser(editorUser.getId());
         if (viewerUser != null) UserDatabase.deleteUser(viewerUser.getId());
     }
+
 
     /**
      * Creates a test ZIP file with campaign data
@@ -214,6 +209,7 @@ public class IntegrationTest {
         // 4. Grant access to viewer
         boolean granted = CampaignDatabase.assignCampaignToUser(savedCampaignId, viewerUser.getId(), editorUser.getId());
         assertTrue(granted, "Access should be granted successfully");
+        CampaignDatabase.clearCaches(); // Implement this method
 
         // 5. Verify access after assignment
         viewerAccess = CampaignDatabase.canUserAccessCampaign(viewerUser.getId(), savedCampaignId);

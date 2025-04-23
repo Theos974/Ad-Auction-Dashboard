@@ -1,4 +1,4 @@
-package com.example.ad_auction_dashboard;
+package com.example.ad_auction_dashboard.IntegrationTests;
 
 import com.example.ad_auction_dashboard.logic.*;
 import org.junit.jupiter.api.BeforeEach;

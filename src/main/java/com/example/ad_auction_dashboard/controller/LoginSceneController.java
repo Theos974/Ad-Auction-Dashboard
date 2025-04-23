@@ -69,8 +69,7 @@ public class LoginSceneController {
     private void handleLogin(ActionEvent event) {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
-
-        // Basic validation
+       // Basic validation
         if (username.isEmpty() || password.isEmpty()) {
             statusText.setText("Please enter both username and password");
             return;

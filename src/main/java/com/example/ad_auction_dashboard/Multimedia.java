@@ -73,6 +73,31 @@ public class Multimedia {
         return new Image(Multimedia.class.getResource("/images/" + file).toExternalForm());
     }
 
+    /**
+     * Toggles the audio on/off state
+     * @return The new audio state (true = enabled, false = disabled)
+     */
+    public static boolean toggleAudio() {
+        audioEnabled = !audioEnabled;
+
+        if (!audioEnabled) {
+            // If disabling audio, stop any currently playing music
+            stopMusic();
+        } else {
+            // If enabling audio, start default music again
+            playMusic("menu.mp3");
+        }
+
+        return audioEnabled;
+    }
+
+    /**
+     * Check if audio is currently enabled
+     * @return true if audio is enabled, false otherwise
+     */
+    public static boolean isAudioEnabled() {
+        return audioEnabled;
+    }
 
 
 }

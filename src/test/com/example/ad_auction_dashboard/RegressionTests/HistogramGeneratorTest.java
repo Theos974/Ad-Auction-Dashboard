@@ -1,4 +1,4 @@
-package com.example.ad_auction_dashboard;
+package com.example.ad_auction_dashboard.RegressionTests;
 
 import com.example.ad_auction_dashboard.charts.ClickCostHistogramGenerator;
 import com.example.ad_auction_dashboard.charts.HistogramGenerator;

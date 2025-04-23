@@ -687,11 +687,11 @@ public class CampaignDatabase {
                 }
             }
 
-            // Simplified query with only necessary columns and no DISTINCT for better performance
+            // Modified query to use DISTINCT to avoid duplicates
             try (PreparedStatement stmt = conn.prepareStatement(
                 isAdmin ?
                     "SELECT campaign_id, campaign_name FROM Campaigns" :
-                    "SELECT c.campaign_id, c.campaign_name FROM Campaigns c " +
+                    "SELECT DISTINCT c.campaign_id, c.campaign_name FROM Campaigns c " +
                         "LEFT JOIN CampaignAssignments a ON c.campaign_id = a.campaign_id " +
                         "WHERE c.user_id = ? OR a.user_id = ?")) {
 

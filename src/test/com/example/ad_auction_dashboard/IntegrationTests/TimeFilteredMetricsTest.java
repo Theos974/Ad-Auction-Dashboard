@@ -1,4 +1,4 @@
-package com.example.ad_auction_dashboard;
+package com.example.ad_auction_dashboard.IntegrationTests;
 
 import com.example.ad_auction_dashboard.logic.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -392,5 +392,4 @@ public class TimeFilteredMetricsTest {
         assertEquals(0, timeFilteredMetrics.getNumberOfConversions(), "Should have 0 conversions in hour 11");
     }
 
-    // End the granularity method correctly
 }

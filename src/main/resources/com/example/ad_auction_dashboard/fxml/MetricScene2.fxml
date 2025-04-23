@@ -31,7 +31,7 @@
                      <graphic>
                         <ImageView fitHeight="22.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true" styleClass="home">
                            <image>
-                              <Image url="@../../../../images/home%20button%20white.png" />
+                              <Image url="@../../../../images/home button white.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -40,7 +40,7 @@
                      <graphic>
                         <ImageView fitHeight="22.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true" styleClass="save">
                            <image>
-                              <Image url="@../../../../images/save%20button%20white.png" />
+                              <Image url="@../../../../images/save button white.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -49,7 +49,7 @@
                      <graphic>
                         <ImageView fitHeight="29.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="admin">
                            <image>
-                              <Image url="@../../../../images/admin%20image%20white.png" />
+                              <Image url="@../../../../images/admin image white.png" />
                            </image>
                         </ImageView>
                      </graphic>

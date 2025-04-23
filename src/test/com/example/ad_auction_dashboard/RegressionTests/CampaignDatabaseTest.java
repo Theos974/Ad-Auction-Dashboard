@@ -1,4 +1,4 @@
-package com.example.ad_auction_dashboard;
+package com.example.ad_auction_dashboard.RegressionTests;
 
 import com.example.ad_auction_dashboard.logic.*;
 import org.junit.jupiter.api.AfterEach;
@@ -177,24 +177,26 @@ public class CampaignDatabaseTest {
         boolean assigned = CampaignDatabase.assignCampaignToUser(savedCampaignId, assignee.getId(), testUserId);
         assertTrue(assigned, "Campaign should be assigned successfully");
 
-        // Verify assignment
-        boolean hasAccess = CampaignDatabase.hasUserAccess(assignee.getId(), savedCampaignId);
+        // Verify assignment using canUserAccessCampaign
+        boolean hasAccess = CampaignDatabase.canUserAccessCampaign(assignee.getId(), savedCampaignId);
         assertTrue(hasAccess, "User should have access to the campaign after assignment");
 
         // Get users with access
         List<Integer> usersWithAccess = CampaignDatabase.getUsersWithAccess(savedCampaignId);
         assertTrue(usersWithAccess.contains(assignee.getId()), "User ID should be in the list of users with access");
 
-        // Get campaigns for user
-        List<Integer> userCampaigns = CampaignDatabase.getCampaignsForUser(assignee.getId());
-        assertTrue(userCampaigns.contains(savedCampaignId), "Campaign ID should be in the list of user's campaigns");
+        // Get campaigns for user - checking accessible campaigns properly
+        List<CampaignDatabase.CampaignInfo> accessibleCampaigns = CampaignDatabase.getAccessibleCampaigns(assignee.getId());
+        boolean campaignFound = accessibleCampaigns.stream()
+            .anyMatch(info -> info.getCampaignId() == savedCampaignId);
+        assertTrue(campaignFound, "Campaign should be in the list of user's accessible campaigns");
 
         // Remove assignment
         boolean removed = CampaignDatabase.removeCampaignFromUser(savedCampaignId, assignee.getId());
         assertTrue(removed, "Campaign assignment should be removed successfully");
 
         // Verify removal
-        hasAccess = CampaignDatabase.hasUserAccess(assignee.getId(), savedCampaignId);
+        hasAccess = CampaignDatabase.canUserAccessCampaign(assignee.getId(), savedCampaignId);
         assertFalse(hasAccess, "User should not have access to the campaign after removal");
 
         // Clean up test user
