@@ -31,7 +31,7 @@
             </Label>
 
                 <VBox alignment="CENTER" spacing="10" styleClass="logo-container">
-                    <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+                    <ImageView fx:id="logoImage" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
                         <image>
                             <Image url="@../../../../images/small logo.png" />
                         </image>

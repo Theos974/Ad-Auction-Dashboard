@@ -275,7 +275,8 @@ public class CampaignDatabase {
             // Create and return Campaign object
             Campaign campaign = new Campaign(impressionLogs, clickLogs, serverLogs);
             System.out.println("Campaign loaded successfully with ID: " + campaignId);
-            Platform.runLater(() -> startSceneController.createCampaignFromData(campaign));
+            Platform.runLater(() -> {startSceneController.stopLoadAnimation();
+                startSceneController.createCampaignFromData(campaign);});
             return campaign;
         } catch (Exception e) {
             System.err.println("Error loading campaign: " + e.getMessage());

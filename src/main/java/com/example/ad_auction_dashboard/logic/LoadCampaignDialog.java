@@ -210,10 +210,13 @@ public class LoadCampaignDialog {
                 );
 
                 if (confirmed) {
+                    startSceneController.playDeleteAnimation();
                     new Thread(() -> {
 
                         boolean deleted = (CampaignDatabase.deleteCampaign(selectedCampaign.getCampaignId()));
                         Platform.runLater(() -> {
+                            startSceneController.stopDeleteAnimation();
+                            startSceneController.toggleControls(false);
                             if (deleted) {
                                 // Refresh the list - check if filter is active
                                 if (isAdmin && finalFilterComboBox != null &&
@@ -231,11 +234,14 @@ public class LoadCampaignDialog {
 
                                 showInfoDialog("Campaign Deleted",
                                         "Campaign \"" + selectedCampaign.getCampaignName() + "\" was deleted successfully.");
+                                startSceneController.statusText.setText("Campaign Deleted");
                             } else {
                                 showErrorDialog("Failed to delete campaign. Please try again.");
+                                startSceneController.statusText.setText("Campaign Deletion Error!");
                             }
                         });
                     }).start();
+                    return;
                 }
             } else {
                 showErrorDialog("Please select a campaign to delete.");
@@ -269,6 +275,7 @@ public class LoadCampaignDialog {
                 if (isAdmin ||
                     selectedCampaign.getUserId() == userId ||
                     CampaignDatabase.canUserAccessCampaign(userId, selectedCampaign.getCampaignId())) {
+                    startSceneController.startLoadAnimation();
                     new Thread(() -> {
                         Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId(), startSceneController);
                     }).start();
