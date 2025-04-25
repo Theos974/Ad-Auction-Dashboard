@@ -1,5 +1,6 @@
 package com.example.ad_auction_dashboard.logic;
 
+import com.example.ad_auction_dashboard.controller.MetricSceneController;
 import com.example.ad_auction_dashboard.logic.CampaignDatabase;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
 import com.example.ad_auction_dashboard.logic.UserSession;
@@ -26,7 +27,7 @@ public class SaveCampaignDialog {
      * @param campaignMetrics The campaign metrics to save
      * @return true if campaign was saved successfully, false otherwise
      */
-    public static boolean showDialog(Stage owner, CampaignMetrics campaignMetrics) {
+    public static void showDialog(Stage owner, CampaignMetrics campaignMetrics, MetricSceneController metricSceneController) {
         // Create dialog
         Dialog<Pair<String, String>> dialog = new Dialog<>();
         dialog.setTitle("Save Campaign");
@@ -82,40 +83,30 @@ public class SaveCampaignDialog {
             // Validate campaign name
             if (campaignName == null || campaignName.trim().isEmpty()) {
                 showErrorDialog("Campaign name cannot be empty");
-                return false;
+                return;
             }
 
             // Get user ID from session
             int userId = getUserId();
 
+            metricSceneController.startSaveAnimation();
             // Save campaign to database
-            Task<Boolean> task = new Task<Boolean>() {
-                @Override
-                protected Boolean call() throws Exception {
-                    int campaignId = CampaignDatabase.saveCampaign(campaignMetrics, campaignName, userId);
-                    if (campaignId != -1) {
-                        Platform.runLater(() -> showInfoDialog("Campaign Saved",
-                                "Campaign \"" + campaignName + "\" saved successfully with ID: " + campaignId));
-                        return true;
-                    } else {
-                        Platform.runLater(() -> showErrorDialog("Failed to save campaign. Please try again."));
-                        return false;
-                    }
-
+            new Thread(() -> {
+                int campaignId = CampaignDatabase.saveCampaign(campaignMetrics, campaignName, userId);
+                Platform.runLater(() -> {metricSceneController.toggleControls(false);
+                    metricSceneController.stopSaveAnimation();});
+                if (campaignId != -1) {
+                    Platform.runLater(() -> showInfoDialog("Campaign Saved",
+                            "Campaign \"" + campaignName + "\" saved successfully with ID: " + campaignId));
+                } else {
+                    Platform.runLater(() -> showErrorDialog("Failed to save campaign. Please try again."));
                 }
-            };
-
-            Thread a = new Thread(task);
-            a.setDaemon(false);
-            a.start();
-            try {
-                return task.get();
-            } catch (Exception e){
-                return false;
-            }
+            }).start();
+            return;
         }
 
-        return false;
+        metricSceneController.toggleControls(false);
+        return;
     }
 
     private static int getUserId() {

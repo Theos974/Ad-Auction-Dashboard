@@ -15,7 +15,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,9 +29,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class MetricSceneController {
 
@@ -93,6 +104,10 @@ public class MetricSceneController {
     private ToggleButton colourSwitch;
 
     private String currentStyle;
+    private Rectangle document, folder;
+    private StackPane animationContainer;
+    private Popup animationPopup;
+    private Boolean playAnimation = false;
 
 
     // Add a field for TimeFilteredMetrics
@@ -142,6 +157,38 @@ public class MetricSceneController {
             validateDateRange();
             applyFilters();
         });
+        animationPopup = new Popup();
+        animationPopup.centerOnScreen();
+
+        animationContainer = new StackPane();
+        animationContainer.setMinSize(200, 125);
+        animationContainer.setStyle("-fx-background-color: transparent;");
+
+        // Create folder shape
+        folder = new javafx.scene.shape.Rectangle(60, 40);
+        folder.setFill(javafx.scene.paint.Color.GOLD);
+        folder.setStroke(javafx.scene.paint.Color.DARKGOLDENROD);
+        folder.setStrokeWidth(1);
+        folder.setTranslateY(25);
+        folder.setTranslateX(50);
+        folder.setArcWidth(10);
+        folder.setArcHeight(10);
+
+        // Create document shape
+        document = new Rectangle(30, 40);
+        document.setFill(javafx.scene.paint.Color.WHITE);
+        document.setStroke(Color.BLACK);
+        document.setStrokeWidth(1);
+        document.setTranslateY(25);
+        document.setTranslateX(50);
+        document.setArcWidth(10);
+        document.setArcHeight(10);
+
+        // Add all elements to the container
+        animationContainer.getChildren().addAll(
+                document, folder
+        );
+        animationPopup.getContent().add(animationContainer);
 
         endDatePicker.setOnAction(e -> {
             validateDateRange();
@@ -577,15 +624,16 @@ public class MetricSceneController {
         Stage stage = (Stage) saveToDatabaseBtn.getScene().getWindow();
 
         // Show save dialog
-        boolean saved = SaveCampaignDialog.showDialog(stage, metrics);
+        toggleControls(true);
+        SaveCampaignDialog.showDialog(stage, metrics,this);
 
-        if (saved) {
-            // Optional: Update UI to reflect successful save
-            if (UserSession.getInstance().getUser() != null) {
-                userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername() +
-                    " (Campaign saved)");
-            }
-        }
+//        if (saved) {
+//            // Optional: Update UI to reflect successful save
+//            if (UserSession.getInstance().getUser() != null) {
+//                userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername() +
+//                    " (Campaign saved)");
+//            }
+//        }
     }
     @FXML
     private void handleLogout(ActionEvent event) {
@@ -657,7 +705,7 @@ public class MetricSceneController {
         }
     }
 
-    private void toggleControls(Boolean bool){
+    public void toggleControls(Boolean bool){
         mainMenuButton.setDisable(bool);
         adminPanelBtn.setDisable(bool);
         logoutBtn.setDisable(bool);
@@ -674,6 +722,62 @@ public class MetricSceneController {
         startDatePicker.setDisable(bool);
         endDatePicker.setDisable(bool);
         resetFiltersButton.setDisable(bool);
+    }
+
+    public void startSaveAnimation(){
+        System.out.println("Starting Animation");
+        playAnimation = true;
+        animationPopup.show(logoutBtn.getScene().getWindow());
+        playSaveAnimation();
+    }
+    public void stopSaveAnimation(){
+        playAnimation = false;
+        animationPopup.hide();
+    }
+    private void playSaveAnimation(){
+        // Reset document position
+        document.setTranslateX(-50);
+        document.setTranslateY(-25);
+
+        // Document movement animation
+        TranslateTransition moveDocument = new TranslateTransition(Duration.seconds(1.5), document);
+        moveDocument.setToX(50);
+        moveDocument.setToY(25);
+        moveDocument.setInterpolator(Interpolator.EASE_BOTH);
+
+        // When document reaches folder, make it disappear
+        moveDocument.setOnFinished(e -> {
+            // Make folder "pulse" to indicate receipt
+            ScaleTransition documentPulse = new ScaleTransition(Duration.millis(200), document);
+            documentPulse.setFromX(1.0);
+            documentPulse.setFromY(1.0);
+            documentPulse.setToX(1.2);
+            documentPulse.setToY(1.2);
+            documentPulse.setCycleCount(2);
+            documentPulse.setAutoReverse(true);
+            documentPulse.play();
+
+            // Fade out document
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(300), document);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.play();
+        });
+
+        Timer timer = new Timer();
+        // Start animations
+        moveDocument.play();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                document.setOpacity(1.0);
+                System.out.println("TRYING");
+
+                if (playAnimation){
+                    playSaveAnimation();
+                }
+            }
+        }, 2000);
     }
 
 }

@@ -91,6 +91,7 @@ public class HistogramController {
     private Button printButton;
     @FXML
     private Button backButton;
+    private Boolean updating = false;
 
     @FXML
     private Label statusLabel; // Optional: can add this to your FXML for status messages
@@ -145,16 +146,19 @@ public class HistogramController {
         // Set the initial bin size label
         updateBinSizeLabel((int)binSizeSlider.getValue());
 
-        // Add listener for when the slider value changes
+         //Add listener for when the slider value changes
         binSizeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            // Ensure we're working with integers and update the label properly
-            int binCount = (int)Math.round(newVal.doubleValue());
-            updateBinSizeLabel(binCount);
+            if(!updating){
+                updating = true;
+                // Ensure we're working with integers and update the label properly
+                int binCount = (int)Math.round(newVal.doubleValue());
+                updateBinSizeLabel(binCount);
 
-            // Debug output to trace value changes
-            System.out.println("Slider raw value: " + newVal + ", Rounded bin count: " + binCount);
+                // Debug output to trace value changes
+                System.out.println("Slider raw value: " + newVal + ", Rounded bin count: " + binCount);
 
-            updateHistogram();
+                updateHistogram();
+            }
         });
 
         // Set up event handlers with date validation
@@ -259,6 +263,17 @@ public class HistogramController {
         if (binSizeLabel != null) {
             binSizeLabel.setText(String.format("Num: %d", binCount));
         }
+    }
+
+    @FXML
+    private void binDragged(){
+        int binCount = (int)Math.round(binSizeSlider.getValue());
+        updateBinSizeLabel(binCount);
+
+        // Debug output to trace value changes
+        System.out.println("Slider raw value: " + binSizeSlider.getValue() + ", Rounded bin count: " + binCount);
+
+        updateHistogram();
     }
 
     /**
@@ -380,7 +395,7 @@ public class HistogramController {
             // Get date range
             LocalDate startDate = startDatePicker.getValue();
             LocalDate endDate = endDatePicker.getValue();
-            if (startDate == null || endDate == null) return;
+            if (startDate == null || endDate == null) {Platform.runLater(() -> updating = false);return;}
 
             // Additional validation to ensure start date is not after end date
             if (startDate.isAfter(endDate)) {
@@ -516,6 +531,9 @@ public class HistogramController {
                     }
                 }
             }
+            Platform.runLater(() -> updating = false);
+            Platform.runLater(() -> {int binCount = (int)Math.round(binSizeSlider.getValue());
+                updateBinSizeLabel(binCount);});
         }).start();
     }
 
@@ -790,6 +808,7 @@ public class HistogramController {
         startDatePicker.setDisable(bool);
         endDatePicker.setDisable(bool);
         resetFiltersButton.setDisable(bool);
+        binSizeSlider.setDisable(bool);
     }
     public void togglePrint(Boolean bool){
         printButton.setDisable(bool);
