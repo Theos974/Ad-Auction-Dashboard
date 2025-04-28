@@ -182,8 +182,8 @@ public class LoadCampaignDialog {
 
         Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelButtonType);
         cancelButton.setOnAction(event -> {
-            System.out.println("RUN");
             startSceneController.toggleControls(false);
+            startSceneController.statusText.setText("No Campaign Loaded.");
         });
 
         // Handle delete button action
@@ -277,15 +277,24 @@ public class LoadCampaignDialog {
         // Set result converter
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == loadButtonType) {
-                return campaignListView.getSelectionModel().getSelectedItem();
+                if (campaignListView.getSelectionModel().getSelectedItem() == null){
+                    return new CampaignDatabase.CampaignInfo(-1,null,null,null,null,-1);
+                } else{
+                    return campaignListView.getSelectionModel().getSelectedItem();
+                }
+            } else if (dialogButton == deleteButtonType || dialogButton == cancelButtonType){
+                return null;
             }
             return null;
         });
 
         // Show dialog and handle result
         Optional<CampaignDatabase.CampaignInfo> result = dialog.showAndWait();
-
-        if (result.isPresent()) {
+        System.out.println("RES: " + result);
+        if (result.isPresent() && result.get().getCampaignId() == -1 && result.get().getCampaignName() == null){
+            Platform.runLater(() -> {startSceneController.toggleControls(false);startSceneController.statusText.setText("No Campaign Loaded");});
+            showErrorDialog("No Campaign Selected");
+        }else if (result.isPresent()) {
             CampaignDatabase.CampaignInfo selectedCampaign = result.get();
 
             try {
