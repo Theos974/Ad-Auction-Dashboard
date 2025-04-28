@@ -138,8 +138,10 @@ public class FullCampaignComparisonView {
 
         // Create layout
         BorderPane layout = new BorderPane();
+        layout.getStylesheets().clear();
+        layout.getStylesheets().add(UserSession.getInstance().getCurrentStyle());
         layout.getStyleClass().add("metrics-container");
-        layout.setStyle("-fx-background-color: #2d2d3b;");
+        //layout.setStyle("-fx-background-color: #2d2d3b;");
 
         // Header
         HBox header = new HBox(20);
@@ -148,7 +150,8 @@ public class FullCampaignComparisonView {
 
         Text headerText = new Text("Full Campaign Comparison");
         headerText.setFont(Font.font("System", FontWeight.BOLD, 24));
-        headerText.setStyle("-fx-fill: white;");
+        headerText.getStyleClass().add("admin-text");
+        //headerText.setStyle("-fx-fill: white;");
 
         header.getChildren().add(headerText);
         layout.setTop(header);
@@ -163,7 +166,8 @@ public class FullCampaignComparisonView {
         // Column headers
         Text metricsLabel = new Text("Metrics");
         metricsLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
-        metricsLabel.setStyle("-fx-fill: white;");
+        metricsLabel.getStyleClass().add("admin-text");
+        //metricsLabel.setStyle("-fx-fill: white;");
 
         Text currentLabel = new Text(currentName);
         currentLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
@@ -287,7 +291,8 @@ public class FullCampaignComparisonView {
                                      double comparisonValue, int rowIndex, boolean formatAsDecimal) {
         // Metric name label
         Text nameLabel = new Text(metricName);
-        nameLabel.setStyle("-fx-fill: white;");
+        nameLabel.getStyleClass().add("admin-text");
+        //nameLabel.setStyle("-fx-fill: white;");
         nameLabel.setFont(Font.font("System", FontWeight.NORMAL, 16));
 
         // Format values appropriately
@@ -372,7 +377,8 @@ public class FullCampaignComparisonView {
 
         // Label
         Text nameLabel = new Text(labelText);
-        nameLabel.setStyle("-fx-fill: white;");
+        nameLabel.getStyleClass().add("admin-text");
+        //nameLabel.setStyle("-fx-fill: white;");
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
 
         // Format date ranges
@@ -438,7 +444,8 @@ public class FullCampaignComparisonView {
                                               int rowIndex) {
         // Label
         Text nameLabel = new Text(labelText);
-        nameLabel.setStyle("-fx-fill: white;");
+        nameLabel.getStyleClass().add("admin-text");
+        //nameLabel.setStyle("-fx-fill: white;");
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
 
         // Format settings

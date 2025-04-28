@@ -790,6 +790,7 @@ public class HistogramController {
             colourSwitch.getScene().getStylesheets().clear();
             colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
     }
 
     private void toggleControls(Boolean bool){

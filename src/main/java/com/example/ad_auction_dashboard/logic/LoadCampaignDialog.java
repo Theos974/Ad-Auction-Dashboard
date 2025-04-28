@@ -1,14 +1,9 @@
 package com.example.ad_auction_dashboard.logic;
 
-import java.util.concurrent.ExecutionException;
-
 import com.example.ad_auction_dashboard.controller.StartSceneController;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -17,7 +12,7 @@ import javafx.stage.Stage;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Dialog to load a campaign from the database
@@ -37,11 +32,15 @@ public class LoadCampaignDialog {
         dialog.setHeaderText("Select a campaign to load");
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(owner);
+        dialog.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        dialog.getDialogPane().getStyleClass().add("load-dialog");
+
 
         // Set buttons
         ButtonType loadButtonType = new ButtonType("Load", ButtonBar.ButtonData.OK_DONE);
         ButtonType deleteButtonType = new ButtonType("Delete Selected", ButtonBar.ButtonData.OTHER);
-        dialog.getDialogPane().getButtonTypes().addAll(loadButtonType, deleteButtonType, ButtonType.CANCEL);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(loadButtonType, deleteButtonType, cancelButtonType);
 
         // Create layout
         VBox vbox = new VBox(10);
@@ -68,6 +67,7 @@ public class LoadCampaignDialog {
 
         // Create ListView for campaigns
         ListView<CampaignDatabase.CampaignInfo> campaignListView = new ListView<>();
+        campaignListView.getStyleClass().add("load-list");
         campaignListView.setItems(FXCollections.observableArrayList(campaignList));
         campaignListView.setCellFactory(param -> new ListCell<CampaignDatabase.CampaignInfo>() {
             @Override
@@ -180,6 +180,12 @@ public class LoadCampaignDialog {
         // Capture filter combo box state for use in button handler
         final ComboBox<String> finalFilterComboBox = filterComboBox;
 
+        Button cancelButton = (Button) dialog.getDialogPane().lookupButton(cancelButtonType);
+        cancelButton.setOnAction(event -> {
+            System.out.println("RUN");
+            startSceneController.toggleControls(false);
+        });
+
         // Handle delete button action
         Button deleteButton = (Button) dialog.getDialogPane().lookupButton(deleteButtonType);
 
@@ -189,6 +195,7 @@ public class LoadCampaignDialog {
         }
 
         deleteButton.setOnAction(event -> {
+            startSceneController.toggleControls(true);
             CampaignDatabase.CampaignInfo selectedCampaign =
                 campaignListView.getSelectionModel().getSelectedItem();
 
@@ -199,6 +206,7 @@ public class LoadCampaignDialog {
                         "You don't have permission to delete this campaign. Only admins or the campaign creator can delete campaigns.");
                     event.consume();
                     Platform.runLater(() -> startSceneController.toggleControls(false));
+                    System.out.println("206");
                     return;
                 }
 
@@ -210,6 +218,8 @@ public class LoadCampaignDialog {
                 );
 
                 if (confirmed) {
+                    startSceneController.toggleControls(true);
+                    startSceneController.statusText.setText("Deleting Campaign");
                     startSceneController.playDeleteAnimation();
                     new Thread(() -> {
 
@@ -217,6 +227,7 @@ public class LoadCampaignDialog {
                         Platform.runLater(() -> {
                             startSceneController.stopDeleteAnimation();
                             startSceneController.toggleControls(false);
+                            System.out.println("227");
                             if (deleted) {
                                 // Refresh the list - check if filter is active
                                 if (isAdmin && finalFilterComboBox != null &&
@@ -240,15 +251,22 @@ public class LoadCampaignDialog {
                                 startSceneController.statusText.setText("Campaign Deletion Error!");
                             }
                         });
+                        return;
                     }).start();
                     return;
+                } else {
+                    startSceneController.toggleControls(false);
                 }
             } else {
+                startSceneController.toggleControls(false);
                 showErrorDialog("Please select a campaign to delete.");
+                return;
             }
 
-            // Prevent dialog from closing
-            event.consume();
+
+            return;
+            //event.consume();
+            //return;
         });
 
         // Enable/disable load and delete buttons based on selection
@@ -290,83 +308,12 @@ public class LoadCampaignDialog {
                 e.printStackTrace();
             }
         }
-
-//        if (result.isPresent()) {
-//            CampaignDatabase.CampaignInfo selectedCampaign = result.get();
-//
-//            // Show loading dialog
-//            Dialog<Campaign> loadingDialog = new Dialog<>();
-//            loadingDialog.setTitle("Loading Campaign");
-//            loadingDialog.setHeaderText("Loading campaign data...");
-//            loadingDialog.initOwner(owner);
-//            loadingDialog.initModality(Modality.WINDOW_MODAL);
-//
-//            // Add progress indicator
-//            ProgressIndicator progress = new ProgressIndicator();
-//            progress.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-//
-//            Label statusLabel = new Label("Loading campaign. Please wait...");
-//
-//            VBox content = new VBox(10, progress, statusLabel);
-//            content.setAlignment(Pos.CENTER);
-//            content.setPadding(new Insets(20));
-//
-//            loadingDialog.getDialogPane().setContent(content);
-//            loadingDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-//
-//            // Create loading task
-//            Task<Campaign> loadTask = new Task<Campaign>() {
-//                @Override
-//                protected Campaign call() throws Exception {
-//                    updateMessage("Checking campaign...");
-//
-//                    // Load campaign in background
-//                    Campaign campaign = CampaignDatabase.loadCampaign(selectedCampaign.getCampaignId());
-//
-//                    updateMessage("Campaign loaded successfully!");
-//                    return campaign;
-//                }
-//            };
-//
-//            // Bind status updates
-//            statusLabel.textProperty().bind(loadTask.messageProperty());
-//
-//            // Start task
-//            Thread loadThread = new Thread(loadTask);
-//            loadThread.setDaemon(true);
-//            loadThread.start();
-//
-//            // Show dialog and wait for result or cancellation
-//            loadingDialog.setResultConverter(dialogButton -> {
-//                if (dialogButton == ButtonType.CANCEL) {
-//                    loadTask.cancel();
-//                    return null;
-//                }
-//                return null;
-//            });
-//
-//            // Start showing dialog (non-blocking)
-//            loadingDialog.show();
-//
-//            // Wait for task to complete
-//            try {
-//                Campaign campaign = loadTask.get();
-//                loadingDialog.close();
-//                return campaign;
-//            } catch (InterruptedException | ExecutionException e) {
-//                loadingDialog.close();
-//                showErrorDialog("Error loading campaign: " + e.getMessage());
-//                e.printStackTrace();
-//                return null;
-//            }
-//        }
-//
-        Platform.runLater(() -> startSceneController.toggleControls(false));
-        return;
     }
 
     private static boolean showConfirmationDialog(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        alert.getDialogPane().getStyleClass().add("alert");
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
@@ -377,6 +324,8 @@ public class LoadCampaignDialog {
 
     private static void showErrorDialog(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        alert.getDialogPane().getStyleClass().add("alert");
         alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -385,6 +334,8 @@ public class LoadCampaignDialog {
 
     private static void showInfoDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        alert.getDialogPane().getStyleClass().add("alert");
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

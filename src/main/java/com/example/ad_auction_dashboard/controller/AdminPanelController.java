@@ -251,6 +251,9 @@ public class AdminPanelController {
                 selectedUserAccess = newVal;
                 updateAccessButtons();
             });
+            Label placeholder = new Label("No content in table");
+            placeholder.getStyleClass().add("admin-table-placeholder");
+            assignmentTable.setPlaceholder(placeholder);
         }
     }
 
@@ -592,6 +595,7 @@ public class AdminPanelController {
             colourSwitch.getScene().getStylesheets().clear();
             colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
     }
 
     // Helper class for user assignment table

@@ -29,7 +29,7 @@
 
 /* ===== CONTAINER STYLES ===== */
 .metrics-container {
-    -fx-background-color: #333333;
+    -fx-background-color: #2d2d3b;
 }
 
 .content-container {
@@ -268,12 +268,44 @@
     -fx-background-radius: 8;
     -fx-padding: 15;
 }
-
-.admin-table .table-cell{
-    -fx-background-color: #363642;
+.admin-table-placeholder{
     -fx-text-fill: white;
+    -fx-fill: white;
+}
+.admin-table{
+    -fx-background-color: #363642;
+    -fx-border-color: #454550;
+    -fx-text-fill: white;
+    -fx-fill: white;
+}
+.admin-table .table-row-cell{
+    -fx-background-color: #363642;
+}
+.admin-table .table-row-cell:odd{
+    -fx-background-color: #2A2A33;
+}
+.admin-table .table-cell{
+    -fx-text-fill: white;
+    -fx-border-color: #454550;
+    -fx-border-width: 0.5px;
+}
+.admin-table .table-row-cell:selected{
+    -fx-background-color: #4E5D8C;
 }
 .admin-text{
+    -fx-text-fill: white;
+    -fx-fill: white;
+}
+
+.admin-tabpane .tab-header-area .tab-header-background{
+    -fx-background-color: #2A2A33;
+}
+.admin-tabpane .tab-header-area .headers-region .tab{
+    -fx-background-color: #454552;
+    -fx-text-base-color: white;
+}
+.admin-tabpane .tab-header-area .headers-region .tab:selected{
+    -fx-background-color: #4C4C5C;
 }
 
 /* ===== BUTTON STYLES ===== */
@@ -654,6 +686,47 @@
     -fx-background-color: white;
 }
 
+.white-combo-box {
+    -fx-background-color: #42424f;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-border-color: black;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+}
+
+.white-combo-box .list-cell {
+    -fx-background-color: #42424f;
+    -fx-text-fill: white;
+}
+
+.white-combo-box .list-view {
+    -fx-background-color: #42424f;
+    -fx-border-color: #cccccc;
+}
+
+.white-combo-box .list-view .list-cell:hover {
+    -fx-background-color: rgba(78, 93, 140, 0.5);
+    -fx-text-fill: #333333;
+}
+
+.white-combo-box .list-view .list-cell:selected {
+    -fx-background-color: rgba(78, 93, 140, 0.7);
+    -fx-text-fill: #333333;
+}
+
+.white-combo-box .arrow {
+    -fx-background-color: #666666;
+}
+
+.data-input {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: #2A2A33;
+    -fx-border-width: 1px;
+    -fx-background-radius: 5px;
+}
+
 .date-picker {
     -fx-background-color: #363642;
     -fx-text-fill: white;
@@ -918,3 +991,118 @@
     -fx-text-fill: white;
     -fx-fill: white;
 }
+/*Dialog Stuff*/
+.load-dialog,
+.save-dialog{
+    -fx-background-color: #363642;
+
+}
+.load-dialog .header-panel,
+.save-dialog .header-panel{
+    -fx-background-color: #363642;
+
+}
+.load-dialog .header-panel .label,
+.save-dialog .header-panel .label{
+    -fx-text-fill: white;
+}
+.load-dialog .content,
+.save-dialog .content{
+    -fx-background-color: #2d2d3b;
+
+}
+.load-dialog .content .label,
+.save-dialog .content .label{
+    -fx-text-fill: white;
+}
+.load-dialog .content .text-area,
+.save-dialog .content .text-area,
+.save-dialog .content .text-field{
+    -fx-background-color: #2d2d3b;
+    -fx-border-width: 1px;
+    -fx-border-color: grey;
+}
+.load-dialog .content .text-area:focused,
+.save-dialog .content .text-area:focused,
+.save-dialog .content .text-field:focused{
+    -fx-border-color: #E3F2FD
+}
+.load-dialog .content .text-area{
+    -fx-fill: grey;
+    -fx-text-fill: grey;
+}
+.save-dialog .content .text-field,
+.save-dialog .content .text-area{
+    -fx-text-fill: white;
+}
+
+.save-dialog .button-bar {
+    -fx-background-color: #2d2d3b;
+}
+.save-dialog-buttons{
+
+}
+
+.load-list {
+    -fx-background-color: #363642;
+    -fx-border-color: #454550;
+    -fx-text-fill: white;
+    -fx-fill: white;
+}
+
+.load-list .list-cell {
+    -fx-background-color: #363642;
+    -fx-text-fill: white;
+    -fx-border-color: #454550;
+    -fx-border-width: 0.5px;
+}
+
+.load-list .list-cell:odd {
+    -fx-background-color: #2A2A33;
+}
+
+.load-list .list-cell:selected {
+    -fx-background-color: #4E5D8C;
+}
+
+.alert {
+    -fx-background-color: #454550;
+}
+
+.alert .label {
+    -fx-text-fill: white;
+}
+
+.alert .content {
+    -fx-font-size: 14px;
+}
+
+.alert .header-panel {
+    -fx-background-color: #454550;
+}
+
+.alert .button-bar .button {
+    -fx-background-color: #454550;
+    -fx-text-fill: white;
+    -fx-border-color: #4E5D8C;
+}
+
+.alert .button-bar .button:hover {
+    -fx-background-color: #4E5D8C;
+}
+.bounce-dialog .content,
+.bounce-dialog .header-panel,
+.bounce-dialog{
+    -fx-background-color: #363642;
+}
+.bounce-dialog .content .label,
+.bounce-dialog .header-panel .label{
+    -fx-text-fill: white;
+}
+.bounce-dialog-text-field{
+    -fx-background-color: transparent;
+    -fx-border-color: grey;
+    -fx-border-width: 1px;
+    -fx-text-fill: white;
+}
+

@@ -398,10 +398,9 @@
 }
 
 .flat-button {
-    -fx-background-color: #f5f5f5;
+    -fx-background-color: #e0e0e0;
     -fx-background-radius: 5px;
-    -fx-border-width: 1;
-    -fx-border-color: black;
+    -fx-border-width: 0;
     -fx-font-family: 'Poppins', sans-serif;
     -fx-font-size: 15px;
     -fx-font-weight: 500;

@@ -42,6 +42,8 @@ public class CampaignComparisonDialog {
 
         // Create dialog
         javafx.scene.control.Dialog<CampaignDatabase.CampaignInfo> dialog = new javafx.scene.control.Dialog<>();
+        dialog.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        dialog.getDialogPane().getStyleClass().add("load-dialog");
         dialog.setTitle("Compare Campaign");
         dialog.setHeaderText("Select a campaign to compare with");
         dialog.initModality(Modality.APPLICATION_MODAL);
@@ -65,6 +67,7 @@ public class CampaignComparisonDialog {
 
         // Create campaign ListView
         ListView<CampaignDatabase.CampaignInfo> campaignListView = new ListView<>();
+        campaignListView.getStyleClass().add("load-list");
 
         try {
             // Get accessible campaigns for current user

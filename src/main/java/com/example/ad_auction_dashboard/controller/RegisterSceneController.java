@@ -175,5 +175,6 @@ public class RegisterSceneController {
             colourSwitch.getScene().getStylesheets().clear();
             colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
     }
 }

@@ -26,16 +26,22 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class MetricSceneController {
@@ -104,9 +110,10 @@ public class MetricSceneController {
     private ToggleButton colourSwitch;
 
     private String currentStyle;
-    private Rectangle document, folder;
+    private Path document, folder;
     private StackPane animationContainer;
     private Popup animationPopup;
+    private Stage animationStage;
     private Boolean playAnimation = false;
 
 
@@ -157,38 +164,69 @@ public class MetricSceneController {
             validateDateRange();
             applyFilters();
         });
-        animationPopup = new Popup();
-        animationPopup.centerOnScreen();
 
         animationContainer = new StackPane();
         animationContainer.setMinSize(200, 125);
-        animationContainer.setStyle("-fx-background-color: transparent;");
+        animationContainer.setStyle("-fx-background-color: black;");
 
-        // Create folder shape
-        folder = new javafx.scene.shape.Rectangle(60, 40);
+        folder = new javafx.scene.shape.Path();
         folder.setFill(javafx.scene.paint.Color.GOLD);
         folder.setStroke(javafx.scene.paint.Color.DARKGOLDENROD);
-        folder.setStrokeWidth(1);
+        folder.setStrokeWidth(1.5);
         folder.setTranslateY(25);
         folder.setTranslateX(50);
-        folder.setArcWidth(10);
-        folder.setArcHeight(10);
 
-        // Create document shape
-        document = new Rectangle(30, 40);
+// Create the folder path with a tab on top
+        javafx.scene.shape.MoveTo moveTo = new javafx.scene.shape.MoveTo(0, 10);
+        javafx.scene.shape.LineTo line1 = new javafx.scene.shape.LineTo(15, 10);
+        javafx.scene.shape.LineTo line2 = new javafx.scene.shape.LineTo(20, 0);
+        javafx.scene.shape.LineTo line3 = new javafx.scene.shape.LineTo(50, 0);
+        javafx.scene.shape.LineTo line4 = new javafx.scene.shape.LineTo(50, 40);
+        javafx.scene.shape.LineTo line5 = new javafx.scene.shape.LineTo(0, 40);
+        javafx.scene.shape.LineTo line6 = new javafx.scene.shape.LineTo(0, 10);
+
+        folder.getElements().addAll(moveTo, line1, line2, line3, line4, line5, line6);
+
+        javafx.scene.effect.DropShadow folderShadow = new javafx.scene.effect.DropShadow();
+        folderShadow.setRadius(4);
+        folderShadow.setOffsetX(1);
+        folderShadow.setOffsetY(1);
+        folderShadow.setColor(javafx.scene.paint.Color.gray(0.2, 0.5));
+        folder.setEffect(folderShadow);
+
+        document = new javafx.scene.shape.Path();
         document.setFill(javafx.scene.paint.Color.WHITE);
-        document.setStroke(Color.BLACK);
+        document.setStroke(javafx.scene.paint.Color.LIGHTGRAY);
         document.setStrokeWidth(1);
         document.setTranslateY(25);
-        document.setTranslateX(50);
-        document.setArcWidth(10);
-        document.setArcHeight(10);
+        document.setTranslateX(120);
+
+// Create document path with folded corner
+        javafx.scene.shape.MoveTo docMove = new javafx.scene.shape.MoveTo(0, 0);
+        javafx.scene.shape.LineTo docLine1 = new javafx.scene.shape.LineTo(25, 0);
+        javafx.scene.shape.LineTo docLine2 = new javafx.scene.shape.LineTo(35, 10);
+        javafx.scene.shape.LineTo docLine3 = new javafx.scene.shape.LineTo(35, 45);
+        javafx.scene.shape.LineTo docLine4 = new javafx.scene.shape.LineTo(0, 45);
+        javafx.scene.shape.LineTo docLine5 = new javafx.scene.shape.LineTo(0, 0);
+        javafx.scene.shape.MoveTo docMove2 = new javafx.scene.shape.MoveTo(25, 0);
+        javafx.scene.shape.LineTo docLine6 = new javafx.scene.shape.LineTo(25, 10);
+        javafx.scene.shape.LineTo docLine7 = new javafx.scene.shape.LineTo(35, 10);
+
+        document.getElements().addAll(docMove, docLine1, docLine2, docLine3, docLine4, docLine5, docMove2, docLine6, docLine7);
+
+
+// Add drop shadow for document
+        javafx.scene.effect.DropShadow docShadow = new javafx.scene.effect.DropShadow();
+        docShadow.setRadius(3);
+        docShadow.setOffsetX(1);
+        docShadow.setOffsetY(1);
+        docShadow.setColor(javafx.scene.paint.Color.gray(0.2, 0.3));
+        document.setEffect(docShadow);
 
         // Add all elements to the container
         animationContainer.getChildren().addAll(
                 document, folder
         );
-        animationPopup.getContent().add(animationContainer);
 
         endDatePicker.setOnAction(e -> {
             validateDateRange();
@@ -507,6 +545,9 @@ public class MetricSceneController {
 
         // Create input dialog components
         TextInputDialog pagesDialog = new TextInputDialog(String.valueOf(currentPagesThreshold));
+        pagesDialog.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        pagesDialog.getDialogPane().getStyleClass().add("bounce-dialog");
+        pagesDialog.getEditor().getStyleClass().add("bounce-dialog-text-field");
         pagesDialog.setTitle("Bounce Settings");
         pagesDialog.setHeaderText("Set bounce pages threshold");
         pagesDialog.setContentText("Pages viewed:");
@@ -519,6 +560,9 @@ public class MetricSceneController {
 
                 // Get seconds threshold
                 TextInputDialog secondsDialog = new TextInputDialog(String.valueOf(currentSecondsThreshold));
+                secondsDialog.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+                secondsDialog.getDialogPane().getStyleClass().add("bounce-dialog");
+                secondsDialog.getEditor().getStyleClass().add("bounce-dialog-text-field");
                 secondsDialog.setTitle("Bounce Settings");
                 secondsDialog.setHeaderText("Set bounce time threshold");
                 secondsDialog.setContentText("Seconds on site:");
@@ -627,13 +671,6 @@ public class MetricSceneController {
         toggleControls(true);
         SaveCampaignDialog.showDialog(stage, metrics,this);
 
-//        if (saved) {
-//            // Optional: Update UI to reflect successful save
-//            if (UserSession.getInstance().getUser() != null) {
-//                userWelcomeLabel.setText("Hello, " + UserSession.getInstance().getUser().getUsername() +
-//                    " (Campaign saved)");
-//            }
-//        }
     }
     @FXML
     private void handleLogout(ActionEvent event) {
@@ -703,6 +740,7 @@ public class MetricSceneController {
             colourSwitch.getScene().getStylesheets().clear();
             colourSwitch.getScene().getStylesheets().add(currentStyle);
         }
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
     }
 
     public void toggleControls(Boolean bool){
@@ -727,12 +765,12 @@ public class MetricSceneController {
     public void startSaveAnimation(){
         System.out.println("Starting Animation");
         playAnimation = true;
-        animationPopup.show(logoutBtn.getScene().getWindow());
+        animationStage = openAnimation();
         playSaveAnimation();
     }
     public void stopSaveAnimation(){
         playAnimation = false;
-        animationPopup.hide();
+        animationStage.close();
     }
     private void playSaveAnimation(){
         // Reset document position
@@ -771,13 +809,32 @@ public class MetricSceneController {
             @Override
             public void run() {
                 document.setOpacity(1.0);
-                System.out.println("TRYING");
 
                 if (playAnimation){
                     playSaveAnimation();
                 }
             }
         }, 2000);
+    }
+
+    public Stage openAnimation() {
+        animationContainer.setStyle("-fx-background-color: transparent;");
+        Pane splashLayout = new Pane();
+        splashLayout.getChildren().add(animationContainer);
+        Stage animationStage = new Stage();
+        Group group = new Group();
+        group.getChildren().add(splashLayout);
+        Scene animationScene = new Scene(group, 200, 125);
+        animationScene.setFill(Color.TRANSPARENT);
+        animationStage.initStyle(StageStyle.TRANSPARENT);
+        animationStage.setWidth(200);
+        animationStage.setHeight(125);
+        animationStage.setScene(animationScene);
+        animationStage.setAlwaysOnTop(true);
+        animationStage.requestFocus();
+        animationStage.centerOnScreen();
+        animationStage.show();
+        return animationStage;
     }
 
 }

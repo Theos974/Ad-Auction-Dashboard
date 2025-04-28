@@ -34,6 +34,8 @@ public class SaveCampaignDialog {
         dialog.setHeaderText("Save your campaign to the database for future use");
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(owner);
+        dialog.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        dialog.getDialogPane().getStyleClass().add("save-dialog");
 
         // Set buttons
         ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
@@ -119,6 +121,8 @@ public class SaveCampaignDialog {
 
     private static void showErrorDialog(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        alert.getDialogPane().getStyleClass().add("alert");
         alert.setTitle("Error");
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -127,6 +131,8 @@ public class SaveCampaignDialog {
 
     private static void showInfoDialog(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.getDialogPane().getStylesheets().add(UserSession.getInstance().getCurrentStyle());
+        alert.getDialogPane().getStyleClass().add("alert");
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

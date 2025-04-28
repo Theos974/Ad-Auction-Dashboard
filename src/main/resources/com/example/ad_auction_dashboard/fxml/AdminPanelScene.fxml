@@ -89,11 +89,11 @@
                                     </Label>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label styleClass="admin-text" text="Selected User:" textFill="#f2f2f2" />
-                                        <Label fx:id="selectedUserLabel" text="None" textFill="#f2eded" />
+                                        <Label fx:id="selectedUserLabel" styleClass="admin-text" text="None" textFill="#f2eded" />
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label styleClass="admin-text" text="New Role:" textFill="#ebe7e7" />
-                                        <ComboBox fx:id="roleComboBox" prefWidth="150.0" />
+                                        <ComboBox fx:id="roleComboBox" prefWidth="150.0" styleClass="white-combo-box" />
                                     </HBox>
                                     <Button mnemonicParsing="false" onAction="#handleChangeRole" prefHeight="39.0" prefWidth="185.0" styleClass="flat-button" text="Apply Role Change" />
                                 </VBox>
@@ -107,23 +107,23 @@
                                     </Label>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label prefWidth="80.0" styleClass="admin-text" text="Username:" textFill="#f5f2f2" />
-                                        <TextField fx:id="newUsernameField" />
+                                        <TextField fx:id="newUsernameField" styleClass="data-input" />
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label prefWidth="80.0" styleClass="admin-text" text="Email:" textFill="#f2eeee" />
-                                        <TextField fx:id="newEmailField" />
+                                        <TextField fx:id="newEmailField" styleClass="data-input" />
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label prefWidth="80.0" styleClass="admin-text" text="Phone:" textFill="#ebebeb" />
-                                        <TextField fx:id="newPhoneField" />
+                                        <TextField fx:id="newPhoneField" styleClass="data-input" />
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label prefWidth="80.0" styleClass="admin-text" text="Password:" textFill="#eee7e7" />
-                                        <TextField fx:id="newPasswordField" />
+                                        <TextField fx:id="newPasswordField" styleClass="data-input" />
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" spacing="10.0">
                                         <Label prefWidth="80.0" styleClass="admin-text" text="Role:" textFill="#f2f2f2" />
-                                        <ComboBox fx:id="newRoleComboBox" prefWidth="150.0" />
+                                        <ComboBox fx:id="newRoleComboBox" prefWidth="150.0" styleClass="white-combo-box" />
                                     </HBox>
                                     <Button mnemonicParsing="false" onAction="#handleAddUser" prefHeight="39.0" prefWidth="118.0" styleClass="flat-button" text="Add User" />
                                 </VBox>
@@ -136,7 +136,7 @@
                 </Tab>
 
                 <!-- Campaign Assignments Tab -->
-                <Tab text="Campaign Assignments">
+                <Tab styleClass="admin-table" text="Campaign Assignments">
                     <content>
                         <VBox spacing="10.0">
                             <padding>
@@ -146,7 +146,7 @@
                                 <!-- Left side: Campaigns list -->
                                 <VBox prefWidth="450.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                     <Label style="-fx-font-size: 16; -fx-text-fill: white;" text="Available Campaigns" />
-                                    <TableView fx:id="campaignTable" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="campaignTable" styleClass="admin-table" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="campaignIdColumn" prefWidth="50.0" text="ID" />
                                             <TableColumn fx:id="campaignNameColumn" prefWidth="200.0" text="Campaign Name" />
@@ -161,7 +161,7 @@
                                 <!-- Right side: Users and assignments -->
                                 <VBox prefWidth="400.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                     <Label style="-fx-font-size: 16; -fx-text-fill: white;" text="User Access" />
-                                    <TableView fx:id="assignmentTable" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="assignmentTable" styleClass="admin-table" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="assignmentUserColumn" prefWidth="200.0" text="Username" />
                                             <TableColumn fx:id="assignmentRoleColumn" prefWidth="100.0" text="Role" />
