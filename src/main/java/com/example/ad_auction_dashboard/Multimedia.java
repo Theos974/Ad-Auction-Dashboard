@@ -17,17 +17,35 @@ public class Multimedia {
      * Method used to play background Music
      * @param file: music file name
      */
-    public static  void playMusic(String file) {
+    public static void playMusic(String file) {
         if (!audioEnabled) return;
+
+        // Check if the same music is already playing
+        if (musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+            musicPlayer.setVolume(0.1); // Set volume to 30%
+
+            // Get the current music file path
+            Media currentMedia = musicPlayer.getMedia();
+            String currentFile = currentMedia.getSource();
+            String requestedFile = Multimedia.class.getResource("/music/" + file).toExternalForm();
+
+            // If it's the same file already playing, don't restart it
+            if (currentFile.equals(requestedFile)) {
+                return;
+            }
+
+            // If a different file, stop the current music before playing the new one
+            musicPlayer.stop();
+        }
 
         String toPlay = Multimedia.class.getResource("/music/" + file).toExternalForm();
         logger.info("Playing music: " + toPlay);
 
         try {
             musicPlayer = new MediaPlayer(new Media(toPlay));
+            musicPlayer.setVolume(0.1);
             musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
             musicPlayer.play();
-            musicPlayer.setVolume(0.2); // Set volume to 30%
         } catch (Exception e) {
             audioEnabled = false;
             e.printStackTrace();
