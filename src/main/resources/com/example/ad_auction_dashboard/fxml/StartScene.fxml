@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="start-scene" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" styleClass="start-scene" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ad_auction_dashboard.controller.StartSceneController">
     <children>
         <!-- User info and logout section at the top -->
         <HBox alignment="CENTER_RIGHT" layoutX="925.0" layoutY="14.0" spacing="10" styleClass="trabs" AnchorPane.rightAnchor="21.0" AnchorPane.topAnchor="14.0" />
@@ -54,7 +54,7 @@
                <graphic>
                   <ImageView fitHeight="37.0" fitWidth="41.0" pickOnBounds="true" preserveRatio="true" styleClass="logoff">
                      <image>
-                        <Image url="@../../../../images/black log off.png" />
+                        <Image url="@../../../../images/black_log_off.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -67,7 +67,10 @@
               <!-- Admin panel button - hidden by default, shown only for admins -->
               <Button fx:id="adminPanelBtn" onAction="#handleAdminPanel" prefHeight="56.0" prefWidth="54.0" visible="false">
                <graphic>
-                  <ImageView fitHeight="46.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true" styleClass="admin" />
+                  <ImageView fitHeight="46.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true" styleClass="admin">
+                     <image>
+                        <Image url="@../../../../images/admin_image_black.png" />
+                     </image></ImageView>
                </graphic>
                <VBox.margin>
                   <Insets top="10.0" />
@@ -78,7 +81,7 @@
                </styleClass>
             </Button>
             <Region prefHeight="22.0" prefWidth="88.0" />
-            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
+            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minHeight="25.0" minWidth="56.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="25.0" prefWidth="56.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
          </children>
       </VBox>
     </children>

@@ -10,7 +10,7 @@
 /* ===== SCENE-SPECIFIC BACKGROUNDS ===== */
 .start-scene {
     /* Fixed path to match standard JavaFX resource path */
-    -fx-background-image: url("/images/backgroundblack.png");
+    -fx-background-image: url("/images/backgrounddark.png");
     -fx-background-size: cover;
     -fx-background-repeat: no-repeat;
 }
