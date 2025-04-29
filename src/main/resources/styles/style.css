@@ -1021,8 +1021,11 @@
 }
 /*REGISTER STUFF*/
 .register-scene{
-    -fx-background-color: #2d2d3b;
-}
+    /* Fixed path to match standard JavaFX resource path */
+    -fx-background-image: url("/images/backgrounddark.png");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;}
+
 .register-text{
     -fx-text-fill: white;
     -fx-fill: white;
