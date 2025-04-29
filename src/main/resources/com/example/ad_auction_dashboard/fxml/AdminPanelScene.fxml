@@ -31,7 +31,10 @@
                 </HBox.margin>
             </Text>
             <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
-            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
+            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css">
+               <HBox.margin>
+                  <Insets right="10.0" />
+               </HBox.margin></ToggleButton>
                 <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBack" textFill="#fffefe">
                     <graphic>
                         <ImageView fitHeight="40.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true" styleClass="back">

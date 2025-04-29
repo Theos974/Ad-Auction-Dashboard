@@ -27,6 +27,7 @@ public class Multimedia {
             musicPlayer = new MediaPlayer(new Media(toPlay));
             musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
             musicPlayer.play();
+            musicPlayer.setVolume(0.2); // Set volume to 30%
         } catch (Exception e) {
             audioEnabled = false;
             e.printStackTrace();
