@@ -63,7 +63,7 @@
                                 </ImageView>
                             </graphic>
                         </Button>
-                  <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
+                  <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minHeight="26.0" minWidth="52.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="26.0" prefWidth="52.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
                     </children>
                 </VBox>
 

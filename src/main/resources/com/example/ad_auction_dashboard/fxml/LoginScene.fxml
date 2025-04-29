@@ -36,7 +36,6 @@
                               <Font name="System Bold" size="33.0" />
                           </font>
                       </Text>
-                  <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
                </children>
             </GridPane>
          </children>
@@ -105,6 +104,11 @@
     <bottom>
         <VBox alignment="CENTER" prefHeight="100.0" prefWidth="100.0" BorderPane.alignment="CENTER">
             <children>
+            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css">
+               <VBox.margin>
+                  <Insets bottom="30.0" />
+               </VBox.margin>
+            </ToggleButton>
                 <Text fx:id="statusText" fill="RED" strokeType="OUTSIDE" strokeWidth="0.0" />
             </children>
         </VBox>

@@ -39,7 +39,7 @@
                 </Button>
 
                 <Region HBox.hgrow="ALWAYS" />
-            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minWidth="60.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="30.0" prefWidth="65.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
+            <ToggleButton fx:id="colourSwitch" alignment="CENTER_LEFT" minHeight="25.0" minWidth="53.0" mnemonicParsing="false" onAction="#toggleColour" prefHeight="25.0" prefWidth="53.0" styleClass="colour-switch" stylesheets="@../../../../styles/style.css" />
 
                 <ComboBox fx:id="exportComboBox" prefWidth="150.0" promptText="Export Format" />
                 <Button fx:id="exportButton" onAction="#exportData" styleClass="nav-button" text="Export" />

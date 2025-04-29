@@ -23,8 +23,10 @@
 }
 
 .login-scene {
-    -fx-background-color: #f6f6f8;
-}
+    /* Fixed path to match standard JavaFX resource path */
+    -fx-background-image: url("/images/background.png");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;}
 
 /* ===== CONTAINER STYLES ===== */
 .metrics-container {
