@@ -77,7 +77,7 @@
                                 <Insets bottom="10.0" />
                             </VBox.margin>
                         </PasswordField>
-                        <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleLogin" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #3498db;" text="Login" textFill="WHITE">
+                        <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleLogin" prefHeight="30.0" prefWidth="150.0" styleClass="login-button" text="Login" textFill="WHITE">
                             <font>
                                 <Font size="14.0" />
                             </font>
@@ -88,7 +88,7 @@
                         <HBox alignment="CENTER" prefHeight="25.0" prefWidth="200.0" spacing="5.0">
                             <children>
                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="login-text" text="Don't have an account?" />
-                                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;" text="Register" />
+                                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" style="-fx-background-color: transparent; -fx-underline: true;" styleClass="highlight-text" text="Register" />
                             </children>
                             <VBox.margin>
                                 <Insets top="10.0" />

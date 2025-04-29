@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -28,6 +29,7 @@ public class LoadCampaignDialog {
     public static void showDialog(Stage owner, StartSceneController startSceneController) {
         // Create dialog
         Dialog<CampaignDatabase.CampaignInfo> dialog = new Dialog<>();
+        dialog.initStyle(StageStyle.UNDECORATED);
         dialog.setTitle("Load Campaign");
         dialog.setHeaderText("Select a campaign to load");
         dialog.initModality(Modality.APPLICATION_MODAL);

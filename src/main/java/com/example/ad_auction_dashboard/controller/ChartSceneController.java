@@ -13,6 +13,7 @@ import com.example.ad_auction_dashboard.charts.TotalCostChart;
 import com.example.ad_auction_dashboard.charts.UniquesChart;
 import com.example.ad_auction_dashboard.charts.BounceChart;
 import com.example.ad_auction_dashboard.logic.CampaignMetrics;
+import com.example.ad_auction_dashboard.logic.LogoutHandler;
 import com.example.ad_auction_dashboard.logic.TimeFilteredMetrics;
 
 import com.example.ad_auction_dashboard.logic.UserSession;
@@ -123,6 +124,8 @@ public class ChartSceneController {
     private Button printButton;
     @FXML
     private Button exportButton;
+    @FXML
+    private Button logoutBtn;
 
     @FXML
     private LineChart primaryChart;
@@ -521,6 +524,7 @@ public class ChartSceneController {
 
     @FXML
     private void handleBackToMetrics(ActionEvent event) {
+        toggleControls(true);
         UserSession.getInstance().setCurrentStyle(currentStyle);
             new Thread(() -> {
                 try {
@@ -546,6 +550,16 @@ public class ChartSceneController {
                 showAlert("Error returning to metrics view: " + e.getMessage());
             }
             }).start();
+    }
+
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        toggleControls(true);
+        UserSession.getInstance().setCurrentStyle(this.currentStyle);
+        if (logoutBtn != null) {
+            toggleControls(true);
+            LogoutHandler.handleLogout(event);
+        }
     }
 
     @FXML
@@ -863,6 +877,7 @@ public class ChartSceneController {
         exportButton.setDisable(bool);
         printButton.setDisable(bool);
         backButton.setDisable(bool);
+        logoutBtn.setDisable(bool);
         primaryChartTypeComboBox.setDisable(bool);
         secondaryChartTypeComboBox.setDisable(bool);
     }

@@ -94,7 +94,7 @@
                         <Insets bottom="5.0" />
                     </VBox.margin>
                 </ComboBox>
-                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #27ae60;" text="Register" textFill="WHITE">
+                <Button fx:id="registerBtn" mnemonicParsing="false" onAction="#handleRegister" prefHeight="30.0" prefWidth="150.0" styleClass="register-button" text="Register" textFill="WHITE">
                     <font>
                         <Font size="14.0" />
                     </font>
@@ -107,7 +107,7 @@
                         <Insets top="5.0" />
                     </VBox.margin>
                     <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="register-text" text="Already have an account?" />
-                    <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleBackToLogin" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true;" text="Login" />
+                    <Button fx:id="loginBtn" mnemonicParsing="false" onAction="#handleBackToLogin" style="-fx-background-color: transparent; -fx-underline: true;" styleClass="highlight-text" text="Login" />
                 </HBox>
             </VBox>
         </VBox>

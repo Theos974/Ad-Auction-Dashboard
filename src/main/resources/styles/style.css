@@ -26,6 +26,9 @@
 .login-scene {
     -fx-background-color: #2d2d3b;
 }
+.admin-scene{
+    -fx-background-color: #363642;
+}
 
 /* ===== CONTAINER STYLES ===== */
 .metrics-container {
@@ -83,6 +86,10 @@
 .back {
     -fx-image: url("/images/back_button_white.png");
 }
+.icon-container:hover{
+    -fx-background-color: rgba(255,255,255,0.1);
+}
+
 .chart-box {
     -fx-background-color: #2b2b3b;
     -fx-background-radius: 5;
@@ -296,16 +303,31 @@
     -fx-text-fill: white;
     -fx-fill: white;
 }
+.admin-tabpane .tab:hover{
+    -fx-background-color: #393946;
+}
 
 .admin-tabpane .tab-header-area .tab-header-background{
     -fx-background-color: #2A2A33;
 }
-.admin-tabpane .tab-header-area .headers-region .tab{
+.admin-tabpane .tab{
     -fx-background-color: #454552;
     -fx-text-base-color: white;
 }
-.admin-tabpane .tab-header-area .headers-region .tab:selected{
+.admin-tabpane .tab:selected{
     -fx-background-color: #4C4C5C;
+}
+.highlight-text{
+    -fx-text-fill:  #3498db;
+}
+.highlight-text:hover {
+    -fx-text-fill: #5dade2;
+}
+.register-button {
+    -fx-background-color:  #3498db;
+}
+.register-button:hover{
+    -fx-background-color: #1e8449;
 }
 
 /* ===== BUTTON STYLES ===== */
@@ -661,6 +683,9 @@
     -fx-border-radius: 5;
     -fx-border-width: 1;
 }
+.combo-box:hover{
+    -fx-background-color: #4A4A59;
+}
 
 .combo-box .list-cell {
     -fx-background-color: #363642;
@@ -726,6 +751,12 @@
     -fx-border-width: 1px;
     -fx-background-radius: 5px;
 }
+.login-button{
+    -fx-background-color:  #3498db;
+}
+.login-button:hover{
+    -fx-background-color: #2980b9;
+}
 
 .date-picker {
     -fx-background-color: #363642;
@@ -734,6 +765,9 @@
     -fx-border-color: #a0a0a0;
     -fx-border-radius: 5;
     -fx-border-width: 1;
+}
+.date-picker:hover{
+    -fx-background-color: #4A4A59;
 }
 
 .date-picker .arrow-button {
@@ -882,7 +916,7 @@
     -fx-font-weight: normal;
 }
 
-/* Date picker styling for histogram scene */
+/* Date picker styling for histogram scene
 .histogram-scene .date-picker {
     -fx-background-color: #363642;
     -fx-border-color: #363642;
@@ -897,7 +931,7 @@
     -fx-background-color: #363642;
     -fx-text-fill: white;
     -fx-prompt-text-fill: #aaaaaa;
-}
+}*/
 
 /* Slider styling for histogram */
 .histogram-scene .slider .track {
