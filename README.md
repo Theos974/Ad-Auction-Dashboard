@@ -1,93 +1,255 @@
-# Ad-Auction-Dashboard
+# Ad Auction Dashboard
 
+A comprehensive JavaFX application for analyzing online advertising campaign performance. This dashboard allows marketing agencies and their clients to evaluate campaign success through detailed metrics, interactive charts, and data visualization tools.
 
+## Table of Contents
+- [Overview](#overview)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [User Roles](#user-roles)
+- [Project Structure](#project-structure)
+- [Database](#database)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
 
-## Getting started
+## Overview
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+The Ad Auction Dashboard is designed for online marketing agencies to help their clients evaluate advertising campaign performance. The application processes campaign data from impression logs, click logs, and server logs to provide comprehensive analytics and insights.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### Key Metrics Calculated
+- **Impressions**: Number of times ads were displayed
+- **Clicks**: Number of ad clicks
+- **Unique Users**: Number of distinct users who clicked ads
+- **Bounces**: Users who left quickly or viewed few pages
+- **Conversions**: Users who completed desired actions
+- **Cost Metrics**: CPC (Cost-per-Click), CPA (Cost-per-Acquisition), CPM (Cost-per-Mille)
+- **Performance Ratios**: CTR (Click-through Rate), Bounce Rate
 
-## Add your files
+## Features
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### 🔐 User Management
+- Multi-user authentication system
+- Role-based access control (Admin, Editor, Viewer)
+- User registration and profile management
+- Secure password authentication
 
-```
-cd existing_repo
-git remote add origin https://git.soton.ac.uk/soft-eng-group-coursework/ad-auction-dashboard.git
-git branch -M main
-git push -uf origin main
-```
+### 📊 Campaign Analytics
+- **Metrics Dashboard**: Real-time campaign performance metrics
+- **Time-based Filtering**: Filter data by custom date ranges
+- **Audience Segmentation**: Filter by gender, age, income, and context
+- **Interactive Charts**: Line charts showing metrics over time with multiple granularities (hourly, daily, weekly)
+- **Histogram Analysis**: Distribution analysis of click costs
+- **Campaign Comparison**: Side-by-side comparison of different campaigns
 
-## Integrate with your tools
+### 📈 Data Visualization
+- **Real-time Charts**: Dynamic chart generation with JavaFX Charts
+- **Multiple Chart Types**: Line charts, bar charts, histograms
+- **Time Granularity Control**: View data by hour, day, or week
+- **Filter Integration**: All charts respond to audience and time filters
 
-- [ ] [Set up project integrations](https://git.soton.ac.uk/soft-eng-group-coursework/ad-auction-dashboard/-/settings/integrations)
+### 📁 Data Management
+- **ZIP File Import**: Load campaign data from compressed files
+- **Database Storage**: Save and retrieve campaigns from embedded H2 database
+- **Export Capabilities**: Export charts and data in multiple formats (PNG, PDF, CSV)
+- **Print Functionality**: Direct printing of charts and reports
 
-## Collaborate with your team
+### 👑 Admin Features
+- **User Management**: Create, edit, and delete user accounts
+- **Role Assignment**: Assign and modify user permissions
+- **Campaign Access Control**: Grant/revoke access to specific campaigns
+- **System Overview**: Monitor all users and campaigns
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### 🎛️ Advanced Features
+- **Bounce Criteria Customization**: Define custom bounce thresholds
+- **Memory Optimization**: Efficient caching for large datasets
+- **Error Handling**: Comprehensive error messages and validation
+- **Responsive Design**: Adaptive UI that works with different screen sizes
 
-## Test and Deploy
+## Requirements
 
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+- **Java**: JDK 11 or higher
+- **JavaFX**: 11 or higher
+- **Dependencies**:
+  - H2 Database Engine
+  - OpenCSV
+  - iText PDF
+  - Apache Commons IO
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/ad-auction-dashboard.git
+   cd ad-auction-dashboard
+   ```
+
+2. **Ensure JavaFX is installed**:
+   - Download JavaFX SDK from [OpenJFX](https://openjfx.io/)
+   - Set JavaFX module path in your IDE or build configuration
+
+3. **Build and run**:
+   ```bash
+   # Using your IDE: Run MainApp.java
+   # Or compile and run manually with JavaFX on classpath
+   java --module-path /path/to/javafx/lib --add-modules javafx.controls,javafx.fxml MainApp
+   ```
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### First Time Setup
+1. **Start the application**: Run `MainApp.java`
+2. **Login with default admin account**:
+   - Username: `admin`
+   - Password: `admin123`
+3. **Create additional users** through the Admin Panel if needed
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Loading Campaign Data
+1. **Prepare your data**: Ensure you have ZIP files containing:
+   - `impression_log.csv`: Impression data with columns: Date, ID, Gender, Age, Income, Context, Impression Cost
+   - `click_log.csv`: Click data with columns: Date, ID, Click Cost
+   - `server_log.csv`: Server interaction data with columns: Entry Date, ID, Exit Date, Pages Viewed, Conversion
+
+2. **Import campaign**:
+   - Click "Load ZIP File" (Editor/Admin only)
+   - Select your campaign ZIP file
+   - Click "Create Campaign"
+
+3. **View analytics**:
+   - Navigate through different sections using the sidebar
+   - Apply filters to segment your data
+   - Generate charts and reports
+
+### User Workflow
+```
+Login → Load/Select Campaign → View Metrics → Analyze Charts → Generate Reports
+```
+
+## User Roles
+
+### 👀 Viewer
+- View saved campaigns from database
+- Access all analytics and charts
+- Apply filters and generate reports
+- Export data in various formats
+
+### ✏️ Editor
+- All Viewer permissions
+- Import new campaigns from ZIP files
+- Save campaigns to database
+- Access campaign comparison features
+
+### 👑 Admin
+- All Editor permissions
+- Access Admin Panel
+- Manage user accounts and roles
+- Control campaign access permissions
+- System administration tasks
+
+## Project Structure
+
+```
+src/main/java/com/example/ad_auction_dashboard/
+├── charts/                 # Chart implementations
+│   ├── Chart.java         # Chart interface
+│   ├── *Chart.java        # Specific chart types
+│   └── HistogramGenerator.java
+├── controller/            # FXML controllers
+│   ├── LoginSceneController.java
+│   ├── MetricSceneController.java
+│   ├── ChartSceneController.java
+│   └── AdminPanelController.java
+├── logic/                 # Business logic
+│   ├── Campaign.java      # Campaign data model
+│   ├── CampaignMetrics.java # Metrics calculations
+│   ├── UserDatabase.java  # User management
+│   ├── TimeFilteredMetrics.java # Filtering logic
+│   └── FileHandler.java   # File operations
+├── viewer/                # Scene management
+│   ├── MainApp.java       # Application entry point
+│   └── *Scene.java        # Scene controllers
+└── resources/
+    ├── fxml/              # FXML layout files
+    ├── css/               # Stylesheets
+    └── images/            # UI assets
+```
+
+## Database
+
+The application uses an embedded H2 database stored in:
+- **Location**: `~/.ad_auction_dashboard/userdb`
+- **Tables**:
+  - `USERS`: User accounts and roles
+  - `CAMPAIGNS`: Saved campaign data
+  - `CAMPAIGN_ACCESS`: User-campaign permissions
+
+## Key Classes
+
+### Data Models
+- **`Campaign`**: Container for campaign log data
+- **`CampaignMetrics`**: Calculates and caches all performance metrics
+- **`ImpressionLog`**, **`ClickLog`**, **`ServerLog`**: Individual log entry models
+
+### Controllers
+- **`MetricSceneController`**: Main dashboard with metrics display
+- **`ChartSceneController`**: Interactive chart visualization
+- **`HistogramController`**: Data distribution analysis
+- **`AdminPanelController`**: User and system management
+
+### Core Logic
+- **`TimeFilteredMetrics`**: Handles filtering and time-based analysis
+- **`UserDatabase`**: User authentication and role management
+- **`FileHandler`**: ZIP file processing and data import
+
+## Configuration
+
+### Bounce Criteria
+Users can customize bounce detection criteria:
+- **Page Threshold**: Minimum pages viewed to not be considered a bounce
+- **Time Threshold**: Minimum time spent on site (in seconds)
+
+### Export Options
+- **Charts**: PNG, PDF formats
+- **Data**: CSV format with chart data points
+- **Combined**: Multi-page PDF reports
+
+## Error Handling
+
+The application includes comprehensive error handling for:
+- Invalid file formats
+- Database connection issues
+- Permission violations
+- Data validation errors
+- Memory management for large datasets
+
+## Performance Optimizations
+
+- **Caching**: Intelligent caching of computed metrics
+- **Memory Management**: Efficient data structures for large campaigns
+- **Lazy Loading**: On-demand calculation of time-granular data
+- **Batch Processing**: Optimized file reading and data processing
 
 ## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+This project is part of an academic assignment for advertising campaign analysis.
+
+## Support
+
+For questions or issues:
+1. Check the error messages displayed in the application
+2. Verify your data format matches the required CSV structure
+3. Ensure you have appropriate permissions for the operation
+4. Contact your system administrator for database or user issues
+
+---
+
+**Note**: This application is designed for educational and professional use in advertising campaign analysis. Ensure your data complies with privacy regulations and company policies before importing.
